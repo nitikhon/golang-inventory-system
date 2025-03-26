@@ -6,7 +6,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/nitikhon/golang-inventory-system/internal/app"
+	"github.com/nitikhon/golang-inventory-system/internal/domain"
 	"github.com/nitikhon/golang-inventory-system/internal/infrastructure"
+	"github.com/nitikhon/golang-inventory-system/internal/infrastructure/repository"
+	"github.com/nitikhon/golang-inventory-system/internal/interfaces/http"
 )
 
 func main() {
@@ -14,16 +18,20 @@ func main() {
 
 	config := infrastructure.NewConfig()
 
-	_, err := infrastructure.NewDatabase(*config)
+	db, err := infrastructure.NewDatabase(*config)
 	if err != nil {
 		log.Fatal("Error: ", err)
 	}
 
+	db.AutoMigrate(&domain.Item{})
+
+	itemRepo := repository.NewItemRepository(db)
+	itemService := app.NewItemService(itemRepo)
+	itemHandler := http.NewItemHandler(itemService)
+
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	http.SetupRoutes(app, itemHandler)
 
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
 	if err != nil {
