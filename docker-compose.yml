@@ -1,12 +1,17 @@
 version: "3.8"
 
 services:
-    server:
-        build: .
-        container_name: lendit-server
+    app:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: lendit-app
+        working_dir: /app
         ports:
             - "8080:8080"
         restart: unless-stopped
+        volumes:
+            - ./:/app
         depends_on:
             - postgres
 
