@@ -6,14 +6,17 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/domain"
 )
 
+// ItemHandler handles HTTP requests for items.
 type ItemHandler struct {
 	service *app.ItemService
 }
 
+// NewItemHandler creates a new ItemHandler.
 func NewItemHandler(service *app.ItemService) *ItemHandler {
 	return &ItemHandler{service: service}
 }
 
+// FindAll retrieves all items.
 func (h *ItemHandler) FindAll(c *fiber.Ctx) error {
 	items, err := h.service.FindAll()
 	if err != nil {
@@ -22,6 +25,7 @@ func (h *ItemHandler) FindAll(c *fiber.Ctx) error {
 	return c.JSON(items)
 }
 
+// FindByID retrieves an item by its ID.
 func (h *ItemHandler) FindByID(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
@@ -35,6 +39,7 @@ func (h *ItemHandler) FindByID(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
+// Create adds a new item.
 func (h *ItemHandler) Create(c *fiber.Ctx) error {
 	var item domain.Item
 	if err := c.BodyParser(&item); err != nil {
@@ -48,6 +53,7 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 	return c.JSON(createdItem)
 }
 
+// Update modifies an existing item.
 func (h *ItemHandler) Update(c *fiber.Ctx) error {
 	var item domain.Item
 	if err := c.BodyParser(&item); err != nil {
@@ -61,6 +67,7 @@ func (h *ItemHandler) Update(c *fiber.Ctx) error {
 	return c.JSON(updatedItem)
 }
 
+// Delete removes an item by its ID.
 func (h *ItemHandler) Delete(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
