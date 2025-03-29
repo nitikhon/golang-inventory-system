@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/nitikhon/golang-inventory-system/internal/domain"
 	"gorm.io/gorm"
@@ -51,6 +52,9 @@ func (r *ItemRepository) Create(item domain.Item) (domain.Item, error) {
 	if item.Quantity == 0 {
 		return domain.Item{}, errors.New("quantity cannot be zero")
 	}
+
+	// Normalize item name
+	item.Name = strings.ToLower(item.Name)
 
 	// Save item to database
 	err := r.db.Create(&item).Error
