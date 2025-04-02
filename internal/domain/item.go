@@ -5,9 +5,9 @@ import (
 )
 
 type Item struct {
-	ID          int `gorm:"primaryKey"`
-	Name        string
+	Name        string `gorm:"uniqueIndex:idx_name"`
 	Description string
 	Quantity    int
+	Status      string `gorm:"type:VARCHAR(20);default:'available'"` // available, borrowed, maintenance, lost
 	gorm.Model
 }

@@ -23,15 +23,19 @@ func main() {
 		log.Fatal("Error: ", err)
 	}
 
-	db.AutoMigrate(&domain.Item{})
+	db.AutoMigrate(&domain.Item{}, &domain.User{})
 
 	itemRepo := repository.NewItemRepository(db)
 	itemService := app.NewItemService(itemRepo)
 	itemHandler := http.NewItemHandler(itemService)
 
+	userRepo := repository.NewUserRepository(db)
+	userService := app.NewUserService(userRepo)
+	userHandler := http.NewUserHandler(userService)
+
 	app := fiber.New()
 
-	http.SetupRoutes(app, itemHandler)
+	http.SetupRoutes(app, itemHandler, userHandler)
 
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
 	if err != nil {
