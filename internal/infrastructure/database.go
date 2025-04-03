@@ -13,6 +13,7 @@ func NewDatabase(config Config) (*gorm.DB, error) {
 	// Open a connection to the database using the provided DSN and custom logger.
 	db, err := gorm.Open(postgres.Open(config.DatabaseDSN), &gorm.Config{
 		Logger: newLogger(),
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	
 	if err != nil {
