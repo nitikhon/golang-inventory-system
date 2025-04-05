@@ -1,4 +1,4 @@
-package infrastructure
+package util
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 )
 
 // newLogger creates a new logger for detailed SQL logging
-func newLogger() logger.Interface {
+func NewLogger() logger.Interface {
 	// New logger for detailed SQL logging
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer

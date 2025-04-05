@@ -1,4 +1,4 @@
-package infrastructure
+package seed
 
 import (
 	"errors"
@@ -24,7 +24,7 @@ func SeedDB(db *gorm.DB) error {
 	log.Println("Seeding database...")
 
 	// Read the SQL file
-	sqlFile := "internal/infrastructure/seed.sql"
+	sqlFile := "internal/util/seed/seed.sql"
 	sqlBytes, err := os.ReadFile(sqlFile)
 	if err != nil {
 		log.Println("Error reading seed file:", err)

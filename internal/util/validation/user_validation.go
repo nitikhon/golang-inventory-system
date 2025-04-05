@@ -5,28 +5,28 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nitikhon/golang-inventory-system/internal/domain"
+	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
-func ValidateAndNormalizeUser(user *domain.User) (*domain.User, error) {
+func ValidateAndNormalizeUser(user *entity.User) (*entity.User, error) {
 	// Validate required fields
 	if err := validateRequiredFields(user); err != nil {
-		return &domain.User{}, err
+		return &entity.User{}, err
 	}
 
 	// Validate and normalize email
 	if err := validateAndNormalizeEmail(user); err != nil {
-		return &domain.User{}, err
+		return &entity.User{}, err
 	}
 
 	// Validate and normalize phone number
 	if err := validateAndNormalizePhone(user); err != nil {
-		return &domain.User{}, err
+		return &entity.User{}, err
 	}
 
 	// Validate and normalize username
 	if err := validateAndNormalizeUsername(user); err != nil {
-		return &domain.User{}, err
+		return &entity.User{}, err
 	}
 
 	// Normalize names and password
@@ -36,10 +36,10 @@ func ValidateAndNormalizeUser(user *domain.User) (*domain.User, error) {
 	// Set default value for IsAdmin
 	user.IsAdmin = false
 
-	return &domain.User{}, nil
+	return &entity.User{}, nil
 }
 
-func validateRequiredFields(user *domain.User) error {
+func validateRequiredFields(user *entity.User) error {
 	// Check if all required fields are provided
 	if user.Username == "" {
 		return errors.New("username is required")
@@ -62,7 +62,7 @@ func validateRequiredFields(user *domain.User) error {
 	return nil
 }
 
-func validateAndNormalizeEmail(user *domain.User) error {
+func validateAndNormalizeEmail(user *entity.User) error {
 	// Validate email format
 	emailRegex := `^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`
 	matched, err := regexp.MatchString(emailRegex, user.Email)
@@ -73,18 +73,18 @@ func validateAndNormalizeEmail(user *domain.User) error {
 		return errors.New("invalid email format")
 	}
 
-	// Normalize email (lowercase domain part)
+	// Normalize email (lowercase entity part)
 	atIndex := strings.LastIndex(user.Email, "@")
 	if atIndex != -1 {
 		localPart := user.Email[:atIndex]
-		domainPart := strings.ToLower(user.Email[atIndex:])
-		user.Email = localPart + domainPart
+		entityPart := strings.ToLower(user.Email[atIndex:])
+		user.Email = localPart + entityPart
 	}
 
 	return nil
 }
 
-func validateAndNormalizePhone(user *domain.User) error {
+func validateAndNormalizePhone(user *entity.User) error {
 	// Remove non-numeric characters from phone
 	phoneRegex := `[^0-9]`
 	phoneCleaned := regexp.MustCompile(phoneRegex).ReplaceAllString(user.Phone, "")
@@ -95,7 +95,7 @@ func validateAndNormalizePhone(user *domain.User) error {
 	return nil
 }
 
-func validateAndNormalizeUsername(user *domain.User) error {
+func validateAndNormalizeUsername(user *entity.User) error {
 	// Validate username format
 	usernameRegex := `^[a-zA-Z0-9._]+$`
 	matched, err := regexp.MatchString(usernameRegex, user.Username)
@@ -134,13 +134,13 @@ func validateAndNormalizeUsername(user *domain.User) error {
 	return nil
 }
 
-func normalizeNames(user *domain.User) {
+func normalizeNames(user *entity.User) {
 	// Trim spaces from first and last names
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 }
 
-func normalizePassword(user *domain.User) {
+func normalizePassword(user *entity.User) {
 	// Trim spaces from password
 	user.Password = strings.TrimSpace(user.Password)
 }

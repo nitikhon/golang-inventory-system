@@ -2,17 +2,17 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nitikhon/golang-inventory-system/internal/app"
-	"github.com/nitikhon/golang-inventory-system/internal/domain"
+	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
 // ItemHandler handles HTTP requests for items.
 type ItemHandler struct {
-	service *app.ItemService
+	service *service.ItemService
 }
 
 // NewItemHandler creates a new ItemHandler.
-func NewItemHandler(service *app.ItemService) *ItemHandler {
+func NewItemHandler(service *service.ItemService) *ItemHandler {
 	return &ItemHandler{service: service}
 }
 
@@ -41,7 +41,7 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 
 // Create adds a new item.
 func (h *ItemHandler) Create(c *fiber.Ctx) error {
-	var item domain.Item
+	var item entity.Item
 	if err := c.BodyParser(&item); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -55,7 +55,7 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 
 // Update modifies an existing item.
 func (h *ItemHandler) Update(c *fiber.Ctx) error {
-	var item domain.Item
+	var item entity.Item
 	if err := c.BodyParser(&item); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}

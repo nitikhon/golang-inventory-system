@@ -2,23 +2,23 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nitikhon/golang-inventory-system/internal/app"
-	"github.com/nitikhon/golang-inventory-system/internal/domain"
+	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
 // UserHandler handles HTTP requests for users.
 type UserHandler struct {
-	service *app.UserService
+	service *service.UserService
 }
 
 // NewUserHandler creates a new UserHandler.
-func NewUserHandler(service *app.UserService) *UserHandler {
+func NewUserHandler(service *service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
 // Create adds a new user.
 func (h *UserHandler) Create(c *fiber.Ctx) error {
-	var user domain.User
+	var user entity.User
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -32,7 +32,7 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 
 // Update modifies an existing user.
 func (h *UserHandler) Update(c *fiber.Ctx) error {
-	var user domain.User
+	var user entity.User
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}

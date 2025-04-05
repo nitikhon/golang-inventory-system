@@ -6,11 +6,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"github.com/nitikhon/golang-inventory-system/internal/app"
-	"github.com/nitikhon/golang-inventory-system/internal/domain"
-	"github.com/nitikhon/golang-inventory-system/internal/infrastructure"
-	"github.com/nitikhon/golang-inventory-system/internal/infrastructure/repository"
-	"github.com/nitikhon/golang-inventory-system/internal/interfaces/http"
+	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http"
+	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/database"
+	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/repository"
+	"github.com/nitikhon/golang-inventory-system/internal/config"
+	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/util/seed"
 )
 
 func main() {
@@ -18,19 +20,19 @@ func main() {
 	godotenv.Load()
 
 	// Initialize configuration
-	config := infrastructure.NewConfig()
+	config := config.NewConfig()
 
 	// Connect to the database
-	db, err := infrastructure.NewDatabase(*config)
+	db, err := database.NewDatabase(*config)
 	if err != nil {
 		log.Fatal("Error: ", err)
 	}
 
 	// Auto-migrate database models
-	db.AutoMigrate(&domain.Item{}, &domain.User{})
+	db.AutoMigrate(&entity.Item{}, &entity.User{})
 
 	// Seed the database if it's empty
-	if err := infrastructure.SeedDB(db); err != nil {
+	if err := seed.SeedDB(db); err != nil {
 		log.Println("Error: ", err)
 	} else {
 		log.Println("Database is empty, seeding...")
@@ -38,11 +40,11 @@ func main() {
 
 	// Initialize repositories, services, and handlers
 	itemRepo := repository.NewItemRepository(db)
-	itemService := app.NewItemService(itemRepo)
+	itemService := service.NewItemService(itemRepo)
 	itemHandler := http.NewItemHandler(itemService)
 
 	userRepo := repository.NewUserRepository(db)
-	userService := app.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo)
 	userHandler := http.NewUserHandler(userService)
 
 	// Create a new Fiber app
