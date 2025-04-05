@@ -29,12 +29,12 @@ func (s *UserService) Delete(id int) error {
 	return s.repo.DeleteUser(id)
 }
 
-// FindAll returns all users.
+// GetAllUsers returns all users.
 func (s *UserService) GetAllUsers() ([]*domain.User, error) {
 	return s.repo.GetAllUsers()
 }
 
-// FindByID returns a user by their ID.
+// GetUserByID returns a user by their ID.
 func (s *UserService) GetUserByID(id int) (*domain.User, error) {
 	return s.repo.GetUserByID(id)
 }
