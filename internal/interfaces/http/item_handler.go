@@ -16,23 +16,23 @@ func NewItemHandler(service *app.ItemService) *ItemHandler {
 	return &ItemHandler{service: service}
 }
 
-// FindAll retrieves all items.
-func (h *ItemHandler) FindAll(c *fiber.Ctx) error {
-	items, err := h.service.FindAll()
+// GetAllItems retrieves all items.
+func (h *ItemHandler) GetAllItems(c *fiber.Ctx) error {
+	items, err := h.service.GetAllItems()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(items)
 }
 
-// FindByID retrieves an item by its ID.
-func (h *ItemHandler) FindByID(c *fiber.Ctx) error {
+// GetItemByID retrieves an item by its ID.
+func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	item, err := h.service.FindByID(id)
+	item, err := h.service.GetItemByID(id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

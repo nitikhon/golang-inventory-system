@@ -19,7 +19,7 @@ func NewItemRepository(db *gorm.DB) *ItemRepository {
 }
 
 // FindAll retrieves all items from the database.
-func (r *ItemRepository) FindAll() ([]domain.Item, error) {
+func (r *ItemRepository) GetAllItems() ([]domain.Item, error) {
 	var items []domain.Item
 	// Query all items
 	err := r.db.Find(&items).Error
@@ -30,7 +30,7 @@ func (r *ItemRepository) FindAll() ([]domain.Item, error) {
 }
 
 // FindByID retrieves an item by its ID.
-func (r *ItemRepository) FindByID(id int) (domain.Item, error) {
+func (r *ItemRepository) GetItemByID(id int) (domain.Item, error) {
 	var item domain.Item
 	// Query item by ID
 	err := r.db.Where("id = ?", id).Take(&item).Error

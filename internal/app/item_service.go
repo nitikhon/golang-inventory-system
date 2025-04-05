@@ -15,13 +15,13 @@ func NewItemService(repo domain.ItemRepository) *ItemService {
 }
 
 // FindAll returns all items.
-func (s *ItemService) FindAll() ([]domain.Item, error) {
-	return s.repo.FindAll()
+func (s *ItemService) GetAllItems() ([]domain.Item, error) {
+	return s.repo.GetAllItems()
 }
 
 // FindByID returns an item by its ID.
-func (s *ItemService) FindByID(id int) (domain.Item, error) {
-	return s.repo.FindByID(id)
+func (s *ItemService) GetItemByID(id int) (domain.Item, error) {
+	return s.repo.GetItemByID(id)
 }
 
 // Create creates a new item.

@@ -7,8 +7,8 @@ import (
 func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHandler) {
 	// Item routes
 	itemRoutes := app.Group("/items")
-	itemRoutes.Get("/", itemHandler.FindAll)
-	itemRoutes.Get("/:id", itemHandler.FindByID)
+	itemRoutes.Get("/", itemHandler.GetAllItems)
+	itemRoutes.Get("/:id", itemHandler.GetItemByID)
 	itemRoutes.Post("/", itemHandler.Create)
 	itemRoutes.Put("/", itemHandler.Update)
 	itemRoutes.Delete("/:id", itemHandler.Delete)
