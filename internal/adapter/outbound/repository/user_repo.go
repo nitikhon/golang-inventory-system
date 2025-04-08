@@ -19,7 +19,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 // CreateUser adds a new user to the database.
 func (r *UserRepository) CreateUser(user *entity.User) (*entity.User, error) {
 	// Validate user fields
-	user, err := validation.ValidateAndNormalizeUser(user)
+	_, err := validation.ValidateAndNormalizeUser(user)
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -69,7 +69,7 @@ func (r *UserRepository) UpdateUser(user *entity.User) (*entity.User, error) {
 }
 
 // DeleteUser removes a user from the database by their ID. (soft delete)
-func (r *UserRepository) DeleteUser(id int) error {
+func (r *UserRepository) DeleteUser(id uint) error {
 	result := r.db.Delete(&entity.User{}, id)
 	if result.Error != nil {
 		return result.Error
@@ -91,7 +91,7 @@ func (r *UserRepository) GetAllUsers() ([]*entity.User, error) {
 }
 
 // GetUserByID retrieves a user by their ID.
-func (r *UserRepository) GetUserByID(id int) (*entity.User, error) {
+func (r *UserRepository) GetUserByID(id uint) (*entity.User, error) {
 	var user entity.User
 	err := r.db.Where("id = ?", id).Take(&user).Error
 	if err != nil {
@@ -128,4 +128,18 @@ func (r *UserRepository) GetUserByPhone(phone string) (*entity.User, error) {
 		return &entity.User{}, err
 	}
 	return &user, nil
+}
+
+// UpdateRefreshToken updates the refresh token for a user.
+func (r *UserRepository) UpdateRefreshToken(userID uint, refreshToken string) error {
+	result := r.db.Model(&entity.User{}).Where("id = ?", userID).Update("refresh_token", refreshToken)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }

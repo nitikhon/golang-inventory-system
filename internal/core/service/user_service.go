@@ -16,17 +16,17 @@ func NewUserService(repo port.UserRepository) *UserService {
 }
 
 // Create creates a new user.
-func (s *UserService) Create(user entity.User) (*entity.User, error) {
+func (s *UserService) CreateUser(user entity.User) (*entity.User, error) {
 	return s.repo.CreateUser(&user)
 }
 
 // Update updates an existing user.
-func (s *UserService) Update(user entity.User) (*entity.User, error) {
+func (s *UserService) UpdateUser(user entity.User) (*entity.User, error) {
 	return s.repo.UpdateUser(&user)
 }
 
 // Delete deletes a user by their ID.
-func (s *UserService) Delete(id int) error {
+func (s *UserService) DeleteUser(id uint) error {
 	return s.repo.DeleteUser(id)
 }
 
@@ -36,7 +36,7 @@ func (s *UserService) GetAllUsers() ([]*entity.User, error) {
 }
 
 // GetUserByID returns a user by their ID.
-func (s *UserService) GetUserByID(id int) (*entity.User, error) {
+func (s *UserService) GetUserByID(id uint) (*entity.User, error) {
 	return s.repo.GetUserByID(id)
 }
 
@@ -53,4 +53,9 @@ func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
 // GetUserByPhone retrieves a user by their phone number.
 func (s *UserService) GetUserByPhone(phone string) (*entity.User, error) {
 	return s.repo.GetUserByPhone(phone)
+}
+
+// UpdateRefreshToken updates the refresh token for a user.
+func (s *UserService) UpdateRefreshToken(userID uint, refreshToken string) error {
+	return s.repo.UpdateRefreshToken(userID, refreshToken)
 }

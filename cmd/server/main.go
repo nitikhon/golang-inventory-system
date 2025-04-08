@@ -28,8 +28,19 @@ func main() {
 		log.Fatal("Error: ", err)
 	}
 
-	// Auto-migrate database models
-	db.AutoMigrate(&entity.Item{}, &entity.User{})
+	// Drop all tables before migration
+    err = db.Migrator().DropTable(&entity.Item{}, &entity.User{})
+    if err != nil {
+        log.Fatal("Error dropping tables: ", err)
+    }
+    log.Println("All tables dropped successfully.")
+
+    // Auto-migrate database models
+    err = db.AutoMigrate(&entity.Item{}, &entity.User{})
+    if err != nil {
+        log.Fatal("Error migrating tables: ", err)
+    }
+    log.Println("Database migrated successfully.")
 
 	// Seed the database if it's empty
 	if err := seed.SeedDB(db); err != nil {
@@ -47,11 +58,14 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userHandler := http.NewUserHandler(userService)
 
+	authService := service.NewAuthService(userRepo)
+	auth := http.NewAuthHandler(authService)
+
 	// Create a new Fiber app
 	app := fiber.New()
 
 	// Setup HTTP routes
-	http.SetupRoutes(app, itemHandler, userHandler)
+	http.SetupRoutes(app, itemHandler, userHandler, auth)
 
 	// Start the server
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
