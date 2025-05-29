@@ -46,11 +46,11 @@ func (r *ItemRepository) Create(item entity.Item) (entity.Item, error) {
 	if item.Name == "" {
 		return entity.Item{}, errors.New("name is required")
 	}
-	if item.Quantity < 0 {
-		return entity.Item{}, errors.New("quantity cannot be negative")
+	if item.AvailableAmount < 0 {
+		return entity.Item{}, errors.New("AvailableAmount cannot be negative")
 	}
-	if item.Quantity == 0 {
-		return entity.Item{}, errors.New("quantity cannot be zero")
+	if item.AvailableAmount == 0 {
+		return entity.Item{}, errors.New("AvailableAmount cannot be zero")
 	}
 
 	// Normalize item name
