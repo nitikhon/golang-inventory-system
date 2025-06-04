@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
 	"gorm.io/gorm"
 )
@@ -41,6 +44,13 @@ func (r *UserRepository) CreateUser(user *entity.User) (*entity.User, error) {
 	if err == nil && existingUser != nil {
 		return &entity.User{}, gorm.ErrDuplicatedKey
 	}
+
+	// Hash the password before saving
+	hashedPassword, err := util.HashPassword(user.Password)
+	if err != nil {
+		return &entity.User{}, err
+	}
+	user.Password = hashedPassword
 
 	// Save user to database
 	err = r.db.Create(user).Error
@@ -143,3 +153,76 @@ func (r *UserRepository) UpdateRefreshToken(userID uint, refreshToken string) er
 
 	return nil
 }
+
+// Login checks if the user exists and if the password is correct.
+func (r *UserRepository) Login(username, password string) (string, string, error) {
+	// Check if user exists
+	user, err := r.GetUserByUsername(username)
+	if err != nil {
+		return "", "", err
+	}
+
+	if user == nil {
+		return "", "", gorm.ErrRecordNotFound
+	}
+
+	// Check if password is correct
+	if err := util.CheckPasswordHash(user.Password, password); err != nil {
+		return "", "", errors.New("invalid credentials")
+	}
+
+	// Generate access and refresh tokens
+	accessToken, err := util.GenerateAccessToken(*user)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := util.GenerateRefreshToken(*user)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Save refresh token
+	err = r.UpdateRefreshToken(user.ID, refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+// RefreshToken validates the provided refresh token, retrieves the associated user,
+// and generates a new pair of access and refresh tokens.
+func (r *UserRepository) RefreshToken(refreshToken string) (entity.Token, error) {
+	// Validate the Refresh Token
+	userID, err := util.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		return entity.Token{}, err
+	}
+
+	// Retrieve the user
+	user, err := r.GetUserByID(userID)
+	if err != nil {
+		return entity.Token{}, err
+	}
+
+	// Generate new tokens
+	accessToken, err := util.GenerateAccessToken(*user)
+	if err != nil {
+		return entity.Token{}, err
+	}
+
+	newRefreshToken, err := util.GenerateRefreshToken(*user)
+	if err != nil {
+		return entity.Token{}, err
+	}
+
+	// Save new refresh token
+	err = r.UpdateRefreshToken(user.ID, newRefreshToken)
+	if err != nil {
+		return entity.Token{}, err
+	}
+
+	return entity.Token{AccessToken: accessToken, RefreshToken: newRefreshToken}, nil
+}
+

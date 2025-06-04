@@ -5,7 +5,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http/middleware"
 )
 
-func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHandler, authHandler *AuthHandler) {
+func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHandler) {
 	// Item routes
 	itemRoutes := app.Group("/items")
 	itemRoutes.Get("/", itemHandler.GetAllItems)
@@ -16,20 +16,21 @@ func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHand
 
 	// User routes
 	userRoutes := app.Group("/users")
-	userRoutes.Post("/", userHandler.Create)
 	userRoutes.Put("/", userHandler.Update)
+	
 	userRoutes.Delete("/:id", userHandler.Delete)
 	userRoutes.Get("/", userHandler.GetAllUsers)
+	userRoutes.Get("/me", middleware.AuthMiddleware(), userHandler.Me) // define this before :id to prevent an error
 	userRoutes.Get("/:id", userHandler.GetUserByID)
 	userRoutes.Get("/username/:username", userHandler.GetUserByUsername)
 	userRoutes.Get("/email/:email", userHandler.GetUserByEmail)
 	userRoutes.Get("/phone/:phone", userHandler.GetUserByPhone)
 
 	// Auth routes
-	app.Post("/login", authHandler.Login)
-	app.Post("/register", authHandler.Register)
-	app.Post("/refresh-token", authHandler.RefreshToken)
-	app.Get("/me", middleware.AuthMiddleware(), authHandler.Me)
+	userRoutes.Post("/login", userHandler.Login)
+	userRoutes.Post("/register", userHandler.Create) // Register user
+	userRoutes.Post("/refresh-token", userHandler.RefreshToken)
+	
 
 	// Protected routes
 	// protectedRoutes := app.Group("/protected", middleware.AuthMiddleware())

@@ -58,14 +58,11 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userHandler := http.NewUserHandler(userService)
 
-	authService := service.NewAuthService(userRepo)
-	auth := http.NewAuthHandler(authService)
-
 	// Create a new Fiber app
 	app := fiber.New()
 
 	// Setup HTTP routes
-	http.SetupRoutes(app, itemHandler, userHandler, auth)
+	http.SetupRoutes(app, itemHandler, userHandler)
 
 	// Start the server
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))

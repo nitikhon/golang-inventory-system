@@ -2,8 +2,9 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/util"
 )
 
 // UserHandler handles HTTP requests for users.
@@ -120,5 +121,99 @@ func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+	return c.JSON(user)
+}
+
+// Login handles user login and returns access and refresh tokens.
+func (h *UserHandler) Login(c *fiber.Ctx) error {
+	var loginRequest struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := c.BodyParser(&loginRequest); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	accessToken, refreshToken, err := h.service.Login(loginRequest.Username, loginRequest.Password)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
+	}
+
+	// Set the Refresh Token in an HTTP-only cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HTTPOnly: true,
+		Secure:   string(util.GetEnvOrPanic("COOKIE_SECURE")) == "true", // Set to true in production
+		SameSite: "Strict",
+		Path:     "/",
+	})
+
+	return c.JSON(fiber.Map{
+		"access_token": accessToken,
+	})
+}
+
+// RefreshToken handles the HTTP request to refresh authentication tokens.
+func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
+	// Retrieve the Refresh Token from the HTTP-only cookie
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "refresh token not found"})
+	}
+
+	// Validate the Refresh Token and generate new tokens
+	tokens, err := h.service.RefreshToken(refreshToken)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid refresh token"})
+	}
+
+	// Set the new Refresh Token in the HTTP-only cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   string(util.GetEnvOrPanic("COOKIE_SECURE")) == "true", // Set to true in production
+		SameSite: "Strict",
+		Path:     "/",
+	})
+
+	// Return the new Access Token in the response body
+	return c.JSON(fiber.Map{
+		"access_token": tokens.AccessToken,
+	})
+}
+
+// Me retrieves the current user's information using the Access Token.
+// It validates the token and returns the user data if valid.
+func (h *UserHandler) Me(c *fiber.Ctx) error {
+	// Check if the Authorization header is present
+	accessToken := c.Get("Authorization")
+	if accessToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "access token not found"})
+	}
+
+	// Remove the "Bearer " prefix from the token
+	if len(accessToken) > 7 && accessToken[:7] == "Bearer " {
+		accessToken = accessToken[7:]
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid access token format"})
+	}
+
+	// Validate the Access Token
+	userID, err := util.ValidateAccessToken(accessToken)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid access token"})
+	}
+
+	// Retrieve the user by ID
+	user, err := h.service.GetUserByID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// May exclude some field from the response later
+
 	return c.JSON(user)
 }

@@ -59,3 +59,11 @@ func (s *UserService) GetUserByPhone(phone string) (*entity.User, error) {
 func (s *UserService) UpdateRefreshToken(userID uint, refreshToken string) error {
 	return s.repo.UpdateRefreshToken(userID, refreshToken)
 }
+
+func (s *UserService) Login(username, password string) (string, string, error) {
+	return s.repo.Login(username, password)
+}
+
+func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
+	return s.repo.RefreshToken(refreshToken)
+}

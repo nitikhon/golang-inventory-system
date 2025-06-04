@@ -15,3 +15,8 @@ type User struct {
 	RefreshToken string `json:"refresh_token"`
 	gorm.Model
 }
+
+type Token struct {
+    AccessToken  string
+    RefreshToken string
+}

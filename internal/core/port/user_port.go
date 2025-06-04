@@ -14,4 +14,6 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*entity.User, error)
 	GetUserByPhone(phone string) (*entity.User, error)
 	UpdateRefreshToken(id uint, refreshToken string) error
+	Login(username, password string) (string, string, error)
+	RefreshToken(refreshToken string) (entity.Token, error)
 }
