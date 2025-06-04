@@ -30,7 +30,7 @@ func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHand
 	userRoutes.Post("/login", userHandler.Login)
 	userRoutes.Post("/register", userHandler.Create) // Register user
 	userRoutes.Post("/refresh-token", userHandler.RefreshToken)
-	
+	userRoutes.Post("/logout", middleware.AuthMiddleware(), userHandler.Logout)
 
 	// Protected routes
 	// protectedRoutes := app.Group("/protected", middleware.AuthMiddleware())

@@ -192,3 +192,27 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 
 	return entity.Token{AccessToken: accessToken, RefreshToken: newRefreshToken}, nil
 }
+
+// Logout clears the refresh token for the user.
+func (s *UserService) Logout(userID uint) error {
+	// Retrieve the user
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return gorm.ErrRecordNotFound
+	}
+
+	// Clear the refresh token
+	user.RefreshToken = ""
+
+	// Update the user in the repository
+	_, err = s.repo.UpdateUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

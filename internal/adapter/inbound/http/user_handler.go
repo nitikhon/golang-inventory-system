@@ -217,3 +217,27 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 
 	return c.JSON(user)
 }
+
+func (h *UserHandler) Logout(c *fiber.Ctx) error {
+	// Get user ID from context (set by AuthMiddleware)
+	userID := c.Locals("user_id").(uint)
+
+	// Clear refresh token in DB
+	err := h.service.Logout(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Clear the refresh token cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Strict",
+		Path:     "/",
+		MaxAge:   -1, // Expire immediately
+	})
+
+	return c.JSON(fiber.Map{"message": "Logged out successfully"})
+}
