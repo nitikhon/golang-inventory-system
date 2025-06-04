@@ -16,23 +16,23 @@ func NewItemService(repo port.ItemRepository) *ItemService {
 }
 
 // FindAll returns all items.
-func (s *ItemService) GetAllItems() ([]entity.Item, error) {
+func (s *ItemService) GetAllItems() ([]*entity.Item, error) {
 	return s.repo.GetAllItems()
 }
 
 // FindByID returns an item by its ID.
-func (s *ItemService) GetItemByID(id uint) (entity.Item, error) {
+func (s *ItemService) GetItemByID(id uint) (*entity.Item, error) {
 	return s.repo.GetItemByID(id)
 }
 
 // Create creates a new item.
-func (s *ItemService) Create(item entity.Item) (entity.Item, error) {
-	return s.repo.Create(item)
+func (s *ItemService) Create(item entity.Item) (*entity.Item, error) {
+	return s.repo.Create(&item)
 }
 
 // Update updates an existing item.
-func (s *ItemService) Update(item entity.Item) (entity.Item, error) {
-	return s.repo.Update(item)
+func (s *ItemService) Update(item entity.Item) (*entity.Item, error) {
+	return s.repo.Update(&item)
 }
 
 // Delete deletes an item by its ID.
