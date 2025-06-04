@@ -29,14 +29,14 @@ func main() {
 	}
 
 	// Drop all tables before migration
-    err = db.Migrator().DropTable(&entity.Item{}, &entity.User{})
+    err = db.Migrator().DropTable(&entity.Item{}, &entity.User{}, &entity.Borrowing{})
     if err != nil {
         log.Fatal("Error dropping tables: ", err)
     }
     log.Println("All tables dropped successfully.")
 
     // Auto-migrate database models
-    err = db.AutoMigrate(&entity.Item{}, &entity.User{})
+    err = db.AutoMigrate(&entity.Item{}, &entity.User{}, &entity.Borrowing{})
     if err != nil {
         log.Fatal("Error migrating tables: ", err)
     }
