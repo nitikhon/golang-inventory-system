@@ -30,7 +30,7 @@ func (r *ItemRepository) GetAllItems() ([]entity.Item, error) {
 }
 
 // FindByID retrieves an item by its ID.
-func (r *ItemRepository) GetItemByID(id int) (entity.Item, error) {
+func (r *ItemRepository) GetItemByID(id uint) (entity.Item, error) {
 	var item entity.Item
 	// Query item by ID
 	err := r.db.Where("id = ?", id).Take(&item).Error

@@ -21,7 +21,7 @@ func (s *ItemService) GetAllItems() ([]entity.Item, error) {
 }
 
 // FindByID returns an item by its ID.
-func (s *ItemService) GetItemByID(id int) (entity.Item, error) {
+func (s *ItemService) GetItemByID(id uint) (entity.Item, error) {
 	return s.repo.GetItemByID(id)
 }
 

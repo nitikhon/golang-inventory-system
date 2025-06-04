@@ -32,7 +32,7 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	item, err := h.service.GetItemByID(id)
+	item, err := h.service.GetItemByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
