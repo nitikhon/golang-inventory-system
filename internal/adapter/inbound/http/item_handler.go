@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 )
 
 // ItemHandler handles HTTP requests for items.
@@ -31,7 +31,6 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-
 	item, err := h.service.GetItemByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -46,7 +45,7 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	createdItem, err := h.service.Create(item)
+	createdItem, err := h.service.Create(&item)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -60,7 +59,7 @@ func (h *ItemHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	updatedItem, err := h.service.Update(item)
+	updatedItem, err := h.service.Update(&item)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -74,7 +73,7 @@ func (h *ItemHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.SendStatus(fiber.StatusNoContent)

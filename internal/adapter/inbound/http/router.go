@@ -5,7 +5,12 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http/middleware"
 )
 
-func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHandler) {
+func SetupRoutes(
+	app *fiber.App, 
+	itemHandler *ItemHandler, 
+	userHandler *UserHandler, 
+	borrowingHandler *BorrowingHandler,
+	) {
 	// Item routes
 	itemRoutes := app.Group("/items")
 	itemRoutes.Get("/", itemHandler.GetAllItems)
@@ -32,6 +37,9 @@ func SetupRoutes(app *fiber.App, itemHandler *ItemHandler, userHandler *UserHand
 	userRoutes.Post("/refresh-token", userHandler.RefreshToken)
 	userRoutes.Post("/logout", middleware.AuthMiddleware(), userHandler.Logout)
 
-	// Protected routes
-	// protectedRoutes := app.Group("/protected", middleware.AuthMiddleware())
+	// Borrowing routes
+	borrowingRoutes := app.Group("/borrows")
+	borrowingRoutes.Post("/", borrowingHandler.BorrowItem)
+	borrowingRoutes.Post("/approve", borrowingHandler.ApproveBorrowing)
+	borrowingRoutes.Post("/reject", borrowingHandler.RejectBorrowing)
 }
