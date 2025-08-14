@@ -8,9 +8,6 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
-var accessTokenSecret = GetEnvOrPanic("ACCESS_TOKEN_SECRET")
-var refreshTokenSecret = GetEnvOrPanic("REFRESH_TOKEN_SECRET")
-
 // GenerateAccessToken generates an access token for the given user.
 // The access token is valid for 15 minutes.
 func GenerateAccessToken(user entity.User) (string, error) {
@@ -30,7 +27,7 @@ func GenerateAccessToken(user entity.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Set the audience and issuer claims
-	signedToken, err := token.SignedString(accessTokenSecret)
+	signedToken, err := token.SignedString(GetEnvOrPanic("ACCESS_TOKEN_SECRET"))
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +48,7 @@ func GenerateRefreshToken(user entity.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Set the audience and issuer claims
-	signedToken, err := token.SignedString(refreshTokenSecret)
+	signedToken, err := token.SignedString(GetEnvOrPanic("REFRESH_TOKEN_SECRET"))
 	if err != nil {
 		return "", err
 	}
@@ -61,12 +58,12 @@ func GenerateRefreshToken(user entity.User) (string, error) {
 
 // ValidateAccessToken validates the access token and returns the user's data if valid.
 func ValidateAccessToken(tokenStr string) (uint, error) {
-	return validateToken(tokenStr, accessTokenSecret)
+	return validateToken(tokenStr, GetEnvOrPanic("ACCESS_TOKEN_SECRET"))
 }
 
 // ValidateRefreshToken validates the refresh token and returns the user ID if valid.
 func ValidateRefreshToken(tokenStr string) (uint, error) {
-	return validateToken(tokenStr, refreshTokenSecret)
+	return validateToken(tokenStr, GetEnvOrPanic("REFRESH_TOKEN_SECRET"))
 }
 
 // validateToken validates the token and returns the user ID if valid.
