@@ -14,6 +14,20 @@ type ItemService struct {
 	repo port.ItemRepository
 }
 
+// Ensure ItemService implements ItemServiceInterface
+var _ ItemServiceInterface = (*ItemService)(nil)
+
+// ItemServiceInterface defines the contract for ItemService.
+type ItemServiceInterface interface {
+	GetAllItems() ([]*entity.Item, error)
+	GetItemByID(id uint) (*entity.Item, error)
+	Create(item *entity.Item) (*entity.Item, error)
+	Update(item *entity.Item) (*entity.Item, error)
+	Delete(id uint) error
+	GetItemByIDForUpdate(tx *gorm.DB, id uint) (*entity.Item, error)
+	UpdateWithTx(tx *gorm.DB, item *entity.Item) (*entity.Item, error)
+}
+
 // NewItemService creates a new ItemService instance.
 func NewItemService(repo port.ItemRepository) *ItemService {
 	return &ItemService{repo: repo}

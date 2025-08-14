@@ -8,6 +8,18 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
 )
 
+// Ensures BorrowingService imnplements BorrowingServiceInterface
+var _ BorrowingServiceInterface = (*BorrowingService)(nil)
+
+// BorrowingServiceInterface defines the contract for borrowing operations.
+type BorrowingServiceInterface interface {
+	BorrowItem(borrowing entity.Borrowing) (*entity.Borrowing, error)
+	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
+	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
+	GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error)
+	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
+}
+
 // BorrowingService provides the use cases for borrowing operations.
 type BorrowingService struct {
 	borrowingRepo port.BorrowingRepository

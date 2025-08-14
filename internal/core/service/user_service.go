@@ -9,6 +9,24 @@ import (
 	"gorm.io/gorm"
 )
 
+// Ensure UserService implements UserServiceInterface
+var _ UserServiceInterface = (*UserService)(nil)
+
+type UserServiceInterface interface {
+	CreateUser(user entity.User) (*entity.User, error)
+	UpdateUser(user entity.User) (*entity.User, error)
+	DeleteUser(id uint) error
+	GetAllUsers() ([]*entity.User, error)
+	GetUserByID(id uint) (*entity.User, error)
+	GetUserByUsername(username string) (*entity.User, error)
+	GetUserByEmail(email string) (*entity.User, error)
+	GetUserByPhone(phone string) (*entity.User, error)
+	UpdateRefreshToken(userID uint, refreshToken string) (*entity.User, error)
+	Login(username, password string) (string, string, error)
+	RefreshToken(refreshToken string) (entity.Token, error)
+	Logout(userID uint) error
+}
+
 // UserService provides the use cases for the user entity.
 type UserService struct {
 	repo port.UserRepository
