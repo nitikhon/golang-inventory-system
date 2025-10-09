@@ -1,11 +1,12 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
-	"errors"
 	"gorm.io/gorm"
 )
 
@@ -13,8 +14,8 @@ import (
 var _ UserServiceInterface = (*UserService)(nil)
 
 type UserServiceInterface interface {
-	CreateUser(user entity.User) (*entity.User, error)
-	UpdateUser(user entity.User) (*entity.User, error)
+	CreateUser(user *entity.User) (*entity.User, error)
+	UpdateUser(user *entity.User) (*entity.User, error)
 	DeleteUser(id uint) error
 	GetAllUsers() ([]*entity.User, error)
 	GetUserByID(id uint) (*entity.User, error)
@@ -29,7 +30,8 @@ type UserServiceInterface interface {
 
 // UserService provides the use cases for the user entity.
 type UserService struct {
-	repo port.UserRepository
+	repo   port.UserRepository
+	crypto util.CryptoUtil
 }
 
 // NewUserService creates a new UserService instance.
@@ -38,9 +40,9 @@ func NewUserService(repo port.UserRepository) *UserService {
 }
 
 // Create creates a new user.
-func (s *UserService) CreateUser(user entity.User) (*entity.User, error) {
+func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 	// Validate user fields
-	_, err := validation.ValidateAndNormalizeUser(&user)
+	_, err := validation.ValidateAndNormalizeUser(user)
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -64,25 +66,25 @@ func (s *UserService) CreateUser(user entity.User) (*entity.User, error) {
 	}
 
 	// Hash the password before saving
-	hashedPassword, err := util.HashPassword(user.Password)
+	hashedPassword, err := s.crypto.HashPassword(user.Password)
 	if err != nil {
 		return &entity.User{}, err
 	}
 
 	user.Password = hashedPassword
 
-	return s.repo.CreateUser(&user)
+	return s.repo.CreateUser(user)
 }
 
 // Update updates an existing user.
-func (s *UserService) UpdateUser(user entity.User) (*entity.User, error) {
+func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
 	// Validate user fields
-	_, err := validation.ValidateAndNormalizeUser(&user)
+	_, err := validation.ValidateAndNormalizeUser(user)
 	if err != nil {
 		return &entity.User{}, err
 	}
 
-	return s.repo.UpdateUser(&user)
+	return s.repo.UpdateUser(user)
 }
 
 // Delete deletes a user by their ID.
@@ -131,7 +133,7 @@ func (s *UserService) UpdateRefreshToken(userID uint, refreshToken string) (*ent
 	}
 
 	user.RefreshToken = refreshToken
-	
+
 	return s.repo.UpdateUser(user)
 }
 
@@ -148,7 +150,7 @@ func (s *UserService) Login(username, password string) (string, string, error) {
 	}
 
 	// Check if password is correct
-	if err := util.CheckPasswordHash(user.Password, password); err != nil {
+	if err := s.crypto.CheckPasswordHash(user.Password, password); err != nil {
 		return "", "", errors.New("invalid credentials")
 	}
 
