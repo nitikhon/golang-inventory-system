@@ -35,8 +35,8 @@ type UserService struct {
 }
 
 // NewUserService creates a new UserService instance.
-func NewUserService(repo port.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo port.UserRepository, crypto util.CryptoUtil) *UserService {
+	return &UserService{repo: repo, crypto: crypto}
 }
 
 // Create creates a new user.

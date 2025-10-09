@@ -11,6 +11,10 @@ type CryptoUtil interface {
 
 type AppCryptoUtil struct {}
 
+func NewAppCrptoUtil() AppCryptoUtil {
+	return AppCryptoUtil{}
+}
+
 // HashPassword hashes the password using bcrypt.
 func (u AppCryptoUtil) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

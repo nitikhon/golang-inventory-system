@@ -12,6 +12,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/config"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"github.com/nitikhon/golang-inventory-system/internal/util/seed"
 )
 
@@ -55,7 +56,8 @@ func main() {
 	itemHandler := http.NewItemHandler(itemService)
 
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	crypto := util.NewAppCrptoUtil()
+	userService := service.NewUserService(userRepo, crypto)
 	userHandler := http.NewUserHandler(userService)
 
 	borrowingRepo := repository.NewBorrowingRepository(db)

@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	mock_port "github.com/nitikhon/golang-inventory-system/internal/core/port/mock"
+	mock_hash "github.com/nitikhon/golang-inventory-system/internal/util/mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,13 +17,15 @@ func TestNewUserService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
 
 	// act
-	userService := NewUserService(mockUserRepo)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	// assert
-	assert.NotNil(t, userService, "expect userService, got nil")
-	assert.NotNil(t, userService.repo, "expect userRepo, got nil")
+	assert.NotNil(t, mockUserService, "expect userService, got nil")
+	assert.NotNil(t, mockUserService.repo, "expect userRepo, got nil")
+	assert.NotNil(t, mockUserService.crypto, "expect Crypto, got nil")
 }
 
 func TestCreateUser_Success(t *testing.T) {
@@ -31,8 +34,8 @@ func TestCreateUser_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	mock
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	userInput := entity.User{
 		Username:  "test",
@@ -46,10 +49,11 @@ func TestCreateUser_Success(t *testing.T) {
 	mockUserRepo.EXPECT().GetUserByUsername(userInput.Username).Return(nil, nil)
 	mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, nil)
 	mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, nil)
+	mockHashApp.EXPECT().HashPassword(gomock.Any()).Return("hashedpassword", nil)
 	mockUserRepo.EXPECT().CreateUser(gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := userService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(&userInput)
 
 	// assert
 	assert.Equal(t, &userInput, user)
@@ -62,7 +66,8 @@ func TestCreateUser_Failed_Validation_MissingField(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	tests := []struct {
 		name      string
@@ -146,7 +151,7 @@ func TestCreateUser_Failed_Validation_MissingField(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// act
-			_, err := userService.CreateUser(&tt.userInput)
+			_, err := mockUserService.CreateUser(&tt.userInput)
 
 			// assert
 			assert.Equal(t, tt.mockErr, err)
@@ -160,7 +165,8 @@ func TestCreateUser_Failed_Validation_Email(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	userInput := entity.User{
 		Username:  "test",
@@ -173,7 +179,7 @@ func TestCreateUser_Failed_Validation_Email(t *testing.T) {
 	mockErr := errors.New("invalid email format")
 
 	// act
-	_, err := userService.CreateUser(&userInput)
+	_, err := mockUserService.CreateUser(&userInput)
 
 	// assert
 	assert.Equal(t, mockErr, err)
@@ -186,7 +192,8 @@ func TestCreateUser_Validation_Phone(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	tests := []struct {
 		name       string
@@ -259,7 +266,7 @@ func TestCreateUser_Validation_Phone(t *testing.T) {
 			}
 
 			// act
-			user, err := userService.CreateUser(&tt.userInput)
+			user, err := mockUserService.CreateUser(&tt.userInput)
 
 			// assert
 			if tt.mockErr == nil {
@@ -276,7 +283,8 @@ func TestCreateUser_Failed_Validation_Username(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	tests := []struct {
 		name       string
@@ -440,7 +448,7 @@ func TestCreateUser_Failed_Validation_Username(t *testing.T) {
 			}
 
 			// act
-			user, err := userService.CreateUser(&tt.userInput)
+			user, err := mockUserService.CreateUser(&tt.userInput)
 
 			// assert
 			if tt.mockErr == nil {
@@ -457,7 +465,8 @@ func TestCreateUser_UsernameExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	userInput := entity.User{
 		Username:  "test",
@@ -472,7 +481,7 @@ func TestCreateUser_UsernameExists(t *testing.T) {
 	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := userService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(&userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
@@ -485,7 +494,8 @@ func TestCreateUser_EmailExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	userInput := entity.User{
 		Username:  "test",
@@ -501,7 +511,7 @@ func TestCreateUser_EmailExists(t *testing.T) {
 	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := userService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(&userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
@@ -514,7 +524,8 @@ func TestCreateUser_PhoneExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_port.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mockHashApp := mock_hash.NewMockCryptoUtil(ctrl)
+	mockUserService := NewUserService(mockUserRepo, mockHashApp)
 
 	userInput := entity.User{
 		Username:  "test",
@@ -531,10 +542,9 @@ func TestCreateUser_PhoneExists(t *testing.T) {
 	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := userService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(&userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
 	assert.Equal(t, mockErr, err)
 }
-
