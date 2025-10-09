@@ -119,13 +119,13 @@ func validateAndNormalizeUsername(user *entity.User) error {
 		return errors.New("username must start with a letter")
 	}
 
-	// Check for invalid start/end characters
+	// Check for invalid start/end characters (to prevent misinterpret as hiden directory (/home/.john) or command-line flag (ssh -help))
 	if strings.HasPrefix(user.Username, ".") || strings.HasPrefix(user.Username, "_") ||
 		strings.HasSuffix(user.Username, ".") || strings.HasSuffix(user.Username, "_") {
 		return errors.New("username cannot start or end with '.' or '_'")
 	}
 
-	// Check for invalid sequences
+	// Check for invalid sequences (prevent directory traversal attacks / ambiguity and parsing issues)
 	if strings.Contains(user.Username, "..") || strings.Contains(user.Username, "__") ||
 		strings.Contains(user.Username, "._") || strings.Contains(user.Username, "_.") {
 		return errors.New("username cannot contain '..', '__', '._', or '_.'")
