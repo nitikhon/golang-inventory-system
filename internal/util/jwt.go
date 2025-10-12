@@ -15,10 +15,6 @@ func GenerateAccessToken(user entity.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":   user.ID,
 		"username":   user.Username,
-		"email":      user.Email,
-		"phone":      user.Phone,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
 		"is_admin":   user.IsAdmin,
 		"exp":        time.Now().Add(15 * time.Minute).Unix(),
 	}
