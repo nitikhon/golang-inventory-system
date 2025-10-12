@@ -20,7 +20,7 @@ func NewItemRepository(db *gorm.DB) *ItemRepository {
 func (r *ItemRepository) GetAllItems() ([]*entity.Item, error) {
 	var items []*entity.Item
 	// Query all items
-	err := r.db.Find(&items).Error
+	err := r.db.Unscoped().Find(&items).Error
 	if err != nil {
 		return nil, err
 	}

@@ -51,7 +51,7 @@ func (r *UserRepository) DeleteUser(id uint) error {
 // GetAllUsers retrieves all users from the database.
 func (r *UserRepository) GetAllUsers() ([]*entity.User, error) {
 	var users []*entity.User
-	err := r.db.Find(&users).Error
+	err := r.db.Unscoped().Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
