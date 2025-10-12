@@ -8,25 +8,25 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
-func ValidateAndNormalizeUser(user *entity.User) (*entity.User, error) {
+func ValidateAndNormalizeUser(user *entity.User) (error) {
 	// Validate required fields
 	if err := validateRequiredFields(user); err != nil {
-		return &entity.User{}, err
+		return err
 	}
 
 	// Validate and normalize email
 	if err := validateAndNormalizeEmail(user); err != nil {
-		return &entity.User{}, err
+		return err
 	}
 
 	// Validate and normalize phone number
 	if err := validateAndNormalizePhone(user); err != nil {
-		return &entity.User{}, err
+		return err
 	}
 
 	// Validate and normalize username
 	if err := validateAndNormalizeUsername(user); err != nil {
-		return &entity.User{}, err
+		return err
 	}
 
 	// Normalize names and password
@@ -36,7 +36,7 @@ func ValidateAndNormalizeUser(user *entity.User) (*entity.User, error) {
 	// Set default value for IsAdmin
 	user.IsAdmin = false
 
-	return &entity.User{}, nil
+	return nil
 }
 
 func validateRequiredFields(user *entity.User) error {
