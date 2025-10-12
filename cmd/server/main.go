@@ -45,9 +45,7 @@ func main() {
 
 	// Seed the database if it's empty
 	if err := seed.SeedDB(db); err != nil {
-		log.Println("Error: ", err)
-	} else {
-		log.Println("Database is empty, seeding...")
+		log.Println("Seeding warning: ", err)
 	}
 
 	// Initialize repositories, services, and handlers
