@@ -26,7 +26,7 @@ func (r *UserRepository) CreateUser(user *entity.User) (*entity.User, error) {
 
 // UpdateUser updates an existing user's details in the database.
 func (r *UserRepository) UpdateUser(user *entity.User) (*entity.User, error) {
-	result := r.db.Model(&entity.User{}).Where("id = ?", user.ID).Updates(user)
+	result := r.db.Model(&entity.User{}).Where("id = ?", user.ID).Select("*").Updates(user)
 	if result.Error != nil {
 		return &entity.User{}, result.Error
 	}
