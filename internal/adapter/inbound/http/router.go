@@ -6,40 +6,82 @@ import (
 )
 
 func SetupRoutes(
-	app *fiber.App, 
-	itemHandler *ItemHandler, 
-	userHandler *UserHandler, 
+	app *fiber.App,
+	itemHandler *ItemHandler,
+	userHandler *UserHandler,
 	borrowingHandler *BorrowingHandler,
-	) {
+) {
 	// Item routes
 	itemRoutes := app.Group("/items")
 	itemRoutes.Get("/", itemHandler.GetAllItems)
 	itemRoutes.Get("/:id", itemHandler.GetItemByID)
-	itemRoutes.Post("/", itemHandler.Create)
-	itemRoutes.Put("/", itemHandler.Update)
-	itemRoutes.Delete("/:id", itemHandler.Delete)
+	itemRoutes.Post("/", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		itemHandler.Create)
+	itemRoutes.Put("/", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		itemHandler.Update)
+	itemRoutes.Delete("/:id", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		itemHandler.Delete)
 
 	// User routes
 	userRoutes := app.Group("/users")
-	userRoutes.Put("/", userHandler.Update)
-	
-	userRoutes.Delete("/:id", userHandler.Delete)
-	userRoutes.Get("/", userHandler.GetAllUsers)
-	userRoutes.Get("/me", middleware.AuthMiddleware(), userHandler.Me) // define this before :id to prevent an error
-	userRoutes.Get("/:id", userHandler.GetUserByID)
-	userRoutes.Get("/username/:username", userHandler.GetUserByUsername)
-	userRoutes.Get("/email/:email", userHandler.GetUserByEmail)
-	userRoutes.Get("/phone/:phone", userHandler.GetUserByPhone)
+	userRoutes.Put("/", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOrOwnerOnly(), 
+		userHandler.Update)
+
+	userRoutes.Delete("/:id", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.Delete)
+	userRoutes.Get("/", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.GetAllUsers)
+	userRoutes.Get("/me", 
+		middleware.AuthMiddleware(), 
+		userHandler.Me) // define this before :id to prevent an error
+	userRoutes.Get("/:id", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.GetUserByID)
+	userRoutes.Get("/username/:username", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.GetUserByUsername)
+	userRoutes.Get("/email/:email", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.GetUserByEmail)
+	userRoutes.Get("/phone/:phone", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		userHandler.GetUserByPhone)
 
 	// Auth routes
 	userRoutes.Post("/login", userHandler.Login)
-	userRoutes.Post("/register", userHandler.Create) // Register user
+	userRoutes.Post("/register", userHandler.Create)
 	userRoutes.Post("/refresh-token", userHandler.RefreshToken)
-	userRoutes.Post("/logout", middleware.AuthMiddleware(), userHandler.Logout)
+	userRoutes.Post("/logout", 
+		middleware.AuthMiddleware(),
+		userHandler.Logout)
 
 	// Borrowing routes
 	borrowingRoutes := app.Group("/borrows")
-	borrowingRoutes.Post("/", borrowingHandler.BorrowItem)
-	borrowingRoutes.Post("/approve", borrowingHandler.ApproveBorrowing)
-	borrowingRoutes.Post("/reject", borrowingHandler.RejectBorrowing)
+	borrowingRoutes.Post("/", 
+		middleware.AuthMiddleware(), 
+		borrowingHandler.BorrowItem)
+	borrowingRoutes.Post("/approve", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		borrowingHandler.ApproveBorrowing)
+	borrowingRoutes.Post("/reject", 
+		middleware.AuthMiddleware(), 
+		middleware.AdminOnly(), 
+		borrowingHandler.RejectBorrowing)
 }

@@ -53,3 +53,66 @@ func AuthMiddleware() fiber.Handler {
 		return c.Next()
 	}
 }
+
+func AdminOrOwnerOnly() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// ok for type assertion
+		claims, ok := c.Locals("user").(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+                "error": "No user context found",
+            })
+		}
+		
+		isAdmin, ok := claims["is_admin"].(bool)
+		if !ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                "error": "Invalid data in the token",
+            })
+		}
+
+		userIDFloat, ok := claims["user_id"].(float64)
+		if !ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                "error": "Invalid data in the token",
+            })
+		}
+		userID := uint(userIDFloat)
+
+		targetID, err := c.ParamsInt("id")
+        if err != nil {
+            return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                "error": "Invalid user ID parameter",
+            })
+        }
+
+		if !isAdmin && userID != uint(targetID) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                "error": "Invalid data in the token",
+            })
+		}
+
+		return c.Next();
+	}
+}
+
+func AdminOnly() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// ok for type assertion
+		claims, ok := c.Locals("user").(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+                "error": "No user context found",
+            })
+		}
+		
+		isAdmin, ok := claims["is_admin"].(bool)
+		if !ok || !isAdmin {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+                "error": "Admin permission required",
+            })
+		}
+
+		return c.Next();
+	}
+}
