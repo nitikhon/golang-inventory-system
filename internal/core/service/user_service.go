@@ -42,8 +42,7 @@ func NewUserService(repo port.UserRepository, crypto util.CryptoUtil) *UserServi
 // Create creates a new user.
 func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 	// Validate user fields
-	_, err := validation.ValidateAndNormalizeUser(user)
-	if err != nil {
+	if err := validation.ValidateAndNormalizeUser(user); err != nil {
 		return &entity.User{}, err
 	}
 
@@ -79,8 +78,7 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 // Update updates an existing user.
 func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
 	// Validate user fields
-	_, err := validation.ValidateAndNormalizeUser(user)
-	if err != nil {
+	if err := validation.ValidateAndNormalizeUser(user); err != nil {
 		return &entity.User{}, err
 	}
 
