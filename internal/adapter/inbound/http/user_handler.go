@@ -221,10 +221,15 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 func (h *UserHandler) Logout(c *fiber.Ctx) error {
 	// Get user ID from context (set by AuthMiddleware)
 	userID := c.Locals("user_id").(uint)
-
+	
 	// Clear refresh token in DB
 	err := h.service.Logout(userID)
 	if err != nil {
+		if err.Error() == "user already logged out" {
+            return c.Status(fiber.StatusOK).JSON(fiber.Map{
+                "message": "Already logged out",
+            })
+        }
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
