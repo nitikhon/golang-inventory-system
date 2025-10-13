@@ -189,6 +189,10 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 		return entity.Token{}, err
 	}
 
+	if user.RefreshToken != refreshToken {
+		return entity.Token{}, errors.New("invalid refresh token")
+	}
+
 	// Generate new tokens
 	accessToken, err := util.GenerateAccessToken(*user)
 	if err != nil {
