@@ -13,4 +13,9 @@ type UserRepository interface {
 	GetUserByUsername(username string) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
 	GetUserByPhone(phone string) (*entity.User, error)
+	UpdateRefreshToken(userID uint, refreshToken string) error
+	UpdateUserProfile(userID uint, updates map[string]interface{}) (*entity.User, error)
+	UpdateUserPassword(userID uint, hashedPassword string) error
+	UpdateUserEmail(userID uint, email string) error
+	UpdateUserAdminStatus(userID uint, isAdmin bool) error
 }
