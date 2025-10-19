@@ -54,7 +54,8 @@ func main() {
 
 	userRepo := repository.NewUserRepository(db)
 	crypto := util.NewAppCrptoUtil()
-	userService := service.NewUserService(userRepo, crypto)
+	jwt := util.NewAppJWTUtil()
+	userService := service.NewUserService(userRepo, crypto, jwt)
 	userHandler := http.NewUserHandler(userService)
 
 	borrowingRepo := repository.NewBorrowingRepository(db)
