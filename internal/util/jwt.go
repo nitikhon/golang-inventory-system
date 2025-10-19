@@ -8,9 +8,22 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 )
 
+type JWTUtil interface {
+	GenerateAccessToken(user entity.User) (string, error)
+	GenerateRefreshToken(user entity.User) (string, error)
+	ValidateAccessToken(tokenStr string) (uint, error)
+	ValidateRefreshToken(tokenStr string) (uint, error)
+}
+
+type JWT struct {}
+
+func NewAppJWTUtil() JWTUtil {
+	return JWT{}
+}
+
 // GenerateAccessToken generates an access token for the given user.
 // The access token is valid for 15 minutes.
-func GenerateAccessToken(user entity.User) (string, error) {
+func (s JWT) GenerateAccessToken(user entity.User) (string, error) {
 	// Create the claims for the access token
 	claims := jwt.MapClaims{
 		"user_id":   user.ID,
@@ -33,7 +46,7 @@ func GenerateAccessToken(user entity.User) (string, error) {
 
 // GenerateRefreshToken generates a refresh token for the given user.
 // The refresh token is valid for 7 days.
-func GenerateRefreshToken(user entity.User) (string, error) {
+func (s JWT) GenerateRefreshToken(user entity.User) (string, error) {
 	// Create the claims for the refresh token
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
@@ -53,12 +66,12 @@ func GenerateRefreshToken(user entity.User) (string, error) {
 }
 
 // ValidateAccessToken validates the access token and returns the user's data if valid.
-func ValidateAccessToken(tokenStr string) (uint, error) {
+func (s JWT) ValidateAccessToken(tokenStr string) (uint, error) {
 	return validateToken(tokenStr, GetEnvOrPanic("ACCESS_TOKEN_SECRET"))
 }
 
 // ValidateRefreshToken validates the refresh token and returns the user ID if valid.
-func ValidateRefreshToken(tokenStr string) (uint, error) {
+func (s JWT) ValidateRefreshToken(tokenStr string) (uint, error) {
 	return validateToken(tokenStr, GetEnvOrPanic("REFRESH_TOKEN_SECRET"))
 }
 
