@@ -138,6 +138,20 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(username interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).GetUserByUsername), username)
 }
 
+// UpdateRefreshToken mocks base method.
+func (m *MockUserRepository) UpdateRefreshToken(userID uint, refreshToken string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRefreshToken", userID, refreshToken)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRefreshToken indicates an expected call of UpdateRefreshToken.
+func (mr *MockUserRepositoryMockRecorder) UpdateRefreshToken(userID, refreshToken interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRefreshToken", reflect.TypeOf((*MockUserRepository)(nil).UpdateRefreshToken), userID, refreshToken)
+}
+
 // UpdateUser mocks base method.
 func (m *MockUserRepository) UpdateUser(user *entity.User) (*entity.User, error) {
 	m.ctrl.T.Helper()
@@ -151,4 +165,61 @@ func (m *MockUserRepository) UpdateUser(user *entity.User) (*entity.User, error)
 func (mr *MockUserRepositoryMockRecorder) UpdateUser(user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepository)(nil).UpdateUser), user)
+}
+
+// UpdateUserAdminStatus mocks base method.
+func (m *MockUserRepository) UpdateUserAdminStatus(userID uint, isAdmin bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserAdminStatus", userID, isAdmin)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserAdminStatus indicates an expected call of UpdateUserAdminStatus.
+func (mr *MockUserRepositoryMockRecorder) UpdateUserAdminStatus(userID, isAdmin interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserAdminStatus", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserAdminStatus), userID, isAdmin)
+}
+
+// UpdateUserEmail mocks base method.
+func (m *MockUserRepository) UpdateUserEmail(userID uint, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserEmail", userID, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserEmail indicates an expected call of UpdateUserEmail.
+func (mr *MockUserRepositoryMockRecorder) UpdateUserEmail(userID, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserEmail", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserEmail), userID, email)
+}
+
+// UpdateUserPassword mocks base method.
+func (m *MockUserRepository) UpdateUserPassword(userID uint, hashedPassword string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPassword", userID, hashedPassword)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockUserRepositoryMockRecorder) UpdateUserPassword(userID, hashedPassword interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserPassword), userID, hashedPassword)
+}
+
+// UpdateUserProfile mocks base method.
+func (m *MockUserRepository) UpdateUserProfile(userID uint, updates map[string]interface{}) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserProfile", userID, updates)
+	ret0, _ := ret[0].(*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserProfile indicates an expected call of UpdateUserProfile.
+func (mr *MockUserRepositoryMockRecorder) UpdateUserProfile(userID, updates interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserProfile", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserProfile), userID, updates)
 }

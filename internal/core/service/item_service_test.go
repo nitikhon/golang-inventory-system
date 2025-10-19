@@ -12,15 +12,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestNewItemService(t *testing.T) {
-	// arrange
+func setupItemServiceMock(t *testing.T) (*ItemService, *mock_port.MockItemRepository) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	service := NewItemService(mockItemRepo)
+	return service, mockItemRepo
+}
 
-	// act
-	mockItemService := NewItemService(mockItemRepo)
+func TestNewItemService(t *testing.T) {
+	// arrange
+	mockItemService, _ := setupItemServiceMock(t)
 
 	// assert
 	assert.NotNil(t, mockItemService)
@@ -28,15 +31,11 @@ func TestNewItemService(t *testing.T) {
 
 func TestGetAllItems(t *testing.T) {
 	// arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
 	mockItemRepo.EXPECT().GetAllItems().Return([]*entity.Item{}, nil)
 
 	// act
-	itemService := NewItemService(mockItemRepo)
-	items, err := itemService.GetAllItems()
+	items, err := mockItemService.GetAllItems()
 
 	// assert
 	assert.NotNil(t, items, fmt.Sprintf("expect empty array, got %v", items))
@@ -44,11 +43,6 @@ func TestGetAllItems(t *testing.T) {
 }
 
 func TestGetItemById(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
-
 	tests := []struct {
 		name       string
 		id         uint
@@ -79,6 +73,8 @@ func TestGetItemById(t *testing.T) {
 		},
 	}
 
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// arrange
@@ -88,8 +84,7 @@ func TestGetItemById(t *testing.T) {
 				Return(tt.mockReturn, tt.mockErr)
 
 			// act
-			itemService := NewItemService(mockItemRepo)
-			item, err := itemService.GetItemByID(tt.id)
+			item, err := mockItemService.GetItemByID(tt.id)
 
 			// assert
 			if tt.expectErr {
@@ -104,11 +99,6 @@ func TestGetItemById(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
-
 	tests := []struct {
 		name            string
 		itemName        string
@@ -150,6 +140,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// arrange
@@ -161,9 +153,8 @@ func TestCreate(t *testing.T) {
 			}
 
 			// act
-			itemService := NewItemService(mockItemRepo)
-			item, err := itemService.Create(&entity.Item{
-				Name: tt.itemName, 
+			item, err := mockItemService.Create(&entity.Item{
+				Name:            tt.itemName,
 				AvailableAmount: tt.AvailableAmount})
 
 			// assert
@@ -180,15 +171,11 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	// arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
 	mockItemRepo.EXPECT().Update(gomock.Any()).Return(&entity.Item{Name: "updatedName"}, nil)
 
 	// act
-	ItemService := NewItemService(mockItemRepo)
-	item, err := ItemService.Update(&entity.Item{Name: "updatedName"})
+	item, err := mockItemService.Update(&entity.Item{Name: "updatedName"})
 
 	// assert
 	assert.NotNil(t, item, "expect an item, got nil")
@@ -198,15 +185,11 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	// arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
 	mockItemRepo.EXPECT().Delete(gomock.Any()).Return(nil)
 
 	// act
-	ItemService := NewItemService(mockItemRepo)
-	err := ItemService.Delete(uint(1))
+	err := mockItemService.Delete(uint(1))
 
 	// assert
 	assert.Nil(t, err, fmt.Sprintf("expect an error to be nil, got %v", err))
@@ -214,10 +197,7 @@ func TestDelete(t *testing.T) {
 
 func TestGetItemByIdForUpdate(t *testing.T) {
 	// arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
 	mockItemRepo.
 		EXPECT().
 		GetItemByIDForUpdate(gomock.Any(), gomock.Any()).
@@ -225,8 +205,7 @@ func TestGetItemByIdForUpdate(t *testing.T) {
 	tx := &gorm.DB{}
 
 	// act
-	ItemService := NewItemService(mockItemRepo)
-	item, err := ItemService.GetItemByIDForUpdate(tx, uint(1))
+	item, err := mockItemService.GetItemByIDForUpdate(tx, uint(1))
 
 	// assert
 	assert.Nil(t, err, fmt.Sprintf("expect an error to be nil, got %v", err))
@@ -236,19 +215,15 @@ func TestGetItemByIdForUpdate(t *testing.T) {
 
 func TestUpdateWithTx(t *testing.T) {
 	// arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockItemRepo := mock_port.NewMockItemRepository(ctrl)
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
 	mockItemRepo.
 		EXPECT().
 		UpdateWithTx(gomock.Any(), gomock.Any()).
 		Return(&entity.Item{Name: "updatedName"}, nil)
 	tx := &gorm.DB{}
-	
+
 	// act
-	ItemService := NewItemService(mockItemRepo)
-	item, err := ItemService.UpdateWithTx(tx, &entity.Item{Name: "updatedName"})
+	item, err := mockItemService.UpdateWithTx(tx, &entity.Item{Name: "updatedName"})
 
 	// assert
 	assert.Nil(t, err, fmt.Sprintf("expect an error to be nil, got %v", err))
