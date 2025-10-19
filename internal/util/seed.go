@@ -1,10 +1,9 @@
-package seed
+package util
 
 import (
 	"log"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
-	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +22,7 @@ func SeedDB(db *gorm.DB) error {
 
 	log.Println("Seeding database...")
 
-	crypto := util.NewAppCrptoUtil()
+	crypto := NewAppCrptoUtil()
 
 	if err := seedUsers(db, crypto); err != nil {
 		log.Printf("An error occurs while trying to seed user data: %v", err)
@@ -37,7 +36,7 @@ func SeedDB(db *gorm.DB) error {
 	return nil
 }
 
-func seedUsers(db *gorm.DB, crpyto util.AppCryptoUtil) error {
+func seedUsers(db *gorm.DB, crpyto AppCryptoUtil) error {
 	adminPassword, err := crpyto.HashPassword("admin123")
 	if err != nil {
 		return err

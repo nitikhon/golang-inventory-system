@@ -13,7 +13,6 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
-	"github.com/nitikhon/golang-inventory-system/internal/util/seed"
 )
 
 func main() {
@@ -44,7 +43,7 @@ func main() {
     log.Println("Database migrated successfully.")
 
 	// Seed the database if it's empty
-	if err := seed.SeedDB(db); err != nil {
+	if err := util.SeedDB(db); err != nil {
 		log.Println("Seeding warning: ", err)
 	}
 
