@@ -188,24 +188,7 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 // Me retrieves the current user's information using the Access Token.
 // It validates the token and returns the user data if valid.
 func (h *UserHandler) Me(c *fiber.Ctx) error {
-	// Check if the Authorization header is present
-	accessToken := c.Get("Authorization")
-	if accessToken == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "access token not found"})
-	}
-
-	// Remove the "Bearer " prefix from the token
-	if len(accessToken) > 7 && accessToken[:7] == "Bearer " {
-		accessToken = accessToken[7:]
-	} else {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid access token format"})
-	}
-
-	// Validate the Access Token
-	userID, err := util.ValidateAccessToken(accessToken)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid access token"})
-	}
+	userID := c.Locals("user_id").(uint)
 
 	// Retrieve the user by ID
 	user, err := h.service.GetUserByID(userID)
@@ -214,7 +197,6 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 	}
 
 	// May exclude some field from the response later
-
 	return c.JSON(user)
 }
 
