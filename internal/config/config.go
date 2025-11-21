@@ -10,11 +10,12 @@ type Config struct {
 	Host        string
 	Port        string
 	DatabaseDSN string
+	Environment string
 }
 
 // NewConfig creates a new Config instance and populates it with values from environment variables.
-func NewConfig() *Config {
-	return &Config{
+func NewConfig() Config {
+	return Config{
 		Host: os.Getenv("HOST"),
 		Port: os.Getenv("PORT"),
 		DatabaseDSN: fmt.Sprintf(
@@ -24,5 +25,6 @@ func NewConfig() *Config {
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_NAME"),
 			os.Getenv("DB_PORT")),
+		Environment: os.Getenv("ENVIRONMENT"),
 	}
 }

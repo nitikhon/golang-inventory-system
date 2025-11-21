@@ -10,7 +10,6 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/database"
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/repository"
 	"github.com/nitikhon/golang-inventory-system/internal/config"
-	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
 )
@@ -23,28 +22,13 @@ func main() {
 	config := config.NewConfig()
 
 	// Connect to the database
-	db, err := database.NewDatabase(*config)
+	db, err := database.NewDatabase(config)
 	if err != nil {
 		log.Fatal("Error: ", err)
 	}
 
-	// Drop all tables before migration
-    err = db.Migrator().DropTable(&entity.Item{}, &entity.User{}, &entity.Borrowing{})
-    if err != nil {
-        log.Fatal("Error dropping tables: ", err)
-    }
-    log.Println("All tables dropped successfully.")
-
-    // Auto-migrate database models
-    err = db.AutoMigrate(&entity.Item{}, &entity.User{}, &entity.Borrowing{})
-    if err != nil {
-        log.Fatal("Error migrating tables: ", err)
-    }
-    log.Println("Database migrated successfully.")
-
-	// Seed the database if it's empty
-	if err := util.SeedDB(db); err != nil {
-		log.Println("Seeding warning: ", err)
+	if err := database.SetupDatabase(config, db); err != nil {
+		log.Fatal("Error: ", err)
 	}
 
 	// Initialize repositories, services, and handlers
