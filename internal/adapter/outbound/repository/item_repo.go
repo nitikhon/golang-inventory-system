@@ -43,7 +43,7 @@ func (r *ItemRepository) Create(item *entity.Item) (*entity.Item, error) {
 	// Save item to database
 	err := r.db.Create(&item).Error
 	if err != nil {
-		return &entity.Item{}, err
+		return nil, err
 	}
 	return item, nil
 }
@@ -53,16 +53,16 @@ func (r *ItemRepository) Update(item *entity.Item) (*entity.Item, error) {
 	// Update item fields
 	result := r.db.Model(&entity.Item{}).Where("id = ?", item.ID).Updates(item)
 	if result.Error != nil {
-		return &entity.Item{}, result.Error
+		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return &entity.Item{}, gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	// Retrieve updated item
 	var updatedItem entity.Item
 	if err := r.db.First(&updatedItem, item.ID).Error; err != nil {
-		return &entity.Item{}, err
+		return nil, err
 	}
 	return &updatedItem, nil
 }
@@ -102,16 +102,16 @@ func (r *ItemRepository) GetItemByIDForUpdate(tx *gorm.DB, id uint) (*entity.Ite
 func (r *ItemRepository) UpdateWithTx(tx *gorm.DB, item *entity.Item) (*entity.Item, error) {
 	result := tx.Model(&entity.Item{}).Where("id = ?", item.ID).Updates(item)
 	if result.Error != nil {
-		return &entity.Item{}, result.Error
+		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return &entity.Item{}, gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	// Retrieve updated item
 	var updatedItem entity.Item
 	if err := tx.First(&updatedItem, item.ID).Error; err != nil {
-		return &entity.Item{}, err
+		return nil, err
 	}
 	return &updatedItem, nil
 }
