@@ -108,7 +108,7 @@ func AdminOnly() fiber.Handler {
 		
 		isAdmin, ok := claims["is_admin"].(bool)
 		if !ok || !isAdmin {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
                 "error": "Admin permission required",
             })
 		}
