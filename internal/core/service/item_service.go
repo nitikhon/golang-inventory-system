@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
@@ -45,27 +44,37 @@ func (s *ItemService) GetItemByID(id uint) (*entity.Item, error) {
 
 // Create creates a new item.
 func (s *ItemService) Create(item *entity.Item) (*entity.Item, error) {
-	// Validate item fields
-	if item.Name == "" {
-		return &entity.Item{}, errors.New("name is required")
-	}
-	if item.AvailableAmount < 0 {
-		return &entity.Item{}, errors.New("AvailableAmount cannot be negative")
-	}
-	if item.AvailableAmount == 0 {
-		return &entity.Item{}, errors.New("AvailableAmount cannot be zero")
+	existingItem, err := s.repo.GetItemByName(item.Name)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
 	}
 
-	// Normalize item name
-	item.Name = strings.ToLower(item.Name)
-	item.TotalAmount = item.AvailableAmount
+	if existingItem != nil {
+		return nil, errors.New("item with this name already exists")
+	}
 
 	return s.repo.Create(item)
 }
 
 // Update updates an existing item.
 func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
-	item.TotalAmount = item.AvailableAmount
+	currentItem, err := s.repo.GetItemByID(item.ID)
+	if err != nil {
+		return nil, err
+	}
+	if currentItem == nil {
+		return nil, errors.New("item not found")
+	}
+
+	existingItem, err := s.repo.GetItemByName(item.Name)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	if existingItem != nil && existingItem.ID != item.ID {
+		return nil, errors.New("item with this name already exists")
+	}
+
 	return s.repo.Update(item)
 }
 
