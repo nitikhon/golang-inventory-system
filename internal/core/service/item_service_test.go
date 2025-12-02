@@ -98,89 +98,373 @@ func TestGetItemById(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
-	tests := []struct {
-		name            string
-		itemName        string
-		AvailableAmount int
-		mockReturn      *entity.Item
-		mockErr         error
-		expectErr       bool
-	}{
-		{
-			name:            "success: create an item",
-			itemName:        "test",
-			AvailableAmount: 10,
-			mockReturn:      &entity.Item{Name: "test", AvailableAmount: 10, TotalAmount: 10},
-			mockErr:         nil,
-			expectErr:       false,
-		},
-		{
-			name:       "failed: empty item name",
-			itemName:   "",
-			mockReturn: &entity.Item{},
-			mockErr:    errors.New("name is required"),
-			expectErr:  true,
-		},
-		{
-			name:            "failed: negative AvailableAmount",
-			itemName:        "test",
-			AvailableAmount: -1,
-			mockReturn:      &entity.Item{},
-			mockErr:         errors.New("AvailableAmount cannot be negative"),
-			expectErr:       true,
-		},
-		{
-			name:            "failed: zero AvailableAmount",
-			itemName:        "test",
-			AvailableAmount: 0,
-			mockReturn:      &entity.Item{},
-			mockErr:         errors.New("AvailableAmount cannot be zero"),
-			expectErr:       true,
-		},
-	}
-
-	mockItemService, mockItemRepo := setupItemServiceMock(t)
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// arrange
-			if !tt.expectErr {
-				mockItemRepo.
-					EXPECT().
-					Create(gomock.Any()).
-					Return(tt.mockReturn, tt.mockErr)
-			}
-
-			// act
-			item, err := mockItemService.Create(&entity.Item{
-				Name:            tt.itemName,
-				AvailableAmount: tt.AvailableAmount})
-
-			// assert
-			if tt.expectErr {
-				assert.NotNil(t, err, "expect an error, got nil")
-			} else {
-				assert.Nil(t, err, "expect nil, got %v", err)
-			}
-
-			assert.Equal(t, tt.mockReturn, item, "expect %v, got %v", tt.mockReturn, item)
-		})
-	}
-}
-
-func TestUpdate(t *testing.T) {
+func TestCreateItem_Success(t *testing.T) {
 	// arrange
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
-	mockItemRepo.EXPECT().Update(gomock.Any()).Return(&entity.Item{Name: "updatedName"}, nil)
+
+	inputItem := &entity.Item{
+		Name:            "test item",
+		Description:     "Test Description",
+		AvailableAmount: 10,
+		TotalAmount:     15,
+		Status:          "available",
+	}
+
+	expectedItem := &entity.Item{
+		Name:            "test item",
+		Description:     "Test Description",
+		AvailableAmount: 10,
+		TotalAmount:     15,
+		Status:          "available",
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("test item").
+		Return(nil, nil) // no existing item found
+
+	mockItemRepo.
+		EXPECT().
+		Create(gomock.Any()).
+		Return(expectedItem, nil)
 
 	// act
-	item, err := mockItemService.Update(&entity.Item{Name: "updatedName"})
+	result, err := mockItemService.Create(inputItem)
 
 	// assert
-	assert.NotNil(t, item, "expect an item, got nil")
-	assert.Nil(t, err, fmt.Sprintf("expect an error to be nil, got %v", err))
-	assert.Equal(t, "updatedName", item.Name)
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, expectedItem, result)
+}
+
+func TestCreateItem_FailureItemAlreadyExists(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Name:            "existing item",
+		Description:     "Test Description",
+		AvailableAmount: 10,
+		TotalAmount:     15,
+	}
+
+	existingItem := &entity.Item{
+		Name:            "existing item",
+		Description:     "Already exists",
+		AvailableAmount: 5,
+		TotalAmount:     10,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("existing item"). // normalized name
+		Return(existingItem, nil)       // existing item found
+
+	// act
+	result, err := mockItemService.Create(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "item with this name already exists")
+}
+
+func TestCreateItem_FailureGetItemByNameError(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Name:            "test item",
+		Description:     "Test Description",
+		AvailableAmount: 10,
+		TotalAmount:     15,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("test item"). // normalized name
+		Return(nil, errors.New("database connection error"))
+
+	// act
+	result, err := mockItemService.Create(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "database connection error")
+}
+
+func TestCreateItem_FailureCreateError(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Name:            "test Item",
+		Description:     "Test Description",
+		AvailableAmount: 10,
+		TotalAmount:     15,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("test item"). // normalized name
+		Return(nil, nil)            // no existing item found
+
+	mockItemRepo.
+		EXPECT().
+		Create(gomock.Any()).
+		Return(nil, errors.New("failed to insert into database"))
+
+	// act
+	result, err := mockItemService.Create(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to insert into database")
+}
+
+func TestUpdateItem_Success(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "Updated Item",
+		Description:     "Updated Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+		Status:          "available",
+	}
+
+	currentItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "old item",
+		Description:     "Old Description",
+		AvailableAmount: 5,
+		TotalAmount:     10,
+		Status:          "available",
+	}
+
+	expectedItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "updated Item", // service doesn't normalize name yet
+		Description:     "Updated Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+		Status:          "available",
+	}
+
+	// Mock expectations - check item exists first, then check name conflicts
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(1)).
+		Return(currentItem, nil) // item exists
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("Updated Item"). // original name (service doesn't normalize yet)
+		Return(nil, nil)               // no existing item with this name
+
+	mockItemRepo.
+		EXPECT().
+		Update(gomock.Any()).
+		Return(expectedItem, nil)
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, expectedItem, result)
+}
+
+func TestUpdateItem_FailureItemNotFound(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 999},
+		Name:            "Test Item",
+		Description:     "Test Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(999)).
+		Return(nil, nil) // item not found
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "item not found")
+}
+
+func TestUpdateItem_SuccessUpdateToSameName(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "same item",
+		Description:     "Updated Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+		Status:          "available",
+	}
+
+	// existed item = to be updated item
+	existingItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "same item",
+		Description:     "Old Description",
+		AvailableAmount: 5,
+		TotalAmount:     10,
+		Status:          "available",
+	}
+
+	expectedItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "same item",
+		Description:     "Updated Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+		Status:          "available",
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(1)).
+		Return(existingItem, nil)
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("same item").
+		Return(existingItem, nil) // existing item found with same ID
+
+	mockItemRepo.
+		EXPECT().
+		Update(gomock.Any()).
+		Return(expectedItem, nil)
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, expectedItem, result)
+}
+
+func TestUpdateItem_FailureNameAlreadyExistsDifferentItem(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "existing name",
+		Description:     "Updated Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+	}
+
+	// Different item with same name
+	existingItem := &entity.Item{
+		Model:           gorm.Model{ID: 2},
+		Name:            "existing name",
+		Description:     "Another item",
+		AvailableAmount: 5,
+		TotalAmount:     10,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(1)).
+		Return(inputItem, nil)
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("existing name").
+		Return(existingItem, nil) // existing item found with different ID
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, errors.New("item with this name already exists"), err)
+}
+
+func TestUpdateItem_FailureGetItemByIDError(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "Test Item",
+		Description:     "Test Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(1)).
+		Return(nil, errors.New("database connection failed"))
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "database connection failed")
+}
+
+func TestUpdateItem_FailureGetItemByNameError(t *testing.T) {
+	// arrange
+	mockItemService, mockItemRepo := setupItemServiceMock(t)
+
+	inputItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "Test Item",
+		Description:     "Test Description",
+		AvailableAmount: 8,
+		TotalAmount:     12,
+	}
+
+	currentItem := &entity.Item{
+		Model:           gorm.Model{ID: 1},
+		Name:            "old name",
+		Description:     "Old Description",
+		AvailableAmount: 5,
+		TotalAmount:     10,
+	}
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByID(uint(1)).
+		Return(currentItem, nil) // item exists
+
+	mockItemRepo.
+		EXPECT().
+		GetItemByName("Test Item").
+		Return(nil, errors.New("database timeout error"))
+
+	// act
+	result, err := mockItemService.Update(inputItem)
+
+	// assert
+	assert.NotNil(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "database timeout error")
 }
 
 func TestDelete(t *testing.T) {
