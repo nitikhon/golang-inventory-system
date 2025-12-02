@@ -33,7 +33,16 @@ func (r *ItemRepository) GetItemByID(id uint) (*entity.Item, error) {
 	// Query item by ID
 	err := r.db.Where("id = ?", id).Take(&item).Error
 	if err != nil {
-		return &entity.Item{}, err
+		return nil, err
+	}
+	return &item, nil
+}
+
+func (r *ItemRepository) GetItemByName(name string) (*entity.Item, error) {
+	var item entity.Item
+	err := r.db.Where("name = ?", name).Take(&item).Error
+	if err != nil {
+		return nil, err
 	}
 	return &item, nil
 }

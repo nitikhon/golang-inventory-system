@@ -123,6 +123,21 @@ func (mr *MockItemRepositoryMockRecorder) GetItemByIDForUpdate(tx, id interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByIDForUpdate", reflect.TypeOf((*MockItemRepository)(nil).GetItemByIDForUpdate), tx, id)
 }
 
+// GetItemByName mocks base method.
+func (m *MockItemRepository) GetItemByName(name string) (*entity.Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetItemByName", name)
+	ret0, _ := ret[0].(*entity.Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetItemByName indicates an expected call of GetItemByName.
+func (mr *MockItemRepositoryMockRecorder) GetItemByName(name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByName", reflect.TypeOf((*MockItemRepository)(nil).GetItemByName), name)
+}
+
 // Update mocks base method.
 func (m *MockItemRepository) Update(item *entity.Item) (*entity.Item, error) {
 	m.ctrl.T.Helper()

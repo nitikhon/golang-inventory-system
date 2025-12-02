@@ -8,6 +8,7 @@ import (
 type ItemRepository interface {
 	GetAllItems() ([]*entity.Item, error)
 	GetItemByID(id uint) (*entity.Item, error)
+	GetItemByName(name string) (*entity.Item, error)
 	Create(item *entity.Item) (*entity.Item, error)
 	Update(item *entity.Item) (*entity.Item, error)
 	Delete(id uint) error
