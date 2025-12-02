@@ -15,7 +15,7 @@ type JWTUtil interface {
 	ValidateRefreshToken(tokenStr string) (uint, error)
 }
 
-type JWT struct {}
+type JWT struct{}
 
 func NewAppJWTUtil() JWTUtil {
 	return JWT{}
@@ -26,10 +26,10 @@ func NewAppJWTUtil() JWTUtil {
 func (s JWT) GenerateAccessToken(user entity.User) (string, error) {
 	// Create the claims for the access token
 	claims := jwt.MapClaims{
-		"user_id":   user.ID,
-		"username":   user.Username,
-		"is_admin":   user.IsAdmin,
-		"exp":        time.Now().Add(15 * time.Minute).Unix(),
+		"user_id":  user.ID,
+		"username": user.Username,
+		"is_admin": user.IsAdmin,
+		"exp":      time.Now().Add(15 * time.Minute).Unix(),
 	}
 
 	// Create a new token with the claims
@@ -50,7 +50,7 @@ func (s JWT) GenerateRefreshToken(user entity.User) (string, error) {
 	// Create the claims for the refresh token
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
-		"exp":      time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
 	}
 
 	// Create a new token with the claims
