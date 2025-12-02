@@ -19,10 +19,14 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),
 		itemHandler.Create)
-	itemRoutes.Put("/", 
-		middleware.AuthMiddleware(), 
-		middleware.AdminOnly(), 
-		itemHandler.Update)
+	itemRoutes.Put("/",
+		middleware.AuthMiddleware(),
+		middleware.AdminOnly(),
+		itemHandler.PutUpdate)
+	itemRoutes.Patch("/:id",
+		middleware.AuthMiddleware(),
+		middleware.AdminOnly(),
+		itemHandler.PatchUpdate)
 	itemRoutes.Delete("/:id",
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),
