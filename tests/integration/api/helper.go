@@ -46,3 +46,53 @@ func createAuthenticatedRequest(method, url string, body []byte, token string) *
 	}
 	return req
 }
+
+// Helper function to login and get access token
+func loginAs(t *testing.T, server *setup.TestServer, username, password string) string {
+	payload := map[string]string{
+		"username": username,
+		"password": password,
+	}
+	body, _ := json.Marshal(payload)
+	req := httptest.NewRequest("POST", "/api/users/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := server.App.Test(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode, "Login failed for user: %s", username)
+
+	var result map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	require.NoError(t, err)
+	return result["access_token"]
+}
+
+// Helper function to login and get both access token and refresh token cookie
+func loginAsWithCookie(t *testing.T, server *setup.TestServer, username, password string) (string, string) {
+	payload := map[string]string{
+		"username": username,
+		"password": password,
+	}
+	body, _ := json.Marshal(payload)
+	req := httptest.NewRequest("POST", "/api/users/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := server.App.Test(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode, "Login failed for user: %s", username)
+
+	var result map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	require.NoError(t, err)
+
+	// Extract refresh token from cookie
+	var refreshToken string
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "refresh_token" {
+			refreshToken = cookie.Value
+			break
+		}
+	}
+
+	return result["access_token"], refreshToken
+}
