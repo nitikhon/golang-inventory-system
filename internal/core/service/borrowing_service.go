@@ -6,6 +6,7 @@ import (
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 )
 
 // Ensures BorrowingService imnplements BorrowingServiceInterface
@@ -44,7 +45,7 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		return nil, err
 	}
 	if user == nil || !user.DeletedAt.Time.IsZero() {
-		return nil, errors.New("user does not exist or is not active")
+		return nil, errors.New(errormap.ErrUserNotExist)
 	}
 
 	// 2. Item exists and is available
@@ -53,12 +54,12 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		return nil, err
 	}
 	if item == nil || !item.DeletedAt.Time.IsZero() || item.Status != "available" {
-		return nil, errors.New("item is not available for borrowing")
+		return nil, errors.New(errormap.ErrItemNotAvailable)
 	}
 
 	// 3. Check available quantity
 	if item.AvailableAmount < borrowing.BorrowingAmount {
-		return nil, errors.New("item is not available enough to borrow")
+		return nil, errors.New(errormap.ErrItemNotEnough)
 	}
 
 	// 4. Check if the user has already borrowed this item
@@ -68,7 +69,7 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 	}
 	for _, existing := range existingBorrowings {
 		if existing.ItemID == borrowing.ItemID && existing.BorrowingStatus == "pending" {
-			return nil, errors.New("user has already borrowed this item and it is still pending")
+			return nil, errors.New(errormap.ErrAlreadyBorrowed)
 		}
 	}
 
@@ -104,7 +105,7 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 		return nil, err
 	}
 	if existingBorrowing == nil {
-		return nil, errors.New("borrowing does not exist")
+		return nil, errors.New(errormap.ErrBorrowingNotExist)
 	}
 
 	// Check if the approver exists
@@ -113,13 +114,13 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 		return nil, err
 	}
 	if approver == nil || !approver.DeletedAt.Time.IsZero() {
-		return nil, errors.New("approver does not exist or is not active")
+		return nil, errors.New(errormap.ErrApproverNotExist)
 	}
 
 	// Check if the borrowing is already approved or rejected or the borrowing status is not pending
 	if existingBorrowing.ApprovalStatus != entity.APPROVAL_PENDING ||
 		existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
-		return nil, errors.New("borrowing request is not pending")
+		return nil, errors.New(errormap.ErrBorrowingNotPending)
 	}
 
 	// Decrease the item's available amount
@@ -128,10 +129,10 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 		return nil, err
 	}
 	if item == nil || !item.DeletedAt.Time.IsZero() {
-		return nil, errors.New("item does not exist or is not active")
+		return nil, errors.New(errormap.ErrItemNotExistOrActive)
 	}
 	if item.AvailableAmount < existingBorrowing.BorrowingAmount {
-		return nil, errors.New("not enough items available to approve borrowing")
+		return nil, errors.New(errormap.ErrNotEnoughItemsForApproval)
 	}
 	item.AvailableAmount -= existingBorrowing.BorrowingAmount
 
@@ -171,7 +172,7 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 		return nil, err
 	}
 	if existingBorrowing == nil {
-		return nil, errors.New("borrowing does not exist")
+		return nil, errors.New(errormap.ErrBorrowingNotExist)
 	}
 
 	// Check if the rejecter exists
@@ -180,13 +181,13 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 		return nil, err
 	}
 	if rejecter == nil || !rejecter.DeletedAt.Time.IsZero() {
-		return nil, errors.New("rejecter does not exist or is not active")
+		return nil, errors.New(errormap.ErrRejecterNotExist)
 	}
 
 	// Check if the borrowing is already approved or rejected or the borrowing status is not pending
 	if existingBorrowing.ApprovalStatus != entity.APPROVAL_PENDING ||
 		existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
-		return nil, errors.New("borrowing request is not pending")
+		return nil, errors.New(errormap.ErrBorrowingNotPending)
 	}
 
 	result, err := s.borrowingRepo.RejectBorrowingWithTx(tx, borrowerId, rejecterId)
