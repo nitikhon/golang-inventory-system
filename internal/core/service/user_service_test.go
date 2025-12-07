@@ -193,71 +193,138 @@ func TestCreateUser_RepoError(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-	// arrange
-	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
+	t.Run("success case", func(t *testing.T) {
+		// arrange
+		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
-	tests := []struct {
-		name        string
-		userInput   entity.User
-		expectCalls func()
-		mockErr     error
-	}{
-		{
-			name: "success case",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			expectCalls: func() {
-				mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{
-					Username:  "test",
-					Email:     "test@gmail.com",
-					Password:  "P@ssw0rd",
-					Phone:     "0987654321",
-					FirstName: "John",
-					LastName:  "Corner",
-				}, nil)
-			},
-			mockErr: nil,
-		},
-		{
-			name: "repo error",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			expectCalls: func() {
-				mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{}, errors.New("database error"))
-			},
-			mockErr: errors.New("database error"),
-		},
-	}
+		userInput := entity.User{
+			Model:     gorm.Model{ID: 1},
+			Email:     "test@gmail.com",
+			Password:  "P@ssw0rd",
+			Phone:     "0987654321",
+			FirstName: "John",
+			LastName:  "Corner",
+		}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// arrange
-			tt.expectCalls()
+		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&userInput, nil)
 
-			// act
-			user, err := mockUserService.UpdateUser(&tt.userInput)
+		// act
+		user, err := mockUserService.UpdateUser(&userInput)
 
-			// assert
-			if tt.mockErr == nil {
-				assert.NotEqual(t, &entity.User{}, user)
-				assert.Nil(t, err)
-			} else {
-				assert.Equal(t, tt.mockErr, err)
-			}
-		})
-	}
+		// assert
+		assert.NotEqual(t, &entity.User{}, user)
+		assert.Nil(t, err)
+	})
+
+	t.Run("success case - same user's email and phone", func(t *testing.T) {
+		// arrange
+		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
+
+		userInput := entity.User{
+			Model:     gorm.Model{ID: 1},
+			Email:     "test@gmail.com",
+			Password:  "P@ssw0rd",
+			Phone:     "0987654321",
+			FirstName: "John",
+			LastName:  "Corner",
+		}
+
+		// same user found (same ID) - should not block update
+		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(&userInput, nil)
+		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(&userInput, nil)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&userInput, nil)
+
+		// act
+		user, err := mockUserService.UpdateUser(&userInput)
+
+		// assert
+		assert.NotEqual(t, &entity.User{}, user)
+		assert.Nil(t, err)
+	})
+
+	t.Run("duplicate email error", func(t *testing.T) {
+		// arrange
+		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
+
+		userInput := entity.User{
+			Model:     gorm.Model{ID: 1},
+			Email:     "existing@gmail.com",
+			Password:  "P@ssw0rd",
+			Phone:     "0987654321",
+			FirstName: "John",
+			LastName:  "Corner",
+		}
+
+		existingUser := entity.User{
+			Model: gorm.Model{ID: 2}, // different user
+			Email: "existing@gmail.com",
+		}
+
+		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(&existingUser, nil)
+
+		// act
+		user, err := mockUserService.UpdateUser(&userInput)
+
+		// assert
+		assert.Equal(t, &entity.User{}, user)
+		assert.EqualError(t, err, "email already taken")
+	})
+
+	t.Run("duplicate phone error", func(t *testing.T) {
+		// arrange
+		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
+
+		userInput := entity.User{
+			Model:     gorm.Model{ID: 1},
+			Email:     "test@gmail.com",
+			Password:  "P@ssw0rd",
+			Phone:     "0987654321",
+			FirstName: "John",
+			LastName:  "Corner",
+		}
+
+		existingUser := entity.User{
+			Model: gorm.Model{ID: 2}, // different user
+			Phone: "0987654321",
+		}
+
+		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(&existingUser, nil)
+
+		// act
+		user, err := mockUserService.UpdateUser(&userInput)
+
+		// assert
+		assert.Equal(t, &entity.User{}, user)
+		assert.EqualError(t, err, "phone already taken")
+	})
+
+	t.Run("repo error", func(t *testing.T) {
+		// arrange
+		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
+
+		userInput := entity.User{
+			Model:     gorm.Model{ID: 1},
+			Email:     "test@gmail.com",
+			Password:  "P@ssw0rd",
+			Phone:     "0987654321",
+			FirstName: "John",
+			LastName:  "Corner",
+		}
+
+		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{}, errors.New("database error"))
+
+		// act
+		user, err := mockUserService.UpdateUser(&userInput)
+
+		// assert
+		assert.Equal(t, &entity.User{}, user)
+		assert.EqualError(t, err, "database error")
+	})
 }
 
 func TestDeleteUser(t *testing.T) {
