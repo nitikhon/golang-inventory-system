@@ -56,10 +56,7 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		return nil, errors.New("item is not available for borrowing")
 	}
 
-	// 3. Quantity checks
-	if borrowing.BorrowingAmount <= 0 {
-		return nil, errors.New("borrowing amount must be greater than zero")
-	}
+	// 3. Check available quantity
 	if item.AvailableAmount < borrowing.BorrowingAmount {
 		return nil, errors.New("item is not available enough to borrow")
 	}
@@ -75,14 +72,7 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		}
 	}
 
-	// 5. Check if the requested due date is valid
-	if borrowing.ReturnedAt != "" {
-		return nil, errors.New("returned at date must be empty when borrowing an item")
-	}
-	if borrowing.DueDate < borrowing.BorrowedAt {
-		return nil, errors.New("due date cannot be before the borrowed at date")
-	}
-
+	// 5. Set default dates if not provided
 	if borrowing.BorrowedAt == "" {
 		borrowing.BorrowedAt = time.Now().Format(time.RFC3339)
 	}
@@ -96,14 +86,6 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 
 // ApproveBorrowing approves a borrowing request.
 func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error) {
-	// Validate required fields
-	if borrowerId == 0 {
-		return nil, errors.New("borrowing ID is required")
-	}
-	if approverId == 0 {
-		return nil, errors.New("approvedBy is required")
-	}
-
 	db := s.itemRepo.GetDB()
 	tx := db.Begin()
 	committed := false
@@ -171,14 +153,6 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 
 // RejectBorrowing rejects a borrowing request.
 func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error) {
-	// Validate required fields
-	if borrowerId == 0 {
-		return nil, errors.New("borrowing ID is required")
-	}
-	if rejecterId == 0 {
-		return nil, errors.New("rejectedBy is required")
-	}
-
 	db := s.itemRepo.GetDB()
 	tx := db.Begin()
 	committed := false
@@ -229,21 +203,10 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 
 // GetBorrowingByStatus retrieves borrowings by their status.
 func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error) {
-	if status != entity.BORROWING_PENDING && status != entity.BORROWING_ACTIVE &&
-		status != entity.BORROWING_RETURNED && status != entity.BORROWING_OVERDUE &&
-		status != entity.BORROWING_CANCELLED && status != entity.BORROWING_LOST {
-		return nil, errors.New("invalid borrowing status")
-	}
-
 	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status)
 }
 
 // GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
 func (s *BorrowingService) GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error) {
-	if status != entity.APPROVAL_PENDING && status != entity.APPROVAL_APPROVED &&
-		status != entity.APPROVAL_REJECTED {
-		return nil, errors.New("invalid approval status")
-	}
-
 	return s.borrowingRepo.GetBorrowingsByApprovalStatus(status)
 }
