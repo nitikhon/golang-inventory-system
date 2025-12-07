@@ -5,6 +5,7 @@ import (
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 	"gorm.io/gorm"
 )
 
@@ -50,7 +51,7 @@ func (s *ItemService) Create(item *entity.Item) (*entity.Item, error) {
 	}
 
 	if existingItem != nil {
-		return nil, errors.New("item with this name already exists")
+		return nil, errors.New(errormap.ErrItemNameAlreadyExists)
 	}
 
 	return s.repo.Create(item)
@@ -63,7 +64,7 @@ func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
 		return nil, err
 	}
 	if currentItem == nil {
-		return nil, errors.New("item not found")
+		return nil, errors.New(errormap.ErrItemNotFound)
 	}
 
 	existingItem, err := s.repo.GetItemByName(item.Name)
@@ -72,7 +73,7 @@ func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
 	}
 
 	if existingItem != nil && existingItem.ID != item.ID {
-		return nil, errors.New("item with this name already exists")
+		return nil, errors.New(errormap.ErrItemNameAlreadyExists)
 	}
 
 	return s.repo.Update(item)

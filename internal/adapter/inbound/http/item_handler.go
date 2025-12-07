@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 )
 
 // for item status enum validation
@@ -22,7 +23,6 @@ type ItemHandler struct {
 func NewItemHandler(service *service.ItemService) *ItemHandler {
 	return &ItemHandler{service: service}
 }
-
 
 // GetAllItems retrieves all items.
 func (h *ItemHandler) GetAllItems(c *fiber.Ctx) error {
@@ -42,8 +42,8 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	item, err := h.service.GetItemByID(uint(id))
 	if err != nil {
 		switch err.Error() {
-		case "record not found":
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "record not found"})
+		case errormap.ErrRecordNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrRecordNotFound})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -56,7 +56,7 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 	var item entity.Item
 
 	if err := c.BodyParser(&item); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid JSON format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidJSONFormat})
 	}
 
 	if err := validateItemInput(&item); err != nil {
@@ -68,8 +68,8 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 	createdItem, err := h.service.Create(&item)
 	if err != nil {
 		// Handle business logic errors
-		if err.Error() == "item with this name already exists" {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Item with this name already exists"})
+		if err.Error() == errormap.ErrItemNameAlreadyExists {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrItemNameAlreadyExists})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -87,12 +87,12 @@ func (h *ItemHandler) PutUpdate(c *fiber.Ctx) error {
 	item.Name = normalizeItemName(item.Name)
 
 	if item.ID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "item ID is required for update"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrItemIDRequired})
 	}
 
 	_, err := h.service.GetItemByID(uint(item.ID))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "item not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 	}
 
 	if err := validateItemInput(&item); err != nil {
@@ -103,10 +103,10 @@ func (h *ItemHandler) PutUpdate(c *fiber.Ctx) error {
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
-		case "item not found":
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Item not found"})
-		case "item with this name already exists":
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Item with this name already exists"})
+		case errormap.ErrItemNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
+		case errormap.ErrItemNameAlreadyExists:
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrItemNameAlreadyExists})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -123,7 +123,7 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 
 	item, err := h.service.GetItemByID(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "item not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 	}
 
 	var req struct {
@@ -135,12 +135,12 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid item payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidItemPayload})
 	}
 
 	if req.Name != nil {
 		if *req.Name == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "name should not be empty"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrNameNotEmpty})
 		}
 
 		item.Name = normalizeItemName(*req.Name)
@@ -152,11 +152,11 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 
 	if req.AvailableAmount != nil {
 		if *req.AvailableAmount < 0 {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "available_amount cannot be negative"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrAvailableAmountNegative})
 		}
 
 		if (req.TotalAmount != nil && *req.AvailableAmount > *req.TotalAmount) || (req.TotalAmount == nil && *req.AvailableAmount > item.TotalAmount) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "available_amount cannot exceed total_amount"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrAvailableExceedsTotal})
 		}
 
 		item.AvailableAmount = *req.AvailableAmount
@@ -164,11 +164,11 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 
 	if req.TotalAmount != nil {
 		if *req.TotalAmount <= 0 {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "total_amount must be greater than 0"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrTotalAmountPositive})
 		}
 
 		if (req.AvailableAmount != nil && *req.TotalAmount < *req.AvailableAmount) || (req.AvailableAmount == nil && *req.TotalAmount < item.AvailableAmount) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "updated total_amount is less than item's available amount"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrTotalLessThanAvailable})
 		}
 
 		item.TotalAmount = *req.TotalAmount
@@ -176,11 +176,11 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 
 	if req.Status != nil {
 		if *req.Status == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "status must be specified"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrStatusRequired})
 		}
 
 		if !slices.Contains(validStatuses, *req.Status) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "status must be one of: available, borrowed, maintenance, lost"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidStatus})
 		}
 
 		item.Status = *req.Status
@@ -190,10 +190,10 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
-		case "item not found":
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Item not found"})
-		case "item with this name already exists":
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Item with this name already exists"})
+		case errormap.ErrItemNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
+		case errormap.ErrItemNameAlreadyExists:
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrItemNameAlreadyExists})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -223,24 +223,24 @@ func normalizeItemName(name string) string {
 func validateItemInput(item *entity.Item) error {
 	// Required field validation
 	if item.Name == "" {
-		return errors.New("name is required")
+		return errors.New(errormap.ErrNameRequired)
 	}
 
 	if item.Description == "" {
-		return errors.New("description is required")
+		return errors.New(errormap.ErrDescriptionRequired)
 	}
 
 	// Data type and range validation
 	if item.AvailableAmount < 0 {
-		return errors.New("available_amount cannot be negative")
+		return errors.New(errormap.ErrAvailableAmountNegative)
 	}
 
 	if item.TotalAmount <= 0 {
-		return errors.New("total_amount must be greater than 0")
+		return errors.New(errormap.ErrTotalAmountPositive)
 	}
 
 	if item.AvailableAmount > item.TotalAmount {
-		return errors.New("available_amount cannot exceed total_amount")
+		return errors.New(errormap.ErrAvailableExceedsTotal)
 	}
 
 	// Set default status if empty
