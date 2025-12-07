@@ -5,7 +5,6 @@ import (
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
-	"github.com/nitikhon/golang-inventory-system/internal/core/service/validation"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"gorm.io/gorm"
 )
@@ -45,11 +44,6 @@ func NewUserService(repo port.UserRepository, crypto util.CryptoUtil, jwt util.J
 
 // Create creates a new user.
 func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
-	// Validate user fields
-	if err := validation.ValidateAndNormalizeUser(user); err != nil {
-		return &entity.User{}, err
-	}
-
 	// Check if username already exists
 	existingUser, err := s.repo.GetUserByUsername(user.Username)
 	if err == nil && existingUser != nil {
@@ -81,11 +75,6 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 
 // Update updates an existing user.
 func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
-	// Validate user fields
-	if err := validation.ValidateAndNormalizeUser(user); err != nil {
-		return &entity.User{}, err
-	}
-
 	return s.repo.UpdateUser(user)
 }
 
@@ -106,39 +95,22 @@ func (s *UserService) GetUserByID(id uint) (*entity.User, error) {
 
 // GetUserByUsername retrieves a user by their username.
 func (s *UserService) GetUserByUsername(username string) (*entity.User, error) {
-	username, err := validation.ValidateAndNormalizeUsername(username)
-	if err != nil {
-		return &entity.User{}, err
-	}
 	return s.repo.GetUserByUsername(username)
 }
 
 // GetUserByEmail retrieves a user by their email.
 func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
-	email, err := validation.ValidateAndNormalizeEmail(email)
-	if err != nil {
-		return &entity.User{}, err
-	}
 	return s.repo.GetUserByEmail(email)
 }
 
 // GetUserByPhone retrieves a user by their phone number.
 func (s *UserService) GetUserByPhone(phone string) (*entity.User, error) {
-	phone, err := validation.ValidateAndNormalizePhone(phone)
-	if err != nil {
-		return &entity.User{}, err
-	}
 	return s.repo.GetUserByPhone(phone)
 }
 
 // Login checks if the user exists and if the password is correct.
 func (s *UserService) Login(username, password string) (string, string, error) {
 	// Check if user exists
-	username, err := validation.ValidateAndNormalizeUsername(username)
-	if err != nil {
-		return "", "", err
-	}
-
 	user, err := s.repo.GetUserByUsername(username)
 	if err != nil {
 		return "", "", err
@@ -234,23 +206,13 @@ func (s *UserService) Logout(userID uint) error {
 }
 
 func (s *UserService) UpdateUserProfile(user *entity.User) (*entity.User, error) {
-	firstName, lastName, err := validation.ValidateAndNormalizeNames(user.FirstName, user.LastName)
-	if err != nil {
-		return &entity.User{}, err
-	}
-
-	phone, err := validation.ValidateAndNormalizePhone(user.Phone)
-	if err != nil {
-		return &entity.User{}, err
-	}
-
 	updatedFields := map[string]any{
-		"first_name": firstName,
-		"last_name":  lastName,
-		"phone":      phone,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"phone":      user.Phone,
 	}
 
-	user, err = s.repo.UpdateUserProfile(user.ID, updatedFields)
+	_, err := s.repo.UpdateUserProfile(user.ID, updatedFields)
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -264,10 +226,6 @@ func (s *UserService) UpdateUserProfile(user *entity.User) (*entity.User, error)
 }
 
 func (s *UserService) UpdateUserPassword(user *entity.User) error {
-	if err := validation.ValidatePassword(user.Password); err != nil {
-		return err
-	}
-
 	hashedPassword, err := s.crypto.HashPassword(user.Password)
 	if err != nil {
 		return err
@@ -281,12 +239,7 @@ func (s *UserService) UpdateUserPassword(user *entity.User) error {
 }
 
 func (s *UserService) UpdateUserEmail(user *entity.User) error {
-	email, err := validation.ValidateAndNormalizeEmail(user.Email)
-	if err != nil {
-		return err
-	}
-
-	if err := s.repo.UpdateUserEmail(user.ID, email); err != nil {
+	if err := s.repo.UpdateUserEmail(user.ID, user.Email); err != nil {
 		return err
 	}
 	return nil

@@ -89,433 +89,6 @@ func TestCreateUser_Failed_HashedFail(t *testing.T) {
 	assert.EqualError(t, err, mockErr.Error())
 }
 
-func TestCreateUser_Failed_Validation_MissingField(t *testing.T) {
-	// arrange
-	mockUserService, _, _, _ := setupUserServiceMock(t)
-
-	tests := []struct {
-		name      string
-		userInput entity.User
-		mockErr   error
-	}{
-		{
-			name: "missing username",
-			userInput: entity.User{
-				Username:  "",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username is required"),
-		},
-		{
-			name: "missing email",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("email is required"),
-		},
-		{
-			name: "missing password",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password is required"),
-		},
-		{
-			name: "missing phone",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("phone is required"),
-		},
-		{
-			name: "missing first name",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("first name is required"),
-		},
-		{
-			name: "missing last name",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "",
-			},
-			mockErr: errors.New("last name is required"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// act
-			_, err := mockUserService.CreateUser(&tt.userInput)
-
-			// assert
-			assert.Equal(t, tt.mockErr, err)
-		})
-	}
-}
-
-func TestCreateUser_Failed_Validations(t *testing.T) {
-	// arrange
-	longString := ""
-	for range 100 {
-		longString += ("verylongStringpart")
-	}
-
-	tests := []struct {
-		name      string
-		userInput entity.User
-		mockErr   error
-	}{
-		// missing fields
-		{
-			name: "missing username",
-			userInput: entity.User{
-				Username:  "",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username is required"),
-		},
-		{
-			name: "missing email",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("email is required"),
-		},
-		{
-			name: "missing password",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password is required"),
-		},
-		{
-			name: "missing phone",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("phone is required"),
-		},
-		{
-			name: "missing first name",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("first name is required"),
-		},
-		{
-			name: "missing last name",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "",
-			},
-			mockErr: errors.New("last name is required"),
-		},
-		// failed email validation
-		{
-			name: "email is too short (invalid format)",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "t@e.x",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("email must be at least 6 characters long"),
-		},
-		{
-			name: "email is too long (invalid format)",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     longString,
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("email must not exceed 128 characters"),
-		},
-		{
-			name: "invalid email format",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "123@eee",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("invalid email format"),
-		},
-		// failed phone validation
-		{
-			name: "invalid phone format",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "ABC098",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("phone number must be exactly 10 digits"),
-		},
-		// failed username validation
-		{
-			name: "invalid username format",
-			userInput: entity.User{
-				Username:  "ไทยทดสอบ",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username can only contain alphabets, numbers, dots, and underscores"),
-		},
-		{
-			name: "username less than 3 characters",
-			userInput: entity.User{
-				Username:  "e",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username must be 3-20 characters"),
-		},
-		{
-			name: "username more than 20 characters",
-			userInput: entity.User{
-				Username:  longString,
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username must be 3-20 characters"),
-		},
-		{
-			name: "username starts with invalid characters",
-			userInput: entity.User{
-				Username:  "_EAAAA",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username ends with invalid characters",
-			userInput: entity.User{
-				Username:  "AAAE.",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username starts with invalid sequences",
-			userInput: entity.User{
-				Username:  "_.E",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username ends with invalid characters",
-			userInput: entity.User{
-				Username:  "E_.",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		// failed password validation
-		{
-			name: "password is too short",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "0",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must be at least 8 characters long"),
-		},
-		{
-			name: "password is too long",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  longString,
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must not exceed 128 characters"),
-		},
-		{
-			name: "password doesn't have a lowercase",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@SSW0RD",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one lowercase letter"),
-		},
-		{
-			name: "password doesn't have a uppercase",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "p@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one uppercase letter"),
-		},
-		{
-			name: "password doesn't have a digit",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssword",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one digit"),
-		},
-		{
-			name: "password doesn't have a special character",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P4ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one special character"),
-		},
-		// failed names validation
-		{
-			name: "first name exceeds 200 characters",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: longString,
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("first name must not exceed 200 characters"),
-		},
-		{
-			name: "last name exceeds 200 characters",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  longString,
-			},
-			mockErr: errors.New("last name must not exceed 200 characters"),
-		},
-	}
-
-	mockUserService, _, _, _ := setupUserServiceMock(t)
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// act
-			_, err := mockUserService.CreateUser(&tt.userInput)
-
-			// assert
-			assert.Equal(t, tt.mockErr, err)
-		})
-	}
-}
-
 func TestCreateUser_UsernameExists(t *testing.T) {
 	// arrange
 	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
@@ -591,19 +164,44 @@ func TestCreateUser_PhoneExists(t *testing.T) {
 	assert.Equal(t, mockErr, err)
 }
 
+func TestCreateUser_RepoError(t *testing.T) {
+	// arrange
+	mockUserService, mockUserRepo, mockHashApp, _ := setupUserServiceMock(t)
+
+	userInput := entity.User{
+		Username:  "test",
+		Email:     "test@gmail.com",
+		Password:  "P@ssw0rd",
+		Phone:     "0987654321",
+		FirstName: "John",
+		LastName:  "Corner",
+	}
+	mockErr := errors.New("database error")
+
+	mockUserRepo.EXPECT().GetUserByUsername(userInput.Username).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, nil)
+	mockHashApp.EXPECT().HashPassword(gomock.Any()).Return("hashedpassword", nil)
+	mockUserRepo.EXPECT().CreateUser(gomock.Any()).Return(&entity.User{}, mockErr)
+
+	// act
+	user, err := mockUserService.CreateUser(&userInput)
+
+	// assert
+	assert.Equal(t, &entity.User{}, user)
+	assert.Equal(t, mockErr, err)
+}
+
 func TestUpdateUser(t *testing.T) {
 	// arrange
-	longString := ""
-	for range 100 {
-		longString += ("verylongStringpart")
-	}
+	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 	tests := []struct {
-		name      string
-		userInput entity.User
-		mockErr   error
+		name        string
+		userInput   entity.User
+		expectCalls func()
+		mockErr     error
 	}{
-		// success case
 		{
 			name: "success case",
 			userInput: entity.User{
@@ -614,335 +212,50 @@ func TestUpdateUser(t *testing.T) {
 				FirstName: "John",
 				LastName:  "Corner",
 			},
+			expectCalls: func() {
+				mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{
+					Username:  "test",
+					Email:     "test@gmail.com",
+					Password:  "P@ssw0rd",
+					Phone:     "0987654321",
+					FirstName: "John",
+					LastName:  "Corner",
+				}, nil)
+			},
 			mockErr: nil,
 		},
-		// missing fields
 		{
-			name: "missing username",
-			userInput: entity.User{
-				Username:  "",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username is required"),
-		},
-		{
-			name: "missing email",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("email is required"),
-		},
-		{
-			name: "missing password",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password is required"),
-		},
-		{
-			name: "missing phone",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("phone is required"),
-		},
-		{
-			name: "missing first name",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("first name is required"),
-		},
-		{
-			name: "missing last name",
+			name: "repo error",
 			userInput: entity.User{
 				Username:  "test",
 				Email:     "test@gmail.com",
 				Password:  "P@ssw0rd",
 				Phone:     "0987654321",
 				FirstName: "John",
-				LastName:  "",
-			},
-			mockErr: errors.New("last name is required"),
-		},
-		// failed email validation
-		{
-			name: "email is too short (invalid format)",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "t@e.x",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
 				LastName:  "Corner",
 			},
-			mockErr: errors.New("email must be at least 6 characters long"),
-		},
-		{
-			name: "email is too long (invalid format)",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     longString,
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
+			expectCalls: func() {
+				mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{}, errors.New("database error"))
 			},
-			mockErr: errors.New("email must not exceed 128 characters"),
-		},
-		{
-			name: "invalid email format",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "123@eee",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("invalid email format"),
-		},
-		// failed phone validation
-		{
-			name: "invalid phone format",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "ABC098",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("phone number must be exactly 10 digits"),
-		},
-		// failed username validation
-		{
-			name: "invalid username format",
-			userInput: entity.User{
-				Username:  "ไทยทดสอบ",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username can only contain alphabets, numbers, dots, and underscores"),
-		},
-		{
-			name: "username less than 3 characters",
-			userInput: entity.User{
-				Username:  "e",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username must be 3-20 characters"),
-		},
-		{
-			name: "username more than 20 characters",
-			userInput: entity.User{
-				Username:  longString,
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username must be 3-20 characters"),
-		},
-		{
-			name: "username starts with invalid characters",
-			userInput: entity.User{
-				Username:  "_EAAAA",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username ends with invalid characters",
-			userInput: entity.User{
-				Username:  "AAAE.",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username starts with invalid sequences",
-			userInput: entity.User{
-				Username:  "_.E",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		{
-			name: "username ends with invalid characters",
-			userInput: entity.User{
-				Username:  "E_.",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("username cannot start or end with '.' or '_'"),
-		},
-		// failed password validation
-		{
-			name: "password is too short",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "0",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must be at least 8 characters long"),
-		},
-		{
-			name: "password is too long",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  longString,
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must not exceed 128 characters"),
-		},
-		{
-			name: "password doesn't have a lowercase",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@SSW0RD",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one lowercase letter"),
-		},
-		{
-			name: "password doesn't have a uppercase",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "p@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one uppercase letter"),
-		},
-		{
-			name: "password doesn't have a digit",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssword",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one digit"),
-		},
-		{
-			name: "password doesn't have a special character",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P4ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("password must contain at least one special character"),
-		},
-		// failed names validation
-		{
-			name: "first name exceeds 200 characters",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: longString,
-				LastName:  "Corner",
-			},
-			mockErr: errors.New("first name must not exceed 200 characters"),
-		},
-		{
-			name: "last name exceeds 200 characters",
-			userInput: entity.User{
-				Username:  "test",
-				Email:     "test@gmail.com",
-				Password:  "P@ssw0rd",
-				Phone:     "0987654321",
-				FirstName: "John",
-				LastName:  longString,
-			},
-			mockErr: errors.New("last name must not exceed 200 characters"),
+			mockErr: errors.New("database error"),
 		},
 	}
-
-	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// arrange
-			if tt.mockErr == nil {
-				mockUserRepo.EXPECT().UpdateUser(&tt.userInput).Return(&tt.userInput, nil)
-			}
+			tt.expectCalls()
 
 			// act
 			user, err := mockUserService.UpdateUser(&tt.userInput)
 
 			// assert
 			if tt.mockErr == nil {
-				assert.Equal(t, &tt.userInput, user)
+				assert.NotEqual(t, &entity.User{}, user)
+				assert.Nil(t, err)
 			} else {
-				assert.Equal(t, &entity.User{}, user)
+				assert.Equal(t, tt.mockErr, err)
 			}
-			assert.Equal(t, tt.mockErr, err)
 		})
 	}
 }
@@ -970,13 +283,13 @@ func TestDeleteUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserRepo.EXPECT().DeleteUser(tt.userID).Return(tt.mockErr)
+
+			// act
+			err := mockUserService.DeleteUser(tt.userID)
+
+			// arrange
+			assert.Equal(t, tt.mockErr, err)
 		})
-
-		// act
-		err := mockUserService.DeleteUser(tt.userID)
-
-		// arrange
-		assert.Equal(t, tt.mockErr, err)
 	}
 }
 
@@ -1000,16 +313,16 @@ func TestGetAllUsers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserRepo.EXPECT().GetAllUsers().Return([]*entity.User{}, tt.mockErr)
+
+			// act
+			users, err := mockUserService.GetAllUsers()
+
+			// assert
+			if tt.mockErr == nil {
+				assert.Equal(t, []*entity.User{}, users)
+			}
+			assert.Equal(t, tt.mockErr, err)
 		})
-
-		// act
-		users, err := mockUserService.GetAllUsers()
-
-		// assert
-		if tt.mockErr == nil {
-			assert.Equal(t, []*entity.User{}, users)
-		}
-		assert.Equal(t, tt.mockErr, err)
 	}
 }
 
@@ -1038,16 +351,16 @@ func TestGetUserByID(t *testing.T) {
 			mockUserRepo.EXPECT().
 				GetUserByID(tt.userID).
 				Return(&entity.User{Model: gorm.Model{ID: tt.userID}}, tt.mockErr)
+
+			// act
+			user, err := mockUserService.GetUserByID(tt.userID)
+
+			// assert
+			if tt.mockErr == nil {
+				assert.NotEqual(t, &entity.User{}, user)
+			}
+			assert.Equal(t, tt.mockErr, err)
 		})
-
-		// act
-		user, err := mockUserService.GetUserByID(tt.userID)
-
-		// assert
-		if tt.mockErr == nil {
-			assert.NotEqual(t, &entity.User{}, user)
-		}
-		assert.Equal(t, tt.mockErr, err)
 	}
 }
 
@@ -1063,19 +376,22 @@ func TestGetUserByUsername(t *testing.T) {
 	}{
 		{
 			name:     "success case",
-			username: "success",
+			username: "testuser",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByUsername("success").
-					Return(&entity.User{Username: "success"}, nil)
+					GetUserByUsername("testuser").
+					Return(&entity.User{Username: "testuser"}, nil)
 			},
 		},
 		{
-			name:     "fail case (error from repo)",
-			username: "@ทดสอบ",
+			name:     "repo error",
+			username: "testuser",
 			expectCalls: func() {
+				mockUserRepo.EXPECT().
+					GetUserByUsername("testuser").
+					Return(nil, gorm.ErrRecordNotFound)
 			},
-			mockErr: errors.New("username can only contain alphabets, numbers, dots, and underscores"),
+			mockErr: gorm.ErrRecordNotFound,
 		},
 	}
 
@@ -1089,7 +405,7 @@ func TestGetUserByUsername(t *testing.T) {
 
 			// assert
 			if tt.mockErr != nil {
-				assert.Equal(t, &entity.User{}, user)
+				assert.Nil(t, user)
 			} else {
 				assert.Equal(t, tt.username, user.Username)
 			}
@@ -1118,10 +434,14 @@ func TestGetUserByEmail(t *testing.T) {
 			},
 		},
 		{
-			name:        "fail case (error from repo)",
-			email:       "X@E",
-			expectCalls: func() {},
-			mockErr:     errors.New("email must be at least 6 characters long"),
+			name:  "repo error",
+			email: "test@gmail.com",
+			expectCalls: func() {
+				mockUserRepo.EXPECT().
+					GetUserByEmail("test@gmail.com").
+					Return(nil, gorm.ErrRecordNotFound)
+			},
+			mockErr: gorm.ErrRecordNotFound,
 		},
 	}
 
@@ -1135,7 +455,7 @@ func TestGetUserByEmail(t *testing.T) {
 
 			// assert
 			if tt.mockErr != nil {
-				assert.Equal(t, &entity.User{}, user)
+				assert.Nil(t, user)
 			} else {
 				assert.Equal(t, tt.email, user.Email)
 			}
@@ -1164,10 +484,14 @@ func TestGetUserByPhone(t *testing.T) {
 			},
 		},
 		{
-			name:        "fail case (error from repo)",
-			phone:       "1",
-			expectCalls: func() {},
-			mockErr:     errors.New("phone number must be exactly 10 digits"),
+			name:  "repo error",
+			phone: "0987654321",
+			expectCalls: func() {
+				mockUserRepo.EXPECT().
+					GetUserByPhone("0987654321").
+					Return(nil, gorm.ErrRecordNotFound)
+			},
+			mockErr: gorm.ErrRecordNotFound,
 		},
 	}
 
@@ -1181,7 +505,7 @@ func TestGetUserByPhone(t *testing.T) {
 
 			// assert
 			if tt.mockErr != nil {
-				assert.Equal(t, &entity.User{}, user)
+				assert.Nil(t, user)
 			} else {
 				assert.Equal(t, tt.phone, user.Phone)
 			}
@@ -1229,14 +553,6 @@ func TestLogin(t *testing.T) {
 						Return(nil),
 				)
 			},
-		},
-		{
-			name:     "username validation error",
-			username: "te@",
-			password: "P@ssw0rd",
-			expectCalls: func() {
-			},
-			mockErr: errors.New("username can only contain alphabets, numbers, dots, and underscores"),
 		},
 		{
 			name:     "error from database",
@@ -1655,28 +971,6 @@ func TestUpdateUserProfile(t *testing.T) {
 			},
 		},
 		{
-			name: "validation error - invalid phone",
-			userInput: entity.User{
-				Model:     gorm.Model{ID: 1},
-				FirstName: "John",
-				LastName:  "Doe",
-				Phone:     "invalid",
-			},
-			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {},
-			mockErr:     errors.New("phone number must be exactly 10 digits"),
-		},
-		{
-			name: "validation error - invalid first name",
-			userInput: entity.User{
-				Model:     gorm.Model{ID: 1},
-				FirstName: "", // empty first name
-				LastName:  "Doe",
-				Phone:     "0987654321",
-			},
-			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {},
-			mockErr:     errors.New("first name is required"),
-		},
-		{
 			name: "repo error - UpdateUserProfile fails",
 			userInput: entity.User{
 				Model:     gorm.Model{ID: 1},
@@ -1767,15 +1061,6 @@ func TestUpdateUserPassword(t *testing.T) {
 			},
 		},
 		{
-			name: "validation error - invalid password",
-			userInput: entity.User{
-				Model:    gorm.Model{ID: 1},
-				Password: "weak", // too short
-			},
-			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {},
-			mockErr:     errors.New("password must be at least 8 characters long"),
-		},
-		{
 			name: "hash error",
 			userInput: entity.User{
 				Model:    gorm.Model{ID: 1},
@@ -1841,24 +1126,6 @@ func TestUpdateUserEmail(t *testing.T) {
 					UpdateUserEmail(uint(1), "test@example.com").
 					Return(nil)
 			},
-		},
-		{
-			name: "validation error - invalid email",
-			userInput: entity.User{
-				Model: gorm.Model{ID: 1},
-				Email: "invalid-email",
-			},
-			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {},
-			mockErr:     errors.New("invalid email format"),
-		},
-		{
-			name: "validation error - email too short",
-			userInput: entity.User{
-				Model: gorm.Model{ID: 1},
-				Email: "a@b.c",
-			},
-			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {},
-			mockErr:     errors.New("email must be at least 6 characters long"),
 		},
 		{
 			name: "repo error",
