@@ -75,6 +75,16 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 
 // Update updates an existing user.
 func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
+	existingUser, err := s.repo.GetUserByEmail(user.Email)
+	if err == nil && existingUser != nil && existingUser.ID != user.ID {
+		return &entity.User{}, errors.New("email already taken")
+	}
+
+	existingUser, err = s.repo.GetUserByPhone(user.Phone)
+	if err == nil && existingUser != nil && existingUser.ID != user.ID {
+		return &entity.User{}, errors.New("phone already taken")
+	}
+
 	return s.repo.UpdateUser(user)
 }
 

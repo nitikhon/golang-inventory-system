@@ -51,17 +51,21 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user ID is required for update"})
 	}
 
-	// Validate and normalize user input
-	if err := validation.ValidateAndNormalizeUser(&user); err != nil {
+	// Validate and normalize user input (excludes username)
+	if err := validation.ValidateAndNormalizeUserForUpdate(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	updatedUser, err := h.service.UpdateUser(&user)
 	if err != nil {
-		if err.Error() == "record not found" {
+		switch err.Error() {
+		case "record not found":
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+		case "email already taken", "phone already taken":
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(updatedUser)
 }

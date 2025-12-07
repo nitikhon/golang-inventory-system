@@ -77,6 +77,84 @@ func ValidateAndNormalizeUser(user *entity.User) error {
 	return nil
 }
 
+// ValidateUserForUpdate validates user fields for update (excludes username)
+func ValidateUserForUpdate(user *entity.User) error {
+	// Validate required fields for update
+	if err := ValidateRequiredFieldsForUpdate(user); err != nil {
+		return err
+	}
+
+	// Validate email format
+	if err := ValidateEmail(user.Email); err != nil {
+		return err
+	}
+
+	// Validate phone number
+	if err := ValidatePhone(user.Phone); err != nil {
+		return err
+	}
+
+	// Validate password
+	if err := ValidatePassword(user.Password); err != nil {
+		return err
+	}
+
+	// Validate names
+	if err := ValidateNames(user.FirstName, user.LastName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NormalizeUserForUpdate normalizes user fields for update (excludes username)
+func NormalizeUserForUpdate(user *entity.User) {
+	// Normalize email
+	user.Email = NormalizeEmail(user.Email)
+
+	// Normalize phone
+	user.Phone = NormalizePhone(user.Phone)
+
+	// Normalize names
+	user.FirstName, user.LastName = NormalizeNames(user.FirstName, user.LastName)
+
+	// Normalize password
+	user.Password = NormalizePassword(user.Password)
+}
+
+// ValidateAndNormalizeUserForUpdate validates and normalizes user data for update (excludes username)
+func ValidateAndNormalizeUserForUpdate(user *entity.User) error {
+	// First normalize the data
+	NormalizeUserForUpdate(user)
+
+	// Then validate the normalized data
+	if err := ValidateUserForUpdate(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ValidateRequiredFieldsForUpdate validates required fields for update (excludes username)
+func ValidateRequiredFieldsForUpdate(user *entity.User) error {
+	if user.Email == "" {
+		return errors.New("email is required")
+	}
+	if user.Password == "" {
+		return errors.New("password is required")
+	}
+	if user.Phone == "" {
+		return errors.New("phone is required")
+	}
+	if user.FirstName == "" {
+		return errors.New("first name is required")
+	}
+	if user.LastName == "" {
+		return errors.New("last name is required")
+	}
+	return nil
+}
+
 func ValidateRequiredFields(user *entity.User) error {
 	// Check if all required fields are provided
 	if user.Username == "" {
