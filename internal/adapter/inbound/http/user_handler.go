@@ -183,6 +183,10 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
+	if loginRequest.Username == "" || loginRequest.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid credentials"})
+	}
+
 	// Validate and normalize username
 	username, err := validation.ValidateAndNormalizeUsername(loginRequest.Username)
 	if err != nil {
