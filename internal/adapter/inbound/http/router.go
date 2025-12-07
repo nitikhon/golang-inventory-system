@@ -34,7 +34,7 @@ func SetupRoutes(
 
 	// User routes
 	userRoutes := app.Group("/api/users")
-	userRoutes.Put("/",
+	userRoutes.Put("/:id",
 		middleware.AuthMiddleware(),
 		middleware.AdminOrOwnerOnly(),
 		userHandler.Update)
