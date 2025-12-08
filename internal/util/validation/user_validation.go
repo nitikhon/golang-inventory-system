@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 )
 
 // ValidateUser validates all user fields without modifying them
@@ -138,19 +139,19 @@ func ValidateAndNormalizeUserForUpdate(user *entity.User) error {
 // ValidateRequiredFieldsForUpdate validates required fields for update (excludes username)
 func ValidateRequiredFieldsForUpdate(user *entity.User) error {
 	if user.Email == "" {
-		return errors.New("email is required")
+		return errors.New(errormap.ErrEmailRequired)
 	}
 	if user.Password == "" {
-		return errors.New("password is required")
+		return errors.New(errormap.ErrPasswordRequired)
 	}
 	if user.Phone == "" {
-		return errors.New("phone is required")
+		return errors.New(errormap.ErrPhoneRequired)
 	}
 	if user.FirstName == "" {
-		return errors.New("first name is required")
+		return errors.New(errormap.ErrFirstNameRequired)
 	}
 	if user.LastName == "" {
-		return errors.New("last name is required")
+		return errors.New(errormap.ErrLastNameRequired)
 	}
 	return nil
 }
@@ -158,43 +159,43 @@ func ValidateRequiredFieldsForUpdate(user *entity.User) error {
 func ValidateRequiredFields(user *entity.User) error {
 	// Check if all required fields are provided
 	if user.Username == "" {
-		return errors.New("username is required")
+		return errors.New(errormap.ErrUsernameRequired)
 	}
 	if user.Email == "" {
-		return errors.New("email is required")
+		return errors.New(errormap.ErrEmailRequired)
 	}
 	if user.Password == "" {
-		return errors.New("password is required")
+		return errors.New(errormap.ErrPasswordRequired)
 	}
 	if user.Phone == "" {
-		return errors.New("phone is required")
+		return errors.New(errormap.ErrPhoneRequired)
 	}
 	if user.FirstName == "" {
-		return errors.New("first name is required")
+		return errors.New(errormap.ErrFirstNameRequired)
 	}
 	if user.LastName == "" {
-		return errors.New("last name is required")
+		return errors.New(errormap.ErrLastNameRequired)
 	}
 	return nil
 }
 
 func ValidateEmail(email string) error {
 	if len(email) < 6 {
-		return errors.New("email must be at least 6 characters long")
+		return errors.New(errormap.ErrEmailMinLength)
 	}
 
 	if len(email) > 128 {
-		return errors.New("email must not exceed 128 characters")
+		return errors.New(errormap.ErrEmailMaxLength)
 	}
 
 	// Validate email format
 	emailRegex := `^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`
 	matched, err := regexp.MatchString(emailRegex, email)
 	if err != nil {
-		return errors.New("failed to validate email format")
+		return errors.New(errormap.ErrEmailValidationFailed)
 	}
 	if !matched {
-		return errors.New("invalid email format")
+		return errors.New(errormap.ErrInvalidEmailFormat)
 	}
 
 	return nil
@@ -225,7 +226,7 @@ func ValidatePhone(phone string) error {
 	phoneRegex := `[^0-9]`
 	phoneCleaned := regexp.MustCompile(phoneRegex).ReplaceAllString(phone, "")
 	if len(phoneCleaned) != 10 {
-		return errors.New("phone number must be exactly 10 digits")
+		return errors.New(errormap.ErrPhoneDigits)
 	}
 	return nil
 }
@@ -250,27 +251,27 @@ func ValidateUsername(username string) error {
 	usernameRegex := `^[a-zA-Z0-9._]+$`
 	matched, err := regexp.MatchString(usernameRegex, username)
 	if err != nil {
-		return errors.New("failed to validate username format")
+		return errors.New(errormap.ErrUsernameValidationFailed)
 	}
 	if !matched {
-		return errors.New("username can only contain alphabets, numbers, dots, and underscores")
+		return errors.New(errormap.ErrUsernameInvalidChars)
 	}
 
 	// Check username length
 	if len(username) < 3 || len(username) > 20 {
-		return errors.New("username must be 3-20 characters")
+		return errors.New(errormap.ErrUsernameLength)
 	}
 
 	// Check for invalid start/end characters (to prevent misinterpret as hiden directory (/home/.john) or command-line flag (ssh -help))
 	if strings.HasPrefix(username, ".") || strings.HasPrefix(username, "_") ||
 		strings.HasSuffix(username, ".") || strings.HasSuffix(username, "_") {
-		return errors.New("username cannot start or end with '.' or '_'")
+		return errors.New(errormap.ErrUsernameInvalidStartEnd)
 	}
 
 	// Check for invalid sequences (prevent directory traversal attacks / ambiguity and parsing issues)
 	if strings.Contains(username, "..") || strings.Contains(username, "__") ||
 		strings.Contains(username, "._") || strings.Contains(username, "_.") {
-		return errors.New("username cannot contain '..', '__', '._', or '_.'")
+		return errors.New(errormap.ErrUsernameInvalidSequence)
 	}
 
 	return nil
@@ -293,36 +294,36 @@ func ValidateAndNormalizeUsername(username string) (string, error) {
 func ValidatePassword(password string) error {
 	// Check minimum length
 	if len(password) < 8 {
-		return errors.New("password must be at least 8 characters long")
+		return errors.New(errormap.ErrPasswordMinLength)
 	}
 
 	// Check maximum length (prevent DoS attacks)
 	if len(password) > 128 {
-		return errors.New("password must not exceed 128 characters")
+		return errors.New(errormap.ErrPasswordMaxLength)
 	}
 
 	// Check for at least one lowercase letter
 	hasLower, _ := regexp.MatchString(`[a-z]`, password)
 	if !hasLower {
-		return errors.New("password must contain at least one lowercase letter")
+		return errors.New(errormap.ErrPasswordLowercase)
 	}
 
 	// Check for at least one uppercase letter
 	hasUpper, _ := regexp.MatchString(`[A-Z]`, password)
 	if !hasUpper {
-		return errors.New("password must contain at least one uppercase letter")
+		return errors.New(errormap.ErrPasswordUppercase)
 	}
 
 	// Check for at least one digit
 	hasDigit, _ := regexp.MatchString(`[0-9]`, password)
 	if !hasDigit {
-		return errors.New("password must contain at least one digit")
+		return errors.New(errormap.ErrPasswordDigit)
 	}
 
 	// Check for at least one special character
 	hasSpecial, _ := regexp.MatchString(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]`, password)
 	if !hasSpecial {
-		return errors.New("password must contain at least one special character")
+		return errors.New(errormap.ErrPasswordSpecialChar)
 	}
 
 	return nil
@@ -366,25 +367,25 @@ func ValidateAndNormalizeNames(firstName, lastName string) (string, string, erro
 func ValidateFirstName(firstName string) error {
 	// Check length
 	if len(firstName) < 1 {
-		return errors.New("first name is required")
+		return errors.New(errormap.ErrFirstNameRequired)
 	}
 	if len(firstName) > 200 {
-		return errors.New("first name must not exceed 200 characters")
+		return errors.New(errormap.ErrFirstNameMaxLength)
 	}
 
 	// Check for valid characters (letters, spaces, hyphens, apostrophes)
 	nameRegex := `^[a-zA-ZÀ-ÿ\s\-']+$`
 	matched, err := regexp.MatchString(nameRegex, firstName)
 	if err != nil {
-		return errors.New("failed to validate first name format")
+		return errors.New(errormap.ErrFirstNameValidationFailed)
 	}
 	if !matched {
-		return errors.New("first name can only contain letters, spaces, hyphens, and apostrophes")
+		return errors.New(errormap.ErrFirstNameInvalidChars)
 	}
 
 	// Check for consecutive special characters
 	if strings.Contains(firstName, "--") || strings.Contains(firstName, "''") || strings.Contains(firstName, "  ") {
-		return errors.New("first name cannot contain consecutive special characters or spaces")
+		return errors.New(errormap.ErrFirstNameConsecutiveSpecial)
 	}
 
 	// Check start/end with valid characters (not space, hyphen, or apostrophe)
@@ -392,7 +393,7 @@ func ValidateFirstName(firstName string) error {
 	lastChar := firstName[len(firstName)-1]
 	if firstChar == ' ' || firstChar == '-' || firstChar == '\'' ||
 		lastChar == ' ' || lastChar == '-' || lastChar == '\'' {
-		return errors.New("first name cannot start or end with space, hyphen, or apostrophe")
+		return errors.New(errormap.ErrFirstNameInvalidStartEnd)
 	}
 
 	return nil
@@ -401,25 +402,25 @@ func ValidateFirstName(firstName string) error {
 func ValidateLastName(lastName string) error {
 	// Check length
 	if len(lastName) < 1 {
-		return errors.New("last name is required")
+		return errors.New(errormap.ErrLastNameRequired)
 	}
 	if len(lastName) > 200 {
-		return errors.New("last name must not exceed 200 characters")
+		return errors.New(errormap.ErrLastNameMaxLength)
 	}
 
 	// Check for valid characters (letters, spaces, hyphens, apostrophes)
 	nameRegex := `^[a-zA-ZÀ-ÿ\s\-']+$`
 	matched, err := regexp.MatchString(nameRegex, lastName)
 	if err != nil {
-		return errors.New("failed to validate last name format")
+		return errors.New(errormap.ErrLastNameValidationFailed)
 	}
 	if !matched {
-		return errors.New("last name can only contain letters, spaces, hyphens, and apostrophes")
+		return errors.New(errormap.ErrLastNameInvalidChars)
 	}
 
 	// Check for consecutive special characters
 	if strings.Contains(lastName, "--") || strings.Contains(lastName, "''") || strings.Contains(lastName, "  ") {
-		return errors.New("last name cannot contain consecutive special characters or spaces")
+		return errors.New(errormap.ErrLastNameConsecutiveSpecial)
 	}
 
 	// Check start/end with valid characters (not space, hyphen, or apostrophe)
@@ -427,7 +428,7 @@ func ValidateLastName(lastName string) error {
 	lastChar := lastName[len(lastName)-1]
 	if firstChar == ' ' || firstChar == '-' || firstChar == '\'' ||
 		lastChar == ' ' || lastChar == '-' || lastChar == '\'' {
-		return errors.New("last name cannot start or end with space, hyphen, or apostrophe")
+		return errors.New(errormap.ErrLastNameInvalidStartEnd)
 	}
 
 	return nil

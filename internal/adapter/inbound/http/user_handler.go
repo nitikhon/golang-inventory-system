@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
-	"github.com/nitikhon/golang-inventory-system/internal/core/service/validation"
+	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
 )
 
