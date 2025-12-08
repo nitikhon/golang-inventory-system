@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 )
 
 type JWTUtil interface {
@@ -84,13 +85,13 @@ func validateToken(tokenStr string, secret []byte) (uint, error) {
 
 	// Check if the token is valid
 	if err != nil || !token.Valid {
-		return 0, errors.New("invalid token")
+		return 0, errors.New(errormap.ErrInvalidToken)
 	}
 
 	// Check the claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || claims["user_id"] == nil {
-		return 0, errors.New("invalid claims")
+		return 0, errors.New(errormap.ErrInvalidClaims)
 	}
 
 	// Get the user ID from the claims

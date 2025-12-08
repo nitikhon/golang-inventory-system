@@ -76,4 +76,7 @@ const (
 	ErrLastNameConsecutiveSpecial  = "last name cannot contain consecutive special characters or spaces"
 	ErrLastNameInvalidStartEnd     = "last name cannot start or end with space, hyphen, or apostrophe"
 
+	// jwt errors
+	ErrInvalidToken = "invalid token"
+	ErrInvalidClaims = "invalid claims"
 )
