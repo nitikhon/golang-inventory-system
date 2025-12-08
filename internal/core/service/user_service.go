@@ -6,6 +6,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/port"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 	"gorm.io/gorm"
 )
 
@@ -47,19 +48,19 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 	// Check if username already exists
 	existingUser, err := s.repo.GetUserByUsername(user.Username)
 	if err == nil && existingUser != nil {
-		return &entity.User{}, errors.New("a user with the provided credentials already exists")
+		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
 
 	// Check if email already exists
 	existingUser, err = s.repo.GetUserByEmail(user.Email)
 	if err == nil && existingUser != nil {
-		return &entity.User{}, errors.New("a user with the provided credentials already exists")
+		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
 
 	// Check if phone already exists
 	existingUser, err = s.repo.GetUserByPhone(user.Phone)
 	if err == nil && existingUser != nil {
-		return &entity.User{}, errors.New("a user with the provided credentials already exists")
+		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
 
 	// Hash the password before saving
@@ -77,12 +78,12 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
 	existingUser, err := s.repo.GetUserByEmail(user.Email)
 	if err == nil && existingUser != nil && existingUser.ID != user.ID {
-		return &entity.User{}, errors.New("email already taken")
+		return &entity.User{}, errors.New(errormap.ErrEmailAlreadyTaken)
 	}
 
 	existingUser, err = s.repo.GetUserByPhone(user.Phone)
 	if err == nil && existingUser != nil && existingUser.ID != user.ID {
-		return &entity.User{}, errors.New("phone already taken")
+		return &entity.User{}, errors.New(errormap.ErrPhoneAlreadyTaken)
 	}
 
 	return s.repo.UpdateUser(user)
@@ -132,7 +133,7 @@ func (s *UserService) Login(username, password string) (string, string, error) {
 
 	// Check if password is correct
 	if err := s.crypto.CheckPasswordHash(user.Password, password); err != nil {
-		return "", "", errors.New("invalid credentials")
+		return "", "", errors.New(errormap.ErrInvalidCredentials)
 	}
 
 	// Generate access and refresh tokens
@@ -171,7 +172,7 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 	}
 
 	if user.RefreshToken != refreshToken {
-		return entity.Token{}, errors.New("invalid refresh token")
+		return entity.Token{}, errors.New(errormap.ErrInvalidRefreshToken)
 	}
 
 	// Generate new tokens
@@ -229,7 +230,7 @@ func (s *UserService) UpdateUserProfile(user *entity.User) (*entity.User, error)
 
 	updatedUser, err := s.repo.GetUserByID(user.ID)
 	if err != nil {
-		return &entity.User{}, errors.New("error while trying to get updated user")
+		return &entity.User{}, errors.New(errormap.ErrGetUpdatedUser)
 	}
 
 	return updatedUser, nil

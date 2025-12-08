@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	mock_port "github.com/nitikhon/golang-inventory-system/internal/core/port/mock"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 	mock_util "github.com/nitikhon/golang-inventory-system/internal/util/mock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
@@ -101,7 +102,7 @@ func TestCreateUser_UsernameExists(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Corner",
 	}
-	mockErr := errors.New("a user with the provided credentials already exists")
+	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
 	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(&userInput, nil)
 
@@ -125,7 +126,7 @@ func TestCreateUser_EmailExists(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Corner",
 	}
-	mockErr := errors.New("a user with the provided credentials already exists")
+	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
 	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(nil, nil)
 	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any()).Return(&userInput, nil)
@@ -150,7 +151,7 @@ func TestCreateUser_PhoneExists(t *testing.T) {
 		FirstName: "John",
 		LastName:  "Corner",
 	}
-	mockErr := errors.New("a user with the provided credentials already exists")
+	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
 	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(nil, nil)
 	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any()).Return(nil, nil)
@@ -269,7 +270,7 @@ func TestUpdateUser(t *testing.T) {
 
 		// assert
 		assert.Equal(t, &entity.User{}, user)
-		assert.EqualError(t, err, "email already taken")
+		assert.EqualError(t, err, errormap.ErrEmailAlreadyTaken)
 	})
 
 	t.Run("duplicate phone error", func(t *testing.T) {
@@ -298,7 +299,7 @@ func TestUpdateUser(t *testing.T) {
 
 		// assert
 		assert.Equal(t, &entity.User{}, user)
-		assert.EqualError(t, err, "phone already taken")
+		assert.EqualError(t, err, errormap.ErrPhoneAlreadyTaken)
 	})
 
 	t.Run("repo error", func(t *testing.T) {
@@ -657,7 +658,7 @@ func TestLogin(t *testing.T) {
 						Return(bcrypt.ErrMismatchedHashAndPassword),
 				)
 			},
-			mockErr: errors.New("invalid credentials"),
+			mockErr: errors.New(errormap.ErrInvalidCredentials),
 		},
 		{
 			name:     "errors at GenerateAccessToken",
@@ -829,7 +830,7 @@ func TestRefreshToken(t *testing.T) {
 						Return(&mockUser, nil),
 				)
 			},
-			mockErr: errors.New("invalid refresh token"),
+			mockErr: errors.New(errormap.ErrInvalidRefreshToken),
 		},
 		{
 			name:             "error at GenerateAccessToken",
@@ -1078,7 +1079,7 @@ func TestUpdateUserProfile(t *testing.T) {
 					GetUserByID(uint(1)).
 					Return(&entity.User{}, errors.New("user not found"))
 			},
-			mockErr: errors.New("error while trying to get updated user"),
+			mockErr: errors.New(errormap.ErrGetUpdatedUser),
 		},
 	}
 

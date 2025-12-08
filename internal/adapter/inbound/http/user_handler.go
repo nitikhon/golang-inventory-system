@@ -6,6 +6,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 )
 
 // UserHandler handles HTTP requests for users.
@@ -22,7 +23,7 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 func (h *UserHandler) Create(c *fiber.Ctx) error {
 	var user entity.User
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
 	// Validate and normalize user input
@@ -32,8 +33,8 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 
 	createdUser, err := h.service.CreateUser(&user)
 	if err != nil {
-		if err.Error() == "a user with the provided credentials already exists" {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
+		if err.Error() == errormap.ErrUserCredentialsExist {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrUserCredentialsExist})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -44,11 +45,11 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 func (h *UserHandler) Update(c *fiber.Ctx) error {
 	var user entity.User
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
 	if user.ID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user ID is required for update"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrUserIDRequired})
 	}
 
 	// Validate and normalize user input (excludes username)
@@ -59,9 +60,9 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 	updatedUser, err := h.service.UpdateUser(&user)
 	if err != nil {
 		switch err.Error() {
-		case "record not found":
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
-		case "email already taken", "phone already taken":
+		case errormap.ErrRecordNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
+		case errormap.ErrEmailAlreadyTaken, errormap.ErrPhoneAlreadyTaken:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -111,7 +112,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 	username := c.Params("username")
 	if username == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "username is required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrUsernameRequired})
 	}
 
 	// Validate and normalize username
@@ -122,8 +123,8 @@ func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByUsername(username)
 	if err != nil {
-		if err.Error() == "record not found" {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+		if err.Error() == errormap.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -134,7 +135,7 @@ func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 	email := c.Params("email")
 	if email == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "email is required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrEmailRequired})
 	}
 
 	// Validate and normalize email
@@ -145,8 +146,8 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByEmail(email)
 	if err != nil {
-		if err.Error() == "record not found" {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+		if err.Error() == errormap.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -157,7 +158,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 	phone := c.Params("phone")
 	if phone == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "phone is required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrPhoneRequired})
 	}
 
 	// Validate and normalize phone
@@ -168,8 +169,8 @@ func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByPhone(phone)
 	if err != nil {
-		if err.Error() == "record not found" {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+		if err.Error() == errormap.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -184,11 +185,11 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&loginRequest); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
 	if loginRequest.Username == "" || loginRequest.Password == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid credentials"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidCredentials})
 	}
 
 	// Validate and normalize username
@@ -199,7 +200,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 
 	accessToken, refreshToken, err := h.service.Login(username, loginRequest.Password)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidCredentials})
 	}
 
 	// Set the Refresh Token in an HTTP-only cookie
@@ -222,13 +223,13 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 	// Retrieve the Refresh Token from the HTTP-only cookie
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "refresh token not found"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrRefreshTokenNotFound})
 	}
 
 	// Validate the Refresh Token and generate new tokens
 	tokens, err := h.service.RefreshToken(refreshToken)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid refresh token"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidRefreshToken})
 	}
 
 	// Set the new Refresh Token in the HTTP-only cookie
