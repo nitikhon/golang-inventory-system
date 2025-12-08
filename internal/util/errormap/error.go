@@ -1,6 +1,7 @@
 package errormap
 
 const (
+	// Borrowing errors
 	ErrUserNotExist              = "user does not exist or is not active"
 	ErrItemNotAvailable          = "item is not available for borrowing"
 	ErrItemNotEnough             = "item is not available enough to borrow"
