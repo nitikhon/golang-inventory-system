@@ -981,3 +981,232 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 	assert.Nil(t, result)
 	assert.EqualError(t, err, mockErr.Error())
 }
+
+func TestRejectBorrowing_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(1)
+
+	mockRejecter := &entity.User{
+		Model:    gorm.Model{ID: 1},
+		Username: "test_admin",
+		IsAdmin:  true,
+	}
+
+	mockBorrowing := &entity.Borrowing{
+		Model:           gorm.Model{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_PENDING,
+	}
+
+	expectedResult := &entity.Borrowing{
+		Model:           gorm.Model{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_REJECTED,
+		ApprovedBy:      rejecterId,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectCommit()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(expectedResult, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, entity.APPROVAL_REJECTED, result.ApprovalStatus)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_BorrowingNotExist(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(999)
+	rejecterId := uint(1)
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrBorrowingNotExist)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_RejecterNotExist(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(999)
+
+	mockBorrowing := &entity.Borrowing{
+		Model:           gorm.Model{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_PENDING,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(nil, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrRejecterNotExist)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_BorrowingNotPending(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(1)
+
+	mockRejecter := &entity.User{
+		Model:    gorm.Model{ID: 1},
+		Username: "test_admin",
+		IsAdmin:  true,
+	}
+
+	mockBorrowing := &entity.Borrowing{
+		Model:           gorm.Model{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_ACTIVE,
+		ApprovalStatus:  entity.APPROVAL_APPROVED,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrBorrowingNotPending)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_RepoError(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(1)
+	mockErr := errors.New("database error")
+
+	mockRejecter := &entity.User{
+		Model:    gorm.Model{ID: 1},
+		Username: "test_admin",
+		IsAdmin:  true,
+	}
+
+	mockBorrowing := &entity.Borrowing{
+		Model:           gorm.Model{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_PENDING,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(nil, mockErr)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, mockErr.Error())
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestGetBorrowingsByBorrowingStatus_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
+
+	status := entity.BORROWING_PENDING
+	expectedBorrowings := []*entity.Borrowing{
+		{
+			BorrowingStatus: entity.BORROWING_PENDING,
+		},
+	}
+
+	mockBorrowingRepo.EXPECT().GetBorrowingsByBorrowingStatus(status).Return(expectedBorrowings, nil)
+
+	// act
+	result, err := service.GetBorrowingsByBorrowingStatus(status)
+
+	// assert
+	assert.Nil(t, err)
+	assert.Equal(t, expectedBorrowings, result)
+}
+
+func TestGetBorrowingsByApprovalStatus_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
+
+	status := entity.APPROVAL_APPROVED
+	expectedBorrowings := []*entity.Borrowing{
+		{
+			ApprovalStatus: entity.APPROVAL_APPROVED,
+		},
+	}
+
+	mockBorrowingRepo.EXPECT().GetBorrowingsByApprovalStatus(status).Return(expectedBorrowings, nil)
+
+	// act
+	result, err := service.GetBorrowingsByApprovalStatus(status)
+
+	// assert
+	assert.Nil(t, err)
+	assert.Equal(t, expectedBorrowings, result)
+}
