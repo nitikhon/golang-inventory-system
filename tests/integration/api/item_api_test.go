@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
 	"github.com/nitikhon/golang-inventory-system/tests/integration/api/setup"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -788,7 +789,7 @@ func TestPatchUpdateItem(t *testing.T) {
 		var errorResponse map[string]string
 		err = json.NewDecoder(resp.Body).Decode(&errorResponse)
 		require.NoError(t, err)
-		assert.Equal(t, "Item with this name already exists", errorResponse["error"])
+		assert.Equal(t, errormap.ErrItemNameAlreadyExists, errorResponse["error"])
 	})
 
 	t.Run("Valid Status Values", func(t *testing.T) {
