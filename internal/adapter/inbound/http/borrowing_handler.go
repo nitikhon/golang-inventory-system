@@ -74,6 +74,8 @@ func (h *BorrowingHandler) ApproveBorrowing(c *fiber.Ctx) error {
 	approvedBorrowing, err := h.service.ApproveBorrowing(borrowing.ID, borrowing.ApprovedBy)
 	if err != nil {
 		switch err.Error() {
+		case gorm.ErrRecordNotFound.Error():
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotExist, errormap.ErrApproverNotExist, errormap.ErrItemNotExistOrActive:
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotPending, errormap.ErrNotEnoughItemsForApproval:
