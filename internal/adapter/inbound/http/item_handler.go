@@ -9,6 +9,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
+	"gorm.io/gorm"
 )
 
 // for item status enum validation
@@ -42,8 +43,8 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	item, err := h.service.GetItemByID(uint(id))
 	if err != nil {
 		switch err.Error() {
-		case errormap.ErrRecordNotFound:
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrRecordNotFound})
+		case gorm.ErrRecordNotFound.Error():
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": gorm.ErrRecordNotFound})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}

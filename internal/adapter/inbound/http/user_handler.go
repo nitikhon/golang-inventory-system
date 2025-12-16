@@ -4,9 +4,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
-	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
+	"github.com/nitikhon/golang-inventory-system/internal/util/validation"
+	"gorm.io/gorm"
 )
 
 // UserHandler handles HTTP requests for users.
@@ -60,7 +61,7 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 	updatedUser, err := h.service.UpdateUser(&user)
 	if err != nil {
 		switch err.Error() {
-		case errormap.ErrRecordNotFound:
+		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		case errormap.ErrEmailAlreadyTaken, errormap.ErrPhoneAlreadyTaken:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
@@ -123,7 +124,7 @@ func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByUsername(username)
 	if err != nil {
-		if err.Error() == errormap.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -146,7 +147,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByEmail(email)
 	if err != nil {
-		if err.Error() == errormap.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -169,7 +170,7 @@ func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByPhone(phone)
 	if err != nil {
-		if err.Error() == errormap.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

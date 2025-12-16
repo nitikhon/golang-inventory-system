@@ -16,7 +16,6 @@ const (
 	// Item errors
 	ErrItemNotFound            = "item not found"
 	ErrItemNameAlreadyExists   = "item with this name already exists"
-	ErrRecordNotFound          = "record not found"
 	ErrInvalidJSONFormat       = "Invalid JSON format"
 	ErrInvalidItemPayload      = "invalid item payload"
 	ErrItemIDRequired          = "item ID is required for update"
@@ -77,6 +76,6 @@ const (
 	ErrLastNameInvalidStartEnd     = "last name cannot start or end with space, hyphen, or apostrophe"
 
 	// jwt errors
-	ErrInvalidToken = "invalid token"
+	ErrInvalidToken  = "invalid token"
 	ErrInvalidClaims = "invalid claims"
 )

@@ -5,6 +5,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util/errormap"
+	"gorm.io/gorm"
 )
 
 // BorrowingHandler handles HTTP requests for borrowing operations.
@@ -44,7 +45,7 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 	borrowedItem, err := h.service.BorrowItem(borrowing)
 	if err != nil {
 		switch err.Error() {
-		case errormap.ErrUserNotExist, errormap.ErrItemNotAvailable:
+		case errormap.ErrUserNotExist, errormap.ErrItemNotAvailable, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrItemNotEnough, errormap.ErrAlreadyBorrowed:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
