@@ -20,17 +20,17 @@ const (
 )
 
 type Borrowing struct {
-	UserID          uint `gorm:"primaryKey"`
-	ItemID          uint `gorm:"primaryKey"`
-	Description     string
-	BorrowedAt      string
-	ReturnedAt      string
-	DueDate         string
-	BorrowingAmount int
-	BorrowingStatus string `gorm:"type:VARCHAR(20);default:'pending';index"`
-	ApprovalStatus  string `gorm:"type:VARCHAR(20);default:'pending';index"` // pending, approved, rejected
-	ApprovedAt      string
-	ApprovedBy      uint
-	RejectedBy      uint
+	UserID          uint `json:"user_id" gorm:"primaryKey"`
+	ItemID          uint `json:"item_id" gorm:"primaryKey"`
+	Description     string `json:"description"`
+	BorrowedAt      string `json:"borrowed_at"`
+	ReturnedAt      string `json:"returned_at"`
+	DueDate         string `json:"due_date"`
+	BorrowingAmount int    `json:"borrowing_amount"`
+	BorrowingStatus string `json:"borrowing_status" gorm:"type:VARCHAR(20);default:'pending';index"`
+	ApprovalStatus  string `json:"approval_status" gorm:"type:VARCHAR(20);default:'pending';index"` // pending, approved, rejected
+	ApprovedAt      string `json:"approved_at"`
+	ApprovedBy      uint   `json:"approved_by"`
+	RejectedBy      uint   `json:"rejected_by"`
 	gorm.Model
 }
