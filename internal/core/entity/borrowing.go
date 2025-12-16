@@ -32,5 +32,6 @@ type Borrowing struct {
 	ApprovedAt      string `json:"approved_at"`
 	ApprovedBy      uint   `json:"approved_by"`
 	RejectedBy      uint   `json:"rejected_by"`
+	RejectedAt      string `json:"rejected_at"`
 	gorm.Model
 }

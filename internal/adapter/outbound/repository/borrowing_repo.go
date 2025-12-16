@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"gorm.io/gorm"
 )
@@ -30,6 +32,7 @@ func (r *BorrowingRepository) ApproveBorrowingWithTx(tx *gorm.DB, borrowingId, a
 			BorrowingStatus: entity.BORROWING_ACTIVE,
 			ApprovalStatus:  entity.APPROVAL_APPROVED,
 			ApprovedBy:      approverId,
+			ApprovedAt:      time.Now().Format(time.RFC3339),
 		}).Error
 	if err != nil {
 		return &entity.Borrowing{}, err
@@ -49,6 +52,7 @@ func (r *BorrowingRepository) RejectBorrowingWithTx(tx *gorm.DB, borrowingId, re
 			BorrowingStatus: entity.BORROWING_CANCELLED,
 			ApprovalStatus:  entity.APPROVAL_REJECTED,
 			RejectedBy:      rejecterId,
+			RejectedAt:      time.Now().Format(time.RFC3339),
 		}).Error
 	if err != nil {
 		return &entity.Borrowing{}, err
