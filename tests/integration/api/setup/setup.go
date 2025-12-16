@@ -288,5 +288,57 @@ func seedTestData(t *testing.T, db *gorm.DB) error {
     }
     t.Logf("[TEST SETUP] Created %d test items", len(items))
 
+	t.Log("[TEST SETUP] Creating test borrowings...")
+
+	users := []entity.User{*adminUser, *regularUser}
+
+	borrowings := []entity.Borrowing{
+		{
+			UserID:          findUserID(users, "test_user"),
+			ItemID:          findItemID(items, "office chair ergonomic"),
+			Description:     "Need for home office",
+			BorrowedAt:      "2023-01-01T10:00:00Z",
+			DueDate:         "2023-02-01T10:00:00Z",
+			BorrowingAmount: 1,
+			BorrowingStatus: entity.BORROWING_ACTIVE,
+			ApprovalStatus:  entity.APPROVAL_APPROVED,
+			ApprovedAt:      "2023-01-01T10:05:00Z",
+			ApprovedBy:      findUserID(users, "test_admin"),
+		},
+		{
+			UserID:          findUserID(users, "test_user"),
+			ItemID:          findItemID(items, "wireless keyboard"),
+			Description:     "Old one broke",
+			BorrowedAt:      "2023-01-15T14:30:00Z",
+			DueDate:         "2023-02-15T14:30:00Z",
+			BorrowingAmount: 1,
+			BorrowingStatus: entity.BORROWING_PENDING,
+			ApprovalStatus:  entity.APPROVAL_PENDING,
+		},
+	}
+
+	if err := db.Create(&borrowings).Error; err != nil {
+		return fmt.Errorf("failed to create test borrowings: %w", err)
+	}
+	t.Logf("[TEST SETUP] Created %d test borrowings", len(borrowings))
+
     return nil
+}
+
+func findUserID(users []entity.User, username string) uint {
+	for _, u := range users {
+		if u.Username == username {
+			return u.ID
+		}
+	}
+	return 0
+}
+
+func findItemID(items []entity.Item, name string) uint {
+	for _, i := range items {
+		if i.Name == name {
+			return i.ID
+		}
+	}
+	return 0
 }
