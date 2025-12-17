@@ -7,21 +7,21 @@ import (
 const (
 	// BorrowingStatus constants
 	BORROWING_PENDING   = "pending"
-	BORROWING_ACTIVE   = "active"
-	BORROWING_RETURNED = "returned"
-	BORROWING_OVERDUE  = "overdue"
+	BORROWING_ACTIVE    = "active"
+	BORROWING_RETURNED  = "returned"
+	BORROWING_OVERDUE   = "overdue"
 	BORROWING_CANCELLED = "cancelled"
-    BORROWING_LOST     = "lost"
+	BORROWING_LOST      = "lost"
 
 	// ApprovalStatus constants
-	APPROVAL_PENDING   = "pending"
-	APPROVAL_APPROVED  = "approved"
-	APPROVAL_REJECTED  = "rejected"
+	APPROVAL_PENDING  = "pending"
+	APPROVAL_APPROVED = "approved"
+	APPROVAL_REJECTED = "rejected"
 )
 
 type Borrowing struct {
-	UserID          uint `json:"user_id" gorm:"primaryKey"`
-	ItemID          uint `json:"item_id" gorm:"primaryKey"`
+	UserID          uint   `json:"user_id" gorm:"primaryKey"`
+	ItemID          uint   `json:"item_id" gorm:"primaryKey"`
 	Description     string `json:"description"`
 	BorrowedAt      string `json:"borrowed_at"`
 	ReturnedAt      string `json:"returned_at"`
