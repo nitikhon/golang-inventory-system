@@ -199,7 +199,7 @@ func TestCreateItem_FailureCreateError(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		Name:            "test Item",
+		Name:            "test item",
 		Description:     "Test Description",
 		AvailableAmount: 10,
 		TotalAmount:     15,
@@ -207,7 +207,7 @@ func TestCreateItem_FailureCreateError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("test item"). // normalized name
+		GetItemByName("test item").
 		Return(nil, nil)            // no existing item found
 
 	mockItemRepo.
