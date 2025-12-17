@@ -88,4 +88,12 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),
 		borrowingHandler.RejectBorrowing)
+	borrowingRoutes.Get("/status/:status",
+		middleware.AuthMiddleware(),
+		middleware.AdminOnly(),
+		borrowingHandler.GetBorrowingsByBorrowingStatus)
+	borrowingRoutes.Get("/approval-status/:status",
+		middleware.AuthMiddleware(),
+		middleware.AdminOnly(),
+		borrowingHandler.GetBorrowingsByApprovalStatus)
 }
