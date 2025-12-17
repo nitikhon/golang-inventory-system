@@ -105,7 +105,7 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 	rejectedBorrowing, err := h.service.RejectBorrowing(borrowing.ID, borrowing.RejectedBy)
 	if err != nil {
 		switch err.Error() {
-		case errormap.ErrBorrowingNotExist, errormap.ErrRejecterNotExist:
+		case errormap.ErrBorrowingNotExist, errormap.ErrRejecterNotExist, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotPending:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
