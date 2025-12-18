@@ -10,6 +10,7 @@ func SetupRoutes(
 	itemHandler *ItemHandler,
 	userHandler *UserHandler,
 	borrowingHandler *BorrowingHandler,
+	rateLimiter fiber.Handler,
 ) {
 	// Item routes
 	itemRoutes := app.Group("/api/items")
@@ -17,18 +18,22 @@ func SetupRoutes(
 	itemRoutes.Get("/:id", itemHandler.GetItemByID)
 	itemRoutes.Post("/",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		itemHandler.Create)
 	itemRoutes.Put("/",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		itemHandler.PutUpdate)
 	itemRoutes.Patch("/:id",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		itemHandler.PatchUpdate)
 	itemRoutes.Delete("/:id",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		itemHandler.Delete)
 
@@ -36,11 +41,13 @@ func SetupRoutes(
 	userRoutes := app.Group("/api/users")
 	userRoutes.Put("/:id",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOrOwnerOnly(),
 		userHandler.Update)
 
 	userRoutes.Delete("/:id",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		userHandler.Delete)
 	userRoutes.Get("/",
@@ -49,6 +56,7 @@ func SetupRoutes(
 		userHandler.GetAllUsers)
 	userRoutes.Get("/me",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		userHandler.Me) // define this before :id to prevent an error
 	userRoutes.Get("/:id",
 		middleware.AuthMiddleware(),
@@ -79,13 +87,16 @@ func SetupRoutes(
 	borrowingRoutes := app.Group("/api/borrows")
 	borrowingRoutes.Post("/",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		borrowingHandler.BorrowItem)
 	borrowingRoutes.Post("/approve",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		borrowingHandler.ApproveBorrowing)
 	borrowingRoutes.Post("/reject",
 		middleware.AuthMiddleware(),
+		rateLimiter,
 		middleware.AdminOnly(),
 		borrowingHandler.RejectBorrowing)
 	borrowingRoutes.Get("/status/:status",

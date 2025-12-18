@@ -5,8 +5,10 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/storage/redis/v3"
 	"github.com/joho/godotenv"
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http"
+	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http/middleware"
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/database"
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/outbound/repository"
 	"github.com/nitikhon/golang-inventory-system/internal/config"
@@ -49,8 +51,17 @@ func main() {
 	// Create a new Fiber app
 	app := fiber.New()
 
+	// Initialize Redis storage for rate limiting
+	store := redis.New(redis.Config{
+		Host: config.RedisHost,
+		Port: config.RedisPort,
+	})
+
+	// Apply Rate Limiting Middleware Bot/DDOS for global
+	app.Use(middleware.BotProtectionMiddleware(store, config.RateLimitBotMax))
+
 	// Setup HTTP routes
-	http.SetupRoutes(app, itemHandler, userHandler, borrowingHandler)
+	http.SetupRoutes(app, itemHandler, userHandler, borrowingHandler, middleware.RateLimitMiddleware(store, config.RateLimitUserMax))
 
 	// Start the server
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
