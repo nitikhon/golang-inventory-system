@@ -114,8 +114,9 @@ func NewTestServer(t *testing.T) *TestServer {
 		},
 	})
 
-	// Setup routes
-	http.SetupRoutes(app, itemHandler, userHandler, borrowingHandler)
+	// pass a dummy rate limiter for tests
+	dummyRateLimiter := func(c *fiber.Ctx) error { return c.Next() }
+	http.SetupRoutes(app, itemHandler, userHandler, borrowingHandler, dummyRateLimiter)
 
 	t.Log("[TEST SETUP] Test server initialized successfully!")
 
