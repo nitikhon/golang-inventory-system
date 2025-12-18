@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/nitikhon/golang-inventory-system/internal/config"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -16,12 +17,22 @@ import (
 func NewDatabase(config config.Config) (*gorm.DB, error) {
 	// Open a connection to the database using the provided DSN and custom logger.
 	db, err := gorm.Open(postgres.Open(config.DatabaseDSN), &gorm.Config{
-		Logger: util.NewLogger(),
+		Logger:                                   util.NewLogger(),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-
 	if err != nil {
 		return nil, err
+	}
+
+	if db != nil {
+		sqlDB, err := db.DB()
+		if err != nil {
+			return nil, err
+		}
+
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetMaxOpenConns(100)
+		sqlDB.SetConnMaxLifetime(time.Hour)
 	}
 
 	log.Println("Database connected")
