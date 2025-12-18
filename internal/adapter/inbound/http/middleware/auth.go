@@ -47,7 +47,7 @@ func AuthMiddleware() fiber.Handler {
 		if userIDFloat, ok := claims["user_id"].(float64); ok {
 			c.Locals("user_id", uint(userIDFloat))
 		}
-		
+
 		// Store JWT claims in the context for later use.
 		c.Locals("user", claims)
 		return c.Next()
@@ -60,39 +60,39 @@ func AdminOrOwnerOnly() fiber.Handler {
 		claims, ok := c.Locals("user").(jwt.MapClaims)
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-                "error": "No user context found",
-            })
+				"error": "No user context found",
+			})
 		}
-		
+
 		isAdmin, ok := claims["is_admin"].(bool)
 		if !ok {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                "error": "Invalid data in the token",
-            })
+				"error": "Invalid data in the token",
+			})
 		}
 
 		userIDFloat, ok := claims["user_id"].(float64)
 		if !ok {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                "error": "Invalid data in the token",
-            })
+				"error": "Invalid data in the token",
+			})
 		}
 		userID := uint(userIDFloat)
 
 		targetID, err := c.ParamsInt("id")
-        if err != nil {
-            return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                "error": "Invalid user ID parameter",
-            })
-        }
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid user ID parameter",
+			})
+		}
 
 		if !isAdmin && userID != uint(targetID) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                "error": "Invalid data in the token",
-            })
+				"error": "Invalid data in the token",
+			})
 		}
 
-		return c.Next();
+		return c.Next()
 	}
 }
 
@@ -102,17 +102,17 @@ func AdminOnly() fiber.Handler {
 		claims, ok := c.Locals("user").(jwt.MapClaims)
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-                "error": "No user context found",
-            })
+				"error": "No user context found",
+			})
 		}
-		
+
 		isAdmin, ok := claims["is_admin"].(bool)
 		if !ok || !isAdmin {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-                "error": "Admin permission required",
-            })
+				"error": "Admin permission required",
+			})
 		}
 
-		return c.Next();
+		return c.Next()
 	}
 }
