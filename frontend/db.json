@@ -1,0 +1,60 @@
+{
+    "items": [
+        {
+            "name": "wireless keyboard",
+            "description": "Mechanical wireless keyboard with RGB backlight",
+            "available_amount": 10,
+            "total_amount": 10,
+            "status": "available"
+        },
+        {
+            "name": "office chair ergonomic",
+            "description": "Ergonomic office chair with lumbar support and adjustable height",
+            "available_amount": 4,
+            "total_amount": 6,
+            "status": "available"
+        },
+        {
+            "name": "standing desk electric",
+            "description": "Height-adjustable electric standing desk 120x60cm",
+            "available_amount": 2,
+            "total_amount": 3,
+            "status": "available"
+        },
+        {
+            "name": "wireless keyboard",
+            "description": "Mechanical wireless keyboard with RGB backlight",
+            "available_amount": 7,
+            "total_amount": 10,
+            "status": "available"
+        },
+        {
+            "name": "conference camera 4k",
+            "description": "4K webcam with auto-focus for video conferences",
+            "available_amount": 0,
+            "total_amount": 4,
+            "status": "borrowed"
+        },
+        {
+            "name": "bluetooth headset",
+            "description": "Noise-cancelling wireless headset for calls and meetings",
+            "available_amount": 6,
+            "total_amount": 8,
+            "status": "available"
+        },
+        {
+            "name": "portable projector",
+            "description": "Mini LED projector 1080p with wireless connectivity",
+            "available_amount": 1,
+            "total_amount": 2,
+            "status": "maintenance"
+        },
+        {
+            "name": "external hard drive",
+            "description": "1TB USB 3.0 external hard drive for data backup",
+            "available_amount": 3,
+            "total_amount": 5,
+            "status": "available"
+        }
+    ]
+}
