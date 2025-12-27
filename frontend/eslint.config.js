@@ -21,6 +21,7 @@ export default defineConfig([
     ],
     rules: {
       indent: "error",
+      semi: ["error", "never"],
     },
     languageOptions: {
       ecmaVersion: 2020,
