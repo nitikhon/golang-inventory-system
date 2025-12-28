@@ -29,7 +29,7 @@ const HomePage: React.FC = () => {
       
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">  
                 {data?.map((item: Item) => (
-                    <ItemCard item={item}/>
+                    <ItemCard key={item.id} item={item}/>
                 ))}
             </div>
         </div>
