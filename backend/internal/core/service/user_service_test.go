@@ -199,7 +199,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			Model:     gorm.Model{ID: 1},
+			GormModel:     entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -224,7 +224,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			Model:     gorm.Model{ID: 1},
+			GormModel:     entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -250,7 +250,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			Model:     gorm.Model{ID: 1},
+			GormModel:     entity.GormModel{ID: 1},
 			Email:     "existing@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -259,7 +259,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		existingUser := entity.User{
-			Model: gorm.Model{ID: 2}, // different user
+			GormModel: entity.GormModel{ID: 2}, // different user
 			Email: "existing@gmail.com",
 		}
 
@@ -278,7 +278,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			Model:     gorm.Model{ID: 1},
+			GormModel:     entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -287,7 +287,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		existingUser := entity.User{
-			Model: gorm.Model{ID: 2}, // different user
+			GormModel: entity.GormModel{ID: 2}, // different user
 			Phone: "0987654321",
 		}
 
@@ -307,7 +307,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			Model:     gorm.Model{ID: 1},
+			GormModel:     entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -418,7 +418,7 @@ func TestGetUserByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserRepo.EXPECT().
 				GetUserByID(tt.userID).
-				Return(&entity.User{Model: gorm.Model{ID: tt.userID}}, tt.mockErr)
+				Return(&entity.User{GormModel: entity.GormModel{ID: tt.userID}}, tt.mockErr)
 
 			// act
 			user, err := mockUserService.GetUserByID(tt.userID)
@@ -589,7 +589,7 @@ func TestLogin(t *testing.T) {
 	t.Setenv("ACCESS_TOKEN_SECRET", "somesecreta")
 	t.Setenv("REFRESH_TOKEN_SECRET", "somesecretb")
 
-	mockUser := entity.User{Model: gorm.Model{ID: 1}}
+	mockUser := entity.User{GormModel: entity.GormModel{ID: 1}}
 
 	tests := []struct {
 		name        string
@@ -754,7 +754,7 @@ func TestRefreshToken(t *testing.T) {
 	t.Setenv("REFRESH_TOKEN_SECRET", "somesecretb")
 
 	mockRefreshToken := "refreshToken"
-	mockUser := entity.User{Model: gorm.Model{ID: 1}, RefreshToken: mockRefreshToken}
+	mockUser := entity.User{GormModel: entity.GormModel{ID: 1}, RefreshToken: mockRefreshToken}
 
 	tests := []struct {
 		name             string
@@ -924,7 +924,7 @@ func TestLogout(t *testing.T) {
 	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 	mockUserWithRefreshToken := &entity.User{
-		Model:        gorm.Model{ID: 1},
+		GormModel:        entity.GormModel{ID: 1},
 		RefreshToken: "refreshToken",
 	}
 
@@ -1014,7 +1014,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "success case",
 			userInput: entity.User{
-				Model:     gorm.Model{ID: 1},
+				GormModel:     entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1027,11 +1027,11 @@ func TestUpdateUserProfile(t *testing.T) {
 				}
 				mockUserRepo.EXPECT().
 					UpdateUserProfile(uint(1), updatedFields).
-					Return(&entity.User{Model: gorm.Model{ID: 1}}, nil)
+					Return(&entity.User{GormModel: entity.GormModel{ID: 1}}, nil)
 				mockUserRepo.EXPECT().
 					GetUserByID(uint(1)).
 					Return(&entity.User{
-						Model:     gorm.Model{ID: 1},
+						GormModel:     entity.GormModel{ID: 1},
 						FirstName: "John",
 						LastName:  "Doe",
 						Phone:     "0987654321",
@@ -1041,7 +1041,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "repo error - UpdateUserProfile fails",
 			userInput: entity.User{
-				Model:     gorm.Model{ID: 1},
+				GormModel:     entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1061,7 +1061,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "repo error - GetUserByID fails",
 			userInput: entity.User{
-				Model:     gorm.Model{ID: 1},
+				GormModel:     entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1074,7 +1074,7 @@ func TestUpdateUserProfile(t *testing.T) {
 				}
 				mockUserRepo.EXPECT().
 					UpdateUserProfile(uint(1), updatedFields).
-					Return(&entity.User{Model: gorm.Model{ID: 1}}, nil)
+					Return(&entity.User{GormModel: entity.GormModel{ID: 1}}, nil)
 				mockUserRepo.EXPECT().
 					GetUserByID(uint(1)).
 					Return(&entity.User{}, errors.New("user not found"))
@@ -1116,7 +1116,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		{
 			name: "success case",
 			userInput: entity.User{
-				Model:    gorm.Model{ID: 1},
+				GormModel:    entity.GormModel{ID: 1},
 				Password: "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
@@ -1131,7 +1131,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		{
 			name: "hash error",
 			userInput: entity.User{
-				Model:    gorm.Model{ID: 1},
+				GormModel:    entity.GormModel{ID: 1},
 				Password: "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
@@ -1144,7 +1144,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		{
 			name: "repo error",
 			userInput: entity.User{
-				Model:    gorm.Model{ID: 1},
+				GormModel:    entity.GormModel{ID: 1},
 				Password: "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
@@ -1186,7 +1186,7 @@ func TestUpdateUserEmail(t *testing.T) {
 		{
 			name: "success case",
 			userInput: entity.User{
-				Model: gorm.Model{ID: 1},
+				GormModel: entity.GormModel{ID: 1},
 				Email: "test@example.com",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
@@ -1198,7 +1198,7 @@ func TestUpdateUserEmail(t *testing.T) {
 		{
 			name: "repo error",
 			userInput: entity.User{
-				Model: gorm.Model{ID: 1},
+				GormModel: entity.GormModel{ID: 1},
 				Email: "test@example.com",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
@@ -1237,7 +1237,7 @@ func TestUpdateUserAdminStatus(t *testing.T) {
 		{
 			name: "success case - set admin to true",
 			userInput: entity.User{
-				Model:   gorm.Model{ID: 1},
+				GormModel:   entity.GormModel{ID: 1},
 				IsAdmin: true,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
@@ -1249,7 +1249,7 @@ func TestUpdateUserAdminStatus(t *testing.T) {
 		{
 			name: "success case - set admin to false",
 			userInput: entity.User{
-				Model:   gorm.Model{ID: 1},
+				GormModel:   entity.GormModel{ID: 1},
 				IsAdmin: false,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
@@ -1261,7 +1261,7 @@ func TestUpdateUserAdminStatus(t *testing.T) {
 		{
 			name: "repo error",
 			userInput: entity.User{
-				Model:   gorm.Model{ID: 1},
+				GormModel:   entity.GormModel{ID: 1},
 				IsAdmin: true,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {

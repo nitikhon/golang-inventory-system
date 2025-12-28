@@ -1,10 +1,7 @@
 package entity
 
-import (
-	"gorm.io/gorm"
-)
-
 type User struct {
+	GormModel
 	Username     string `json:"username" gorm:"index:idx_username"`
 	Email        string `json:"email" gorm:"index:idx_email"`
 	Password     string `json:"password"`
@@ -13,7 +10,6 @@ type User struct {
 	LastName     string `json:"last_name"`
 	IsAdmin      bool   `json:"is_admin" gorm:"default:false"`
 	RefreshToken string `json:"refresh_token"`
-	gorm.Model
 }
 
 type Token struct {

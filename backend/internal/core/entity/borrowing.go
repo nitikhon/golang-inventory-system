@@ -1,9 +1,5 @@
 package entity
 
-import (
-	"gorm.io/gorm"
-)
-
 const (
 	// BorrowingStatus constants
 	BORROWING_PENDING   = "pending"
@@ -20,6 +16,7 @@ const (
 )
 
 type Borrowing struct {
+	GormModel
 	UserID          uint   `json:"user_id" gorm:"primaryKey"`
 	ItemID          uint   `json:"item_id" gorm:"primaryKey"`
 	Description     string `json:"description"`
@@ -33,5 +30,4 @@ type Borrowing struct {
 	ApprovedBy      uint   `json:"approved_by"`
 	RejectedBy      uint   `json:"rejected_by"`
 	RejectedAt      string `json:"rejected_at"`
-	gorm.Model
 }
