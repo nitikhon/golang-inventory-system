@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "preview": "vite preview",
-    "dev-server": "npx json-server db.json"
+    "dev-server": "npx json-server db.json",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

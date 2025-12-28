@@ -20,8 +20,7 @@ export default defineConfig([
       ...pluginQuery.configs['flat/recommended'],
     ],
     rules: {
-      indent: "error",
-      semi: ["error", "never"],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
     languageOptions: {
       ecmaVersion: 2020,
