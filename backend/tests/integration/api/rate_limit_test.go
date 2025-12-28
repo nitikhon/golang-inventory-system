@@ -15,11 +15,11 @@ import (
 
 var (
 	// this only implement rate limiting for DDoS protection
-	ddosReqs = util.ParseInt(os.Getenv("RATE_LIMIT_BOT_MAX"))
+	ddosReqs = util.ParseInt(os.Getenv("RATE_LIMIT_BOT_MAX")) + 42
 	ddosUrl  = "http://localhost:8080/non-existent-path-for-dl-test"
 
 	// this implement rate limiting for normal requests
-	normalReqs = util.ParseInt(os.Getenv("RATE_LIMIT_USER_MAX"))
+	normalReqs = util.ParseInt(os.Getenv("RATE_LIMIT_USER_MAX")) + 42
 	normalUrl  = "http://localhost:8080/api/users/me"
 )
 
