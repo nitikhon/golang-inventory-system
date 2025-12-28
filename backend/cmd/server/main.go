@@ -14,6 +14,7 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/config"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
+	"github.com/gofiber/fiber/v2/middleware/cors" 
 )
 
 func main() {
@@ -51,6 +52,15 @@ func main() {
 	// Create a new Fiber app
 	app := fiber.New()
 
+	app.Use(cors.New(cors.Config{
+        AllowOrigins:     "http://localhost:5173", 
+        AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+        AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
+        AllowCredentials: true, 
+    }))
+
+	// app.Static("/", "/app/dist")
+
 	// Initialize Redis storage for rate limiting
 	store := redis.New(redis.Config{
 		Host: config.RedisHost,
@@ -62,6 +72,10 @@ func main() {
 
 	// Setup HTTP routes
 	http.SetupRoutes(app, itemHandler, userHandler, borrowingHandler, middleware.RateLimitMiddleware(store, config.RateLimitUserMax))
+
+	// app.Get("/*", func(c *fiber.Ctx) error {
+	// 	return c.SendFile("/app/dist/index.html")
+	// })
 
 	// Start the server
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
