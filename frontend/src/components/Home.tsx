@@ -1,6 +1,3 @@
-// import React, { useState } from 'react';
-// import { InventoryItem } from './types/inventory';
-
 import itemService from '../services/item'
 import { useQuery } from '@tanstack/react-query'
 import type { Item } from '../types/item'
