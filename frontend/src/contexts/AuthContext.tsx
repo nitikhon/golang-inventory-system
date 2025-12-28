@@ -8,79 +8,81 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const queryClient = useQueryClient()
-    const navigator = useNavigate()
+  const queryClient = useQueryClient()
+  const navigator = useNavigate()
 
-    const [user, setUser] = useState<User | null>(null)
-    const [token, setToken] = useState<Token | null>(null)
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<Token | null>(null)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
-    useEffect(() => {
-        const silentRefresh = async () => {
-            try {
-                const token = await userService.refreshToken()
-                if (token.access_token !== undefined) {
-                    setToken(token)
-                    try {
-                        const user = await userService.getProfile(token.access_token)
-                        setUser(user)
-                    } catch {
-                        console.log("Silent refresh: Failed to retrieve data")
-                    }
-                }
-            } catch {
-                console.log("Silent refresh: No session found")
-            }
+  useEffect(() => {
+    const silentRefresh = async () => {
+      try {
+        const token = await userService.refreshToken()
+        if (token.access_token !== undefined) {
+          setToken(token)
+          try {
+            const user = await userService.getProfile(token.access_token)
+            setUser(user)
+          } catch {
+            console.log('Silent refresh: Failed to retrieve data')
+          }
         }
-
-        silentRefresh()
-    }, [])
-
-    const { mutate: loginMutation, isPending } = useMutation({
-        mutationFn: userService.login,
-        onSuccess: async (data: Token) => {
-            setToken(data)
-            try {
-                const userProfile = await userService.getProfile(data?.access_token)
-                setUser(userProfile)
-                queryClient.setQueryData(['user'], userProfile)
-            } catch {
-                alert("Fetch profile failed")
-            }
-            setIsLoginModalOpen(false)
-        },
-        onError: (error: AxiosError<{error : string}>) => {
-            const message = error.response?.data?.error || "Something went wrong"
-            alert(message)
-        }
-    })
-
-    const { mutate: logoutMutation } = useMutation({
-        mutationFn: userService.logout,
-        onSuccess: () => {
-            setUser(null)
-            setToken(null)
-            navigator('/')
-            queryClient.removeQueries({ queryKey: ['user'] })
-        },
-        onError: () => {
-            setUser(null)
-            setToken(null)
-            navigator('/')
-        }
-    })
-
-    const login = (payload: LoginPayload) => {
-        loginMutation(payload)
+      } catch {
+        console.log('Silent refresh: No session found')
+      }
     }
 
-    const logout = () => {
-        logoutMutation()
-    }
+    silentRefresh()
+  }, [])
 
-    return (
-        <AuthContext.Provider value={{ user, token, login, logout, isPending, isLoginModalOpen, setIsLoginModalOpen }}>
-            {children}
-        </AuthContext.Provider>
-    )
+  const { mutate: loginMutation, isPending } = useMutation({
+    mutationFn: userService.login,
+    onSuccess: async (data: Token) => {
+      setToken(data)
+      try {
+        const userProfile = await userService.getProfile(data?.access_token)
+        setUser(userProfile)
+        queryClient.setQueryData(['user'], userProfile)
+      } catch {
+        alert('Fetch profile failed')
+      }
+      setIsLoginModalOpen(false)
+    },
+    onError: (error: AxiosError<{ error: string }>) => {
+      const message = error.response?.data?.error || 'Something went wrong'
+      alert(message)
+    },
+  })
+
+  const { mutate: logoutMutation } = useMutation({
+    mutationFn: userService.logout,
+    onSuccess: () => {
+      setUser(null)
+      setToken(null)
+      navigator('/')
+      queryClient.removeQueries({ queryKey: ['user'] })
+    },
+    onError: () => {
+      setUser(null)
+      setToken(null)
+      navigator('/')
+    },
+  })
+
+  const login = (payload: LoginPayload) => {
+    loginMutation(payload)
+  }
+
+  const logout = () => {
+    logoutMutation()
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{ user, token, login, logout, isPending, isLoginModalOpen, setIsLoginModalOpen }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
