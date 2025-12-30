@@ -19,6 +19,7 @@ type BorrowingServiceInterface interface {
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
 	GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
+	GetBorrowingsByUserID(borrowerId uint) ([]*entity.Borrowing, error)
 }
 
 // BorrowingService provides the use cases for borrowing operations.
@@ -210,4 +211,8 @@ func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status string) ([]*ent
 // GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
 func (s *BorrowingService) GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error) {
 	return s.borrowingRepo.GetBorrowingsByApprovalStatus(status)
+}
+
+func (s *BorrowingService) GetBorrowingsByUserID(id uint) ([]*entity.Borrowing, error) {
+	return s.borrowingRepo.GetBorrowingsByUserID(id)
 }

@@ -148,6 +148,24 @@ func (h *BorrowingHandler) GetBorrowingsByApprovalStatus(c *fiber.Ctx) error {
 	return c.JSON(borrowings)
 }
 
+func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
+	userID, err := c.ParamsInt("user_id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
+	}
+
+	if userID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
+	}
+
+	borrowings, err := h.service.GetBorrowingsByUserID(uint(userID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(borrowings)
+}
+
 func isValidBorrowingStatus(status string) bool {
 	return status == entity.BORROWING_PENDING ||
 		status == entity.BORROWING_ACTIVE ||

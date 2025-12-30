@@ -1210,3 +1210,21 @@ func TestGetBorrowingsByApprovalStatus_Success(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedBorrowings, result)
 }
+
+func TestGetBorrowingsByUserID_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
+
+	id := uint(1)
+
+	expectedBorrowings := []*entity.Borrowing{}
+
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(id).Return(expectedBorrowings, nil)
+
+	// act
+	result, err := service.GetBorrowingsByUserID(id)
+
+	// assert
+	assert.Nil(t, err)
+	assert.Equal(t, expectedBorrowings, result)
+}
