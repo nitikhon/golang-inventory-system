@@ -1,17 +1,24 @@
-export type BorrowingStatus = 'pending' | 'approved' | 'rejected'
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
+export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost'
 
 export interface Borrowing {
   id: number
   user_id: number
   item_id: number
   description: string
-  borrow_at: Date
-  returned_at: Date
-  due_date: Date
+  borrow_at: string
+  returned_at: string
+  due_date: string
   borrowing_amount: number
   borrowing_status: BorrowingStatus
-  approval_at: Date
+  approval_status: ApprovalStatus
+  approval_at: string
   approved_by: number
-  rejected_at: Date
+  rejected_at: string
   rejected_by: number
+}
+
+export interface BorrowingStats {
+  ongoing_borrows: number
+  total_returned: number
 }

@@ -10,9 +10,17 @@ import {
   LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import borrowingService from '../services/borrowing'
+import { useQuery } from '@tanstack/react-query'
 
 const Profile: React.FC = () => {
-  const { user, logout } = useAuth()
+  const { user, token, logout } = useAuth()
+
+  const { data } = useQuery({
+    queryKey: ['stats'],
+    queryFn: () => borrowingService.getBorrowingStats(token?.access_token),
+    enabled: !!token?.access_token
+  })
 
   if (!user) return <p>Please login</p>
 
@@ -36,18 +44,21 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* stats grid (TODO: hard-coded stats for now) */}
+      {/* stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard icon={<Clock className="text-amber-500" />} label="Ongoing Borrows" value="3" />
+        <StatCard 
+          icon={<Clock className="text-amber-500" />} 
+          label="Ongoing Borrows" 
+          value={String(data?.ongoing_borrows ?? 0)} />
         <StatCard
           icon={<PackageCheck className="text-emerald-500" />}
           label="Total Returned"
-          value="12"
+          value={String(data?.total_returned ?? 0)}
         />
         <StatCard
           icon={<ShieldCheck className="text-blue-500" />}
           label="Account Status"
-          value="Active"
+          value={user.deleted_at === null ? 'Active' : 'Unactive'}
         />
       </div>
 
@@ -75,7 +86,7 @@ const Profile: React.FC = () => {
                     font-bold rounded-2xl border border-rose-100 hover:bg-rose-100 hover:shadow-md hover:shadow-rose-100 
                     transition-all active:scale-[0.98]"
         >
-          <LogOut size={20} /> {/* อย่าลืม import LogOut จาก lucide-react นะครับ */}
+          <LogOut size={20} />
           Sign Out from System
         </button>
         <p className="text-center text-slate-400 text-xs mt-4">
