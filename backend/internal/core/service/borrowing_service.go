@@ -74,13 +74,31 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		}
 	}
 
+	layout := time.RFC3339
+
 	// 5. Set default dates if not provided
 	if borrowing.BorrowedAt == "" {
-		borrowing.BorrowedAt = time.Now().Format(time.RFC3339)
+		borrowing.BorrowedAt = time.Now().Format(layout)
 	}
 
 	if borrowing.DueDate == "" {
-		borrowing.DueDate = time.Now().AddDate(0, 0, 7).Format(time.RFC3339) // Default to 7 days later
+		borrowing.DueDate = time.Now().AddDate(0, 0, 7).Format(layout) // Default to 7 days later
+	}
+
+	if borrowing.DueDate != "" && borrowing.BorrowedAt != "" {
+		due, err1 := time.Parse(layout, borrowing.DueDate)
+		borrowed, err2 := time.Parse(layout, borrowing.BorrowedAt)
+
+		if err1 != nil {
+    		return nil, errors.New(errormap.ErrInvalidDueDateFormat)
+		}
+		if err2 != nil {
+			return nil, errors.New(errormap.ErrInvalidBorrowDateFormat)
+		}
+
+		if due.Before(borrowed) {
+			return nil, errors.New(errormap.ErrInvalidDueDateValue)
+		}
 	}
 
 	return s.borrowingRepo.BorrowItem(&borrowing)

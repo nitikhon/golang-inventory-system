@@ -40,9 +40,6 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 	if borrowing.ReturnedAt != "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "returned at date must be empty when borrowing an item"})
 	}
-	if borrowing.DueDate != "" && borrowing.BorrowedAt != "" && borrowing.DueDate < borrowing.BorrowedAt {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "due date cannot be before the borrowed at date"})
-	}
 
 	borrowedItem, err := h.service.BorrowItem(borrowing)
 	if err != nil {

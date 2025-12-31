@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
@@ -448,6 +449,116 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedBorrowing.ItemID, result.ItemID)
+}
+
+func TestBorrowItem_InvalidDueDateFormat(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+
+	mockUser := &entity.User{
+		GormModel:    entity.GormModel{ID: 2},
+		Username: "test_user",
+	}
+
+	mockItem := &entity.Item{
+		GormModel:           entity.GormModel{ID: 1},
+		Name:            "office chair ergonomic",
+		AvailableAmount: 4,
+		TotalAmount:     6,
+		Status:          "available",
+	}
+
+	borrowingInput := entity.Borrowing{
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowedAt: time.Now().Format(time.RFC3339),
+		DueDate: "2025/01/01",
+	}
+
+	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
+
+	// act
+	result, err := service.BorrowItem(borrowingInput)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrInvalidDueDateFormat)
+}
+func TestBorrowItem_InvalidBorrowDateFormat(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+
+	mockUser := &entity.User{
+		GormModel:    entity.GormModel{ID: 2},
+		Username: "test_user",
+	}
+
+	mockItem := &entity.Item{
+		GormModel:           entity.GormModel{ID: 1},
+		Name:            "office chair ergonomic",
+		AvailableAmount: 4,
+		TotalAmount:     6,
+		Status:          "available",
+	}
+
+	borrowingInput := entity.Borrowing{
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowedAt: "2025/01/01",
+		DueDate: time.Now().AddDate(0, 0, 7).Format(time.RFC3339),
+	}
+
+	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
+
+	// act
+	result, err := service.BorrowItem(borrowingInput)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrInvalidBorrowDateFormat)
+}
+
+func TestBorrowItem_InvalidDueDate(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+
+	mockUser := &entity.User{
+		GormModel:    entity.GormModel{ID: 2},
+		Username: "test_user",
+	}
+
+	mockItem := &entity.Item{
+		GormModel:           entity.GormModel{ID: 1},
+		Name:            "office chair ergonomic",
+		AvailableAmount: 4,
+		TotalAmount:     6,
+		Status:          "available",
+	}
+
+	borrowingInput := entity.Borrowing{
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowedAt: time.Now().Format(time.RFC3339),
+		DueDate: time.Now().AddDate(0, 0, -7).Format(time.RFC3339),
+	}
+
+	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
+
+	// act
+	result, err := service.BorrowItem(borrowingInput)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrInvalidDueDateValue)
 }
 
 func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
