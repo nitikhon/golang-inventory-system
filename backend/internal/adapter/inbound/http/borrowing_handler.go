@@ -25,6 +25,8 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
+	borrowing.UserID = c.Locals("user_id").(uint)
+
 	// Input validation
 	if borrowing.UserID == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user ID is required"})
