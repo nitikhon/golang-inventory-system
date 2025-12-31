@@ -31,3 +31,8 @@ type Borrowing struct {
 	RejectedBy      uint   `json:"rejected_by"`
 	RejectedAt      string `json:"rejected_at"`
 }
+
+type BorrowingStats struct {
+	OnGoingBorrows uint   `json:"ongoing_borrows"`
+	TotalReturned  uint   `json:"total_returned"`
+}

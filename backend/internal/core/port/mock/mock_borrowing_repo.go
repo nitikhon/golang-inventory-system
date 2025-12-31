@@ -170,6 +170,21 @@ func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByUserID(userID inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByUserID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByUserID), userID)
 }
 
+// GetUserBorrowingStats mocks base method.
+func (m *MockBorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserBorrowingStats", userID)
+	ret0, _ := ret[0].(*entity.BorrowingStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserBorrowingStats indicates an expected call of GetUserBorrowingStats.
+func (mr *MockBorrowingRepositoryMockRecorder) GetUserBorrowingStats(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserBorrowingStats", reflect.TypeOf((*MockBorrowingRepository)(nil).GetUserBorrowingStats), userID)
+}
+
 // RejectBorrowingWithTx mocks base method.
 func (m *MockBorrowingRepository) RejectBorrowingWithTx(tx *gorm.DB, borrowingId, rejecterId uint) (*entity.Borrowing, error) {
 	m.ctrl.T.Helper()

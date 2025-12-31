@@ -110,4 +110,8 @@ func SetupRoutes(
 	borrowingRoutes.Get("/user/:user_id",
 		middleware.AuthMiddleware(),
 		borrowingHandler.GetBorrowingByUserID)
+	borrowingRoutes.Get("/stats",
+		middleware.AuthMiddleware(),
+		rateLimiter,
+		borrowingHandler.UserStats)
 }

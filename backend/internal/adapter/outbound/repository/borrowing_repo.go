@@ -134,3 +134,28 @@ func (r *BorrowingRepository) GetBorrowingsByApproverID(approverID uint) ([]*ent
 	}
 	return borrowings, nil
 }
+
+func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {
+	var result entity.BorrowingStats
+	var countOngoing int64
+	var countReturned int64
+
+	err := r.db.Model(&entity.Borrowing{}).
+		Where("user_id = ? AND borrowing_status = ?", userID, "pending").
+		Count(&countOngoing).Error
+	if err != nil {
+		return nil, err
+	}
+	result.OnGoingBorrows = uint(countOngoing)
+
+	err = r.db.Model(&entity.Borrowing{}).
+		Where("user_id = ? AND borrowing_status = ?", userID, "returned").
+		Count(&countReturned).Error
+	if err != nil {
+		return nil, err
+	}
+
+	result.TotalReturned = uint(countReturned)
+
+	return &result, nil
+}

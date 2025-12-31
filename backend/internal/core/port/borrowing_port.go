@@ -16,4 +16,5 @@ type BorrowingRepository interface {
 	GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByApproverID(approverID uint) ([]*entity.Borrowing, error)
+	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
 }
