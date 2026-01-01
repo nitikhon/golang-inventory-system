@@ -1,3 +1,5 @@
+import type { Item } from "./item"
+
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost'
 
@@ -5,8 +7,9 @@ export interface Borrowing {
   id: number
   user_id: number
   item_id: number
+  item: Item
   description: string
-  borrow_at: string
+  borrowed_at: string
   returned_at: string
   due_date: string
   borrowing_amount: number
