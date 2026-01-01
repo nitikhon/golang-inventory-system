@@ -4,6 +4,7 @@ import Home from './components/Home'
 import NavBar from './components/NavBar'
 import Profile from './components/Profile'
 import { AuthProvider } from './contexts/AuthContext'
+import MyBorrowings from './components/MyBorrowings'
 
 const queryClient = new QueryClient()
 
@@ -18,6 +19,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/my-borrowings" element={<MyBorrowings />} />
               </Routes>
             </main>
           </div>
