@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../hooks/useAuth'
 import borrowingService from '../services/borrowing'
 import { useQuery } from '@tanstack/react-query'
+import formatDate from '../utils/formatDate'
 
 const Profile: React.FC = () => {
   const { user, token, logout } = useAuth()
@@ -133,14 +134,5 @@ const InfoRow = ({
     </div>
   </div>
 )
-
-const formatDate = (dateString?: string) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 export default Profile
