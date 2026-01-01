@@ -1,5 +1,5 @@
 import { Box, History, Package, User, Globe, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoginCard from './LoginCard'
 
@@ -26,7 +26,7 @@ const NavBar: React.FC = () => {
 
               {/* menu */}
               <div className="hidden md:flex items-center gap-1">
-                <NavItem icon={<Package size={18} />} label="Inventory" to="/" active />
+                <NavItem icon={<Package size={18} />} label="Inventory" to="/" />
                 {user 
                   ? <NavItem icon={<History size={18} />} label="My Borrowings" to="/my-borrowings" />
                   : <GhostNavItem icon={<History size={18} />} label="My Borrowings" onClick={() => setIsLoginModalOpen(true)} />
@@ -52,7 +52,7 @@ const NavBar: React.FC = () => {
                     <p className="text-[10px] text-slate-500">username: {`${user?.username}`}</p>
                   </div>
 
-                  <NavItem icon={<User size={32} />} to="/profile" active />
+                  <NavItem icon={<User size={32} />} to="/profile" />
                 </div>
               ) : (
                 <button onClick={() => setIsLoginModalOpen(true)}>Login</button>
@@ -89,17 +89,17 @@ const NavBar: React.FC = () => {
 }
 
 // sub-component for navbar menu
-const NavItem = ({ icon, label, to, active = false, }: { icon: React.ReactNode, label?: string, to: string, active?: boolean }) => (
-  <Link
+const NavItem = ({ icon, label, to }: { icon: React.ReactNode, label?: string, to: string, active?: boolean }) => (
+  <NavLink
     to={to}
-    className={`
+    className={({ isActive }) => `
     flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all
-    ${active ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+    ${isActive ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
   `}
   >
     {icon}
     {label}
-  </Link>
+  </NavLink>
 )
 
 const GhostNavItem = ({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) => (
