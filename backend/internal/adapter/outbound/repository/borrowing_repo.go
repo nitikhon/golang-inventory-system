@@ -22,6 +22,12 @@ func (r *BorrowingRepository) BorrowItem(borrowing *entity.Borrowing) (*entity.B
 	if err != nil {
 		return &entity.Borrowing{}, err
 	}
+
+	err = r.db.Preload("Item").First(borrowing, borrowing.ID).Error
+    if err != nil {
+        return nil, err
+    }
+
 	return borrowing, nil
 }
 
@@ -88,7 +94,7 @@ func (r *BorrowingRepository) GetBorrowingByID(borrowingID uint) (*entity.Borrow
 // GetBorrowingsByUserID retrieves all borrowings for a specific user.
 func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint) ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing
-	err := r.db.Where("user_id = ?", userID).Find(&borrowings).Error
+	err := r.db.Preload("Item").Where("user_id = ?", userID).Find(&borrowings).Error
 	if err != nil {
 		return nil, err
 	}

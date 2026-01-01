@@ -17,8 +17,9 @@ const (
 
 type Borrowing struct {
 	GormModel
-	UserID          uint   `json:"user_id" gorm:"primaryKey"`
-	ItemID          uint   `json:"item_id" gorm:"primaryKey"`
+	UserID          uint   `json:"user_id"`
+	ItemID          uint   `json:"item_id" gorm:"index"`
+	Item            *Item   `json:"item"`
 	Description     string `json:"description"`
 	BorrowedAt      string `json:"borrowed_at"`
 	ReturnedAt      string `json:"returned_at"`
