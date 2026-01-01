@@ -2,6 +2,8 @@ import itemService from '../services/item'
 import { useQuery } from '@tanstack/react-query'
 import type { Item } from '../types/item'
 import ItemCard from './ItemCard'
+import Loading from './Loading'
+import Error from './Error'
 
 const HomePage: React.FC = () => {
   const { data, isLoading, isError } = useQuery({
@@ -11,18 +13,13 @@ const HomePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-slate-500">Loading inventory...</span>
-      </div>
+      <Loading message={"Loading inventory..."}/>
     )
   }
 
   if (isError) {
     return (
-      <div className="p-8 bg-red-50 text-red-600 rounded-2xl border border-red-100 text-center">
-        Failed to load items. Please check if your backend is running.
-      </div>
+      <Error message={"Failed to load items. Please check if your backend is running."}/>
     )
   }
 
