@@ -148,10 +148,7 @@ func (h *BorrowingHandler) GetBorrowingsByApprovalStatus(c *fiber.Ctx) error {
 }
 
 func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
-	userID, err := c.ParamsInt("user_id")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
-	}
+	userID := c.Locals("user_id").(uint)
 
 	if userID == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
