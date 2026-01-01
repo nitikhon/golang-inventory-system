@@ -210,7 +210,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		Value:    refreshToken,
 		HTTPOnly: true,
 		Secure:   string(util.GetEnvOrPanic("COOKIE_SECURE")) == "true", // Set to true in production
-		SameSite: "Strict",
+		SameSite: "Lax",
 		Path:     "/",
 	})
 
@@ -239,7 +239,7 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 		Value:    tokens.RefreshToken,
 		HTTPOnly: true,
 		Secure:   string(util.GetEnvOrPanic("COOKIE_SECURE")) == "true", // Set to true in production
-		SameSite: "Strict",
+		SameSite: "Lax",
 		Path:     "/",
 	})
 
@@ -284,8 +284,8 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 		Name:     "refresh_token",
 		Value:    "",
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Strict",
+		Secure:   string(util.GetEnvOrPanic("COOKIE_SECURE")) == "true",
+		SameSite: "Lax",
 		Path:     "/",
 		MaxAge:   -1, // Expire immediately
 	})

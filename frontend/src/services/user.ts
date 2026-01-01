@@ -5,7 +5,7 @@ const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/users' : '/api/users'
 
 const login = async (data: LoginPayload | undefined): Promise<Token> => {
-  const request = await axios.post(`${baseUrl}/login`, data)
+  const request = await axios.post(`${baseUrl}/login`, data, { withCredentials: true })
   return request.data
 }
 
@@ -26,7 +26,7 @@ const getProfile = async (access_token: string | undefined): Promise<User> => {
 }
 
 const refreshToken = async (): Promise<Token> => {
-  const request = await axios.get(`${baseUrl}/refresh`, { withCredentials: true })
+  const request = await axios.post(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
   return request.data
 }
 
