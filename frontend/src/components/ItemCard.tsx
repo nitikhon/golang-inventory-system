@@ -3,13 +3,15 @@ import type { Item } from '../types/item'
 
 interface ItemCardProps {
   item: Item
+  handleBorrow: (item: Item) => void
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
   const isAvailable = item.status === 'available'
   const isBorrowed = item.status === 'borrowed'
   const canBorrow =
     (item.status === 'available' || item.status === 'borrowed') && item.available_amount > 0
+
   const getButtonText = () => {
     switch (item.status) {
       case 'available':
@@ -24,6 +26,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         return 'Unavailable'
     }
   }
+
   const getBadgeColor = () => {
     switch (item.status) {
       case 'available':
@@ -40,43 +43,46 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-4">
-          {/* badge */}
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${getBadgeColor()}`}
-          >
-            {item.status}
-          </span>
-
-          {/* item amount */}
-          {(isAvailable || isBorrowed) && (
-            <span className="text-sm font-medium text-slate-400">
-              {item.available_amount}/{item.total_amount} items
+    <>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
+        <div className="p-5">
+          <div className="flex justify-between items-start mb-4">
+            {/* badge */}
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${getBadgeColor()}`}
+            >
+              {item.status}
             </span>
-          )}
-        </div>
 
-        {/* item info */}
-        <h3 className="text-lg font-semibold text-slate-800 mb-1 group-hover:text-blue-600">
-          {item.name}
-        </h3>
-        <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px]">{item.description}</p>
+            {/* item amount */}
+            {(isAvailable || isBorrowed) && (
+              <span className="text-sm font-medium text-slate-400">
+                {item.available_amount}/{item.total_amount} items
+              </span>
+            )}
+          </div>
 
-        {/* button */}
-        <div className="mt-5 pt-4 border-t border-slate-50">
-          <button
-            disabled={!canBorrow}
-            className="w-full py-2.5 rounded-xl font-medium transition-all active:scale-95 disabled:opacity-50 
+          {/* item info */}
+          <h3 className="text-lg font-semibold text-slate-800 mb-1 group-hover:text-blue-600">
+            {item.name}
+          </h3>
+          <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px]">{item.description}</p>
+
+          {/* button */}
+          <div className="mt-5 pt-4 border-t border-slate-50">
+            <button
+              disabled={!canBorrow}
+              className="w-full py-2.5 rounded-xl font-medium transition-all active:scale-95 disabled:opacity-50 
                         disabled:active:scale-100 bg-blue-700 text-white hover:bg-slate-800 disabled:bg-slate-200 
                         disabled:text-slate-400"
-          >
-            {getButtonText()}
-          </button>
+              onClick={() => handleBorrow(item)}
+            >
+              {getButtonText()}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

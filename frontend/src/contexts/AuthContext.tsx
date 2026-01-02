@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<Token | null>(null)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isSilentLoading, setIsSilentLoading] = useState(true)
 
   useEffect(() => {
     const silentRefresh = async () => {
@@ -30,6 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch {
         console.log('Silent refresh: No session found')
+      } finally {
+        setIsSilentLoading(false)
       }
     }
 
@@ -80,7 +83,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isPending, isLoginModalOpen, setIsLoginModalOpen }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isPending,
+        isLoginModalOpen,
+        setIsLoginModalOpen,
+        isSilentLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>

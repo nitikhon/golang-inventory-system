@@ -6,9 +6,10 @@ import type React from 'react'
 import Loading from './Loading'
 import Error from './Error'
 import formatDate from '../utils/formatDate'
+import { useEffect } from 'react'
 
 const MyBorrowings: React.FC = () => {
-  const { user, token, setIsLoginModalOpen } = useAuth()
+  const { user, token, isSilentLoading, setIsLoginModalOpen } = useAuth()
 
   const {
     data: borrowings,
@@ -20,12 +21,17 @@ const MyBorrowings: React.FC = () => {
     enabled: !!user?.id,
   })
 
+  useEffect(() => {
+    if (!isSilentLoading && !user) {
+      setIsLoginModalOpen(true)
+    }
+  }, [user, setIsLoginModalOpen])
+
   if (!user) {
-    setIsLoginModalOpen(true)
     return <p>Please login</p>
   }
 
-  if (isLoading) {
+  if (isLoading || isSilentLoading) {
     return <Loading message={'Loading borrowings'} />
   }
 

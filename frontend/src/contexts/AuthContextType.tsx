@@ -9,6 +9,7 @@ interface AuthContextType {
   isPending: boolean
   isLoginModalOpen: boolean
   setIsLoginModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  isSilentLoading: boolean
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

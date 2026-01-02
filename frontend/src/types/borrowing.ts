@@ -25,3 +25,10 @@ export interface BorrowingStats {
   ongoing_borrows: number
   total_returned: number
 }
+
+export interface BorrowRequest {
+  item_id: number
+  borrowing_amount: number
+  description: string
+  due_date: string
+}
