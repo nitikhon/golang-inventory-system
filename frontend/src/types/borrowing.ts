@@ -1,4 +1,4 @@
-import type { Item } from "./item"
+import type { Item } from './item'
 
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost'

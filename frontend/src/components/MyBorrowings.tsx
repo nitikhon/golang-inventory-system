@@ -9,50 +9,46 @@ import formatDate from '../utils/formatDate'
 
 const MyBorrowings: React.FC = () => {
   const { user, token, setIsLoginModalOpen } = useAuth()
-  
-  const { data: borrowings, isLoading, isError } = useQuery({
+
+  const {
+    data: borrowings,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['my-borrowings', user?.id],
     queryFn: () => borrowingService.getBorrowingsByUserID(token?.access_token),
     enabled: !!user?.id,
   })
-  
-  if (!user) { 
+
+  if (!user) {
     setIsLoginModalOpen(true)
-    return <p>Please login</p> 
+    return <p>Please login</p>
   }
 
   if (isLoading) {
-    return (
-        <Loading message={"Loading borrowings"}/>
-    )
+    return <Loading message={'Loading borrowings'} />
   }
 
   if (isError) {
-    return (
-        <Error message={"Failed to load borrowings. Please check if your backend is running."}/>
-    )
+    return <Error message={'Failed to load borrowings. Please check if your backend is running.'} />
   }
 
   if (borrowings?.length === 0) {
-    return (
-        <div>
-            No borrowings found. You can borrow items at home page.
-        </div>
-    )
+    return <div>No borrowings found. You can borrow items at home page.</div>
   }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-800">My Borrowing History</h1>
-      
+
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-100">
-             <tr>
-                <th scope="col">Item Name</th>
-                <th scope="col">Date</th>
-                <th scope="col">Amount</th>
-                <th scope="col">Status</th>
+            <tr>
+              <th scope="col">Item Name</th>
+              <th scope="col">Date</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
             </tr>
           </thead>
           <tbody>

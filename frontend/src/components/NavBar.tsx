@@ -27,10 +27,15 @@ const NavBar: React.FC = () => {
               {/* menu */}
               <div className="hidden md:flex items-center gap-1">
                 <NavItem icon={<Package size={18} />} label="Inventory" to="/" />
-                {user 
-                  ? <NavItem icon={<History size={18} />} label="My Borrowings" to="/my-borrowings" />
-                  : <GhostNavItem icon={<History size={18} />} label="My Borrowings" onClick={() => setIsLoginModalOpen(true)} />
-                }
+                {user ? (
+                  <NavItem icon={<History size={18} />} label="My Borrowings" to="/my-borrowings" />
+                ) : (
+                  <GhostNavItem
+                    icon={<History size={18} />}
+                    label="My Borrowings"
+                    onClick={() => setIsLoginModalOpen(true)}
+                  />
+                )}
               </div>
             </div>
 
@@ -89,7 +94,16 @@ const NavBar: React.FC = () => {
 }
 
 // sub-component for navbar menu
-const NavItem = ({ icon, label, to }: { icon: React.ReactNode, label?: string, to: string, active?: boolean }) => (
+const NavItem = ({
+  icon,
+  label,
+  to,
+}: {
+  icon: React.ReactNode
+  label?: string
+  to: string
+  active?: boolean
+}) => (
   <NavLink
     to={to}
     className={({ isActive }) => `
@@ -102,8 +116,16 @@ const NavItem = ({ icon, label, to }: { icon: React.ReactNode, label?: string, t
   </NavLink>
 )
 
-const GhostNavItem = ({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) => (
-  <button 
+const GhostNavItem = ({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+}) => (
+  <button
     onClick={onClick}
     className={`
     flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all`}

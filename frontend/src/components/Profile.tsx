@@ -20,7 +20,7 @@ const Profile: React.FC = () => {
   const { data } = useQuery({
     queryKey: ['stats'],
     queryFn: () => borrowingService.getBorrowingStats(token?.access_token),
-    enabled: !!token?.access_token
+    enabled: !!token?.access_token,
   })
 
   if (!user) return <p>Please login</p>
@@ -47,10 +47,11 @@ const Profile: React.FC = () => {
 
       {/* stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard 
-          icon={<Clock className="text-amber-500" />} 
-          label="Ongoing Borrows" 
-          value={String(data?.ongoing_borrows ?? 0)} />
+        <StatCard
+          icon={<Clock className="text-amber-500" />}
+          label="Ongoing Borrows"
+          value={String(data?.ongoing_borrows ?? 0)}
+        />
         <StatCard
           icon={<PackageCheck className="text-emerald-500" />}
           label="Total Returned"

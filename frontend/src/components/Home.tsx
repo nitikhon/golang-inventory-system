@@ -12,15 +12,11 @@ const HomePage: React.FC = () => {
   })
 
   if (isLoading) {
-    return (
-      <Loading message={"Loading inventory..."}/>
-    )
+    return <Loading message={'Loading inventory...'} />
   }
 
   if (isError) {
-    return (
-      <Error message={"Failed to load items. Please check if your backend is running."}/>
-    )
+    return <Error message={'Failed to load items. Please check if your backend is running.'} />
   }
 
   return (
