@@ -34,7 +34,6 @@ func TestBorrowItem(t *testing.T) {
 			"user_id":          user.ID,
 			"item_id":          availableItem.ID,
 			"borrowing_amount": 1,
-			"borrowed_at":      time.Now().Format(time.RFC3339),
 			"due_date":         time.Now().Add(24 * time.Hour).Format(time.RFC3339),
 		}
 		body, _ := json.Marshal(payload)
@@ -51,15 +50,7 @@ func TestBorrowItem(t *testing.T) {
 			expectedStatus int
 			expectedError  string
 		}{
-			{
-				name: "Missing User ID",
-				payload: map[string]any{
-					"item_id":          availableItem.ID,
-					"borrowing_amount": 1,
-				},
-				expectedStatus: http.StatusBadRequest,
-				expectedError:  "user ID is required",
-			},
+
 			{
 				name: "Missing Item ID",
 				payload: map[string]any{
@@ -80,24 +71,12 @@ func TestBorrowItem(t *testing.T) {
 				expectedError:  "borrowing amount must be greater than zero",
 			},
 			{
-				name: "ReturnedAt Should Be Empty",
+				name: "DueDate Before Now",
 				payload: map[string]any{
 					"user_id":          user.ID,
 					"item_id":          availableItem.ID,
 					"borrowing_amount": 1,
-					"returned_at":      time.Now().Format(time.RFC3339),
-				},
-				expectedStatus: http.StatusBadRequest,
-				expectedError:  "returned at date must be empty when borrowing an item",
-			},
-			{
-				name: "DueDate Before BorrowedAt",
-				payload: map[string]any{
-					"user_id":          user.ID,
-					"item_id":          availableItem.ID,
-					"borrowing_amount": 1,
-					"borrowed_at":      time.Now().Add(24 * time.Hour).Format(time.RFC3339),
-					"due_date":         time.Now().Format(time.RFC3339),
+					"due_date":         time.Now().Add(-24 * time.Hour).Format(time.RFC3339),
 				},
 				expectedStatus: http.StatusBadRequest,
 				expectedError:  "due date cannot be before the borrowed at date",
@@ -127,7 +106,6 @@ func TestBorrowItem(t *testing.T) {
 				"user_id":          user.ID,
 				"item_id":          999999,
 				"borrowing_amount": 1,
-				"borrowed_at":      time.Now().Format(time.RFC3339),
 			}
 			body, _ := json.Marshal(payload)
 			req := createAuthenticatedRequest("POST", "/api/borrows/", body, userToken)
@@ -149,7 +127,6 @@ func TestBorrowItem(t *testing.T) {
 				"user_id":          user.ID,
 				"item_id":          limitedItem.ID,
 				"borrowing_amount": limitedItem.AvailableAmount + 1,
-				"borrowed_at":      time.Now().Format(time.RFC3339),
 			}
 			body, _ := json.Marshal(payload)
 			req := createAuthenticatedRequest("POST", "/api/borrows/", body, userToken)
@@ -176,7 +153,6 @@ func TestBorrowItem(t *testing.T) {
 			"user_id":          user.ID,
 			"item_id":          testItem.ID,
 			"borrowing_amount": 1,
-			"borrowed_at":      borrowedAt.Format(time.RFC3339),
 			"due_date":         dueDate.Format(time.RFC3339),
 			"description":      "Test borrowing",
 		}

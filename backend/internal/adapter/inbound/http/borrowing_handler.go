@@ -20,7 +20,7 @@ func NewBorrowingHandler(service *service.BorrowingService) *BorrowingHandler {
 
 // BorrowItem handles borrowing an item.
 func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
-	var borrowing entity.Borrowing
+	var borrowing entity.BorrowRequest
 	if err := c.BodyParser(&borrowing); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
@@ -37,9 +37,6 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 	if borrowing.BorrowingAmount <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "borrowing amount must be greater than zero"})
 	}
-	if borrowing.ReturnedAt != "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "returned at date must be empty when borrowing an item"})
-	}
 
 	borrowedItem, err := h.service.BorrowItem(borrowing)
 	if err != nil {
@@ -48,10 +45,13 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrItemNotEnough, errormap.ErrAlreadyBorrowed:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
+		case errormap.ErrInvalidDueDateValue, errormap.ErrInvalidDueDateFormat:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
 	}
+
 	return c.Status(fiber.StatusCreated).JSON(borrowedItem)
 }
 

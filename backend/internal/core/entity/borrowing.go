@@ -19,7 +19,7 @@ type Borrowing struct {
 	GormModel
 	UserID          uint   `json:"user_id"`
 	ItemID          uint   `json:"item_id" gorm:"index"`
-	Item            *Item   `json:"item"`
+	Item            *Item  `json:"item"`
 	Description     string `json:"description"`
 	BorrowedAt      string `json:"borrowed_at"`
 	ReturnedAt      string `json:"returned_at"`
@@ -34,6 +34,14 @@ type Borrowing struct {
 }
 
 type BorrowingStats struct {
-	OnGoingBorrows uint   `json:"ongoing_borrows"`
-	TotalReturned  uint   `json:"total_returned"`
+	OnGoingBorrows uint `json:"ongoing_borrows"`
+	TotalReturned  uint `json:"total_returned"`
+}
+
+type BorrowRequest struct {
+	UserID          uint
+	ItemID          uint   `json:"item_id"`
+	BorrowingAmount int    `json:"borrowing_amount"`
+	Description     string `json:"description"`
+	DueDate         string `json:"due_date"`
 }

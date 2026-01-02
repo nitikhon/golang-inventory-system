@@ -14,7 +14,7 @@ var _ BorrowingServiceInterface = (*BorrowingService)(nil)
 
 // BorrowingServiceInterface defines the contract for borrowing operations.
 type BorrowingServiceInterface interface {
-	BorrowItem(borrowing entity.Borrowing) (*entity.Borrowing, error)
+	BorrowItem(borrowing entity.BorrowRequest) (*entity.Borrowing, error)
 	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
 	GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error)
@@ -40,9 +40,9 @@ func NewBorrowingService(borrowingRepo port.BorrowingRepository, itemRepo port.I
 }
 
 // BorrowItem handles the borrowing of an item.
-func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borrowing, error) {
-	// 1. User exists and is active
-	user, err := s.userRepo.GetUserByID(borrowing.UserID)
+func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowing, error) {
+	// User exists and is active
+	user, err := s.userRepo.GetUserByID(req.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		return nil, errors.New(errormap.ErrUserNotExist)
 	}
 
-	// 2. Item exists and is available
-	item, err := s.itemRepo.GetItemByID(borrowing.ItemID)
+	// Item exists and is available
+	item, err := s.itemRepo.GetItemByID(req.ItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,47 +59,49 @@ func (s *BorrowingService) BorrowItem(borrowing entity.Borrowing) (*entity.Borro
 		return nil, errors.New(errormap.ErrItemNotAvailable)
 	}
 
-	// 3. Check available quantity
-	if item.AvailableAmount < borrowing.BorrowingAmount {
+	// Check available quantity
+	if item.AvailableAmount < req.BorrowingAmount {
 		return nil, errors.New(errormap.ErrItemNotEnough)
 	}
 
-	// 4. Check if the user has already borrowed this item
-	existingBorrowings, err := s.borrowingRepo.GetBorrowingsByUserID(borrowing.UserID)
+	// Check if the user has already borrowed this item
+	existingBorrowings, err := s.borrowingRepo.GetBorrowingsByUserID(req.UserID)
 	if err != nil {
 		return nil, err
 	}
 	for _, existing := range existingBorrowings {
-		if existing.ItemID == borrowing.ItemID && existing.BorrowingStatus == "pending" {
+		if existing.ItemID == req.ItemID && existing.BorrowingStatus == "pending" {
 			return nil, errors.New(errormap.ErrAlreadyBorrowed)
 		}
 	}
 
-	layout := time.RFC3339
+	borrowsAt := time.Now()
 
-	// 5. Set default dates if not provided
-	if borrowing.BorrowedAt == "" {
-		borrowing.BorrowedAt = time.Now().Format(layout)
+	if req.DueDate == "" {
+		req.DueDate = time.Now().AddDate(0, 0, 7).Format(time.RFC3339) // Default to 7 days later
 	}
 
-	if borrowing.DueDate == "" {
-		borrowing.DueDate = time.Now().AddDate(0, 0, 7).Format(layout) // Default to 7 days later
-	}
-
-	if borrowing.DueDate != "" && borrowing.BorrowedAt != "" {
-		due, err1 := time.Parse(layout, borrowing.DueDate)
-		borrowed, err2 := time.Parse(layout, borrowing.BorrowedAt)
+	if req.DueDate != "" {
+		due, err1 := time.Parse(time.RFC3339, req.DueDate)
 
 		if err1 != nil {
-    		return nil, errors.New(errormap.ErrInvalidDueDateFormat)
-		}
-		if err2 != nil {
-			return nil, errors.New(errormap.ErrInvalidBorrowDateFormat)
+			return nil, errors.New(errormap.ErrInvalidDueDateFormat)
 		}
 
-		if due.Before(borrowed) {
+		if due.Before(borrowsAt) {
 			return nil, errors.New(errormap.ErrInvalidDueDateValue)
 		}
+	}
+
+	borrowing := entity.Borrowing{
+		UserID:          req.UserID,
+		ItemID:          req.ItemID,
+		Description:     req.Description,
+		BorrowingAmount: req.BorrowingAmount,
+		BorrowedAt:      borrowsAt.Format(time.RFC3339),
+		DueDate:         req.DueDate,
+		ApprovalStatus:  "pending",
+		BorrowingStatus: "pending",
 	}
 
 	return s.borrowingRepo.BorrowItem(&borrowing)

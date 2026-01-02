@@ -68,7 +68,7 @@ func TestBorrowItem_Success(t *testing.T) {
 
 	// Mock data based on setup.go seed data
 	mockUser := &entity.User{
-		GormModel:     entity.GormModel{ID: 2},
+		GormModel: entity.GormModel{ID: 2},
 		Username:  "test_user",
 		Email:     "user@test.com",
 		Phone:     "0987654321",
@@ -78,7 +78,7 @@ func TestBorrowItem_Success(t *testing.T) {
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		Description:     "Ergonomic office chair with lumbar support and adjustable height",
 		AvailableAmount: 4,
@@ -86,7 +86,7 @@ func TestBorrowItem_Success(t *testing.T) {
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -119,7 +119,7 @@ func TestBorrowItem_UserNotExist(t *testing.T) {
 	// arrange
 	service, _, _, mockUserRepo := setupBorrowingServiceMock(t)
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          999,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -139,7 +139,7 @@ func TestBorrowItem_UserRepoError(t *testing.T) {
 	// arrange
 	service, _, _, mockUserRepo := setupBorrowingServiceMock(t)
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -161,20 +161,20 @@ func TestBorrowItem_ItemNotAvailable(t *testing.T) {
 	service, _, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	// Item with status "borrowed" (based on setup.go - conference camera 4k)
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 4},
+		GormModel:       entity.GormModel{ID: 4},
 		Name:            "conference camera 4k",
 		AvailableAmount: 0,
 		TotalAmount:     4,
 		Status:          "borrowed",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          4,
 		BorrowingAmount: 1,
@@ -196,11 +196,11 @@ func TestBorrowItem_ItemNotExist(t *testing.T) {
 	service, _, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          999,
 		BorrowingAmount: 1,
@@ -222,11 +222,11 @@ func TestBorrowItem_ItemRepoError(t *testing.T) {
 	service, _, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -249,20 +249,20 @@ func TestBorrowItem_ItemNotEnough(t *testing.T) {
 	service, _, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	// Item with limited availability (based on setup.go - portable projector)
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 6},
+		GormModel:       entity.GormModel{ID: 6},
 		Name:            "portable projector",
 		AvailableAmount: 1,
 		TotalAmount:     2,
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          6,
 		BorrowingAmount: 5, // Requesting more than available
@@ -284,12 +284,12 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
@@ -305,7 +305,7 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 		},
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -328,19 +328,19 @@ func TestBorrowItem_GetBorrowingsRepoError(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -364,19 +364,19 @@ func TestBorrowItem_BorrowRepoError(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -401,13 +401,13 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	// First item - wireless keyboard (based on setup.go)
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 3},
+		GormModel:       entity.GormModel{ID: 3},
 		Name:            "wireless keyboard",
 		AvailableAmount: 7,
 		TotalAmount:     10,
@@ -423,7 +423,7 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 		},
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          3, // Different item
 		BorrowingAmount: 2,
@@ -456,24 +456,23 @@ func TestBorrowItem_InvalidDueDateFormat(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
-		BorrowedAt: time.Now().Format(time.RFC3339),
-		DueDate: "2025/01/01",
+		DueDate:         "2025/01/01",
 	}
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
@@ -487,66 +486,29 @@ func TestBorrowItem_InvalidDueDateFormat(t *testing.T) {
 	assert.Nil(t, result)
 	assert.EqualError(t, err, errormap.ErrInvalidDueDateFormat)
 }
-func TestBorrowItem_InvalidBorrowDateFormat(t *testing.T) {
-	// arrange
-	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
-
-	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
-	}
-
-	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
-		Name:            "office chair ergonomic",
-		AvailableAmount: 4,
-		TotalAmount:     6,
-		Status:          "available",
-	}
-
-	borrowingInput := entity.Borrowing{
-		UserID:          2,
-		ItemID:          1,
-		BorrowingAmount: 1,
-		BorrowedAt: "2025/01/01",
-		DueDate: time.Now().AddDate(0, 0, 7).Format(time.RFC3339),
-	}
-
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
-
-	// act
-	result, err := service.BorrowItem(borrowingInput)
-
-	// assert
-	assert.Nil(t, result)
-	assert.EqualError(t, err, errormap.ErrInvalidBorrowDateFormat)
-}
 
 func TestBorrowItem_InvalidDueDate(t *testing.T) {
 	// arrange
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
 		Status:          "available",
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
-		BorrowedAt: time.Now().Format(time.RFC3339),
-		DueDate: time.Now().AddDate(0, 0, -7).Format(time.RFC3339),
+		DueDate:         time.Now().AddDate(0, 0, -7).Format(time.RFC3339),
 	}
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
@@ -566,12 +528,12 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
 	mockUser := &entity.User{
-		GormModel:    entity.GormModel{ID: 2},
-		Username: "test_user",
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
@@ -587,7 +549,7 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 		},
 	}
 
-	borrowingInput := entity.Borrowing{
+	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -623,13 +585,13 @@ func TestApproveBorrowing_Success(t *testing.T) {
 	approverId := uint(1) // test_admin from setup.go
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -638,7 +600,7 @@ func TestApproveBorrowing_Success(t *testing.T) {
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
@@ -646,7 +608,7 @@ func TestApproveBorrowing_Success(t *testing.T) {
 	}
 
 	expectedResult := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -733,7 +695,7 @@ func TestApproveBorrowing_ApproverNotExist(t *testing.T) {
 	approverId := uint(999) // Non-existent approver
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -766,7 +728,7 @@ func TestApproveBorrowing_ApproverRepoError(t *testing.T) {
 	mockErr := errors.New("database error")
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -798,14 +760,14 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyApproved(t *testing.T) {
 	approverId := uint(1)
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	// Borrowing already approved
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -837,14 +799,14 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyRejected(t *testing.T) {
 	approverId := uint(1)
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	// Borrowing already rejected
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -876,13 +838,13 @@ func TestApproveBorrowing_ItemNotExist(t *testing.T) {
 	approverId := uint(1)
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          999, // Non-existent item
 		BorrowingAmount: 1,
@@ -916,13 +878,13 @@ func TestApproveBorrowing_ItemRepoError(t *testing.T) {
 	mockErr := errors.New("database error")
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -955,13 +917,13 @@ func TestApproveBorrowing_NotEnoughItemsForApproval(t *testing.T) {
 	approverId := uint(1)
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 5, // Requesting more than available
@@ -971,7 +933,7 @@ func TestApproveBorrowing_NotEnoughItemsForApproval(t *testing.T) {
 
 	// Item with limited availability
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "portable projector",
 		AvailableAmount: 1,
 		TotalAmount:     2,
@@ -1004,13 +966,13 @@ func TestApproveBorrowing_UpdateWithTxError(t *testing.T) {
 	mockErr := errors.New("update transaction error")
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1019,7 +981,7 @@ func TestApproveBorrowing_UpdateWithTxError(t *testing.T) {
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
@@ -1053,13 +1015,13 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 	mockErr := errors.New("approve transaction error")
 
 	mockApprover := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1068,7 +1030,7 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 	}
 
 	mockItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "office chair ergonomic",
 		AvailableAmount: 4,
 		TotalAmount:     6,
@@ -1102,13 +1064,13 @@ func TestRejectBorrowing_Success(t *testing.T) {
 	rejecterId := uint(1)
 
 	mockRejecter := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1117,7 +1079,7 @@ func TestRejectBorrowing_Success(t *testing.T) {
 	}
 
 	expectedResult := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1176,7 +1138,7 @@ func TestRejectBorrowing_RejecterNotExist(t *testing.T) {
 	rejecterId := uint(999)
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1209,13 +1171,13 @@ func TestRejectBorrowing_BorrowingNotPending(t *testing.T) {
 	rejecterId := uint(1)
 
 	mockRejecter := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
@@ -1249,13 +1211,13 @@ func TestRejectBorrowing_RepoError(t *testing.T) {
 	mockErr := errors.New("database error")
 
 	mockRejecter := &entity.User{
-		GormModel:    entity.GormModel{ID: 1},
-		Username: "test_admin",
-		IsAdmin:  true,
+		GormModel: entity.GormModel{ID: 1},
+		Username:  "test_admin",
+		IsAdmin:   true,
 	}
 
 	mockBorrowing := &entity.Borrowing{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,

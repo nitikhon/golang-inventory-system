@@ -178,6 +178,9 @@ func setupTestDatabase(t *testing.T, config *TestConfig) *gorm.DB {
 		t.Fatalf("[TEST SETUP] Failed to connect to test database: %v", err)
 	}
 
+	t.Log("[TEST SETUP] Dropping existing tables to ensure clean schema...")
+	db.Migrator().DropTable(&entity.Borrowing{}, &entity.Item{}, &entity.User{})
+
 	t.Log("[TEST SETUP] Running migrations...")
 	err = db.AutoMigrate(&entity.Item{}, &entity.User{}, &entity.Borrowing{})
 	if err != nil {

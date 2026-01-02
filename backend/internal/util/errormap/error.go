@@ -13,7 +13,6 @@ const (
 	ErrNotEnoughItemsForApproval = "not enough items available to approve borrowing"
 	ErrBorrowingNotPending       = "borrowing request is not pending"
 	ErrInvalidDueDateFormat      = "invalid due_date format, expected RFC3339"
-	ErrInvalidBorrowDateFormat   = "invalid borrowed_at format, expected RFC3339"
 	ErrInvalidDueDateValue       = "due date cannot be before the borrowed at date"
 
 	// Item errors
