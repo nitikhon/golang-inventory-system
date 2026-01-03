@@ -29,6 +29,8 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
     mutationFn: (data: BorrowRequest) => borrowService.createBorrowing(data, token?.access_token),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['items'] })
+      queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
       alert('Borrowing request submitted!')
       navigate('/my-borrowings')
       setIsBorrowModalOpen(false)
