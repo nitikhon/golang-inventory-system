@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/useAuth'
 import borrowingService from '../services/borrowing'
 import { useQuery } from '@tanstack/react-query'
 import formatDate from '../utils/formatDate'
+import StatCard from './StatCard'
 
 const Profile: React.FC = () => {
   const { user, token, logout } = useAuth()
@@ -100,24 +101,6 @@ const Profile: React.FC = () => {
 }
 
 // Sub-components
-const StatCard = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-}) => (
-  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
-    <div className="p-3 bg-slate-50 rounded-2xl">{icon}</div>
-    <div>
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="text-xl font-bold text-slate-900">{value}</p>
-    </div>
-  </div>
-)
-
 const InfoRow = ({
   icon,
   label,
