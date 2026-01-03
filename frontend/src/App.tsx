@@ -5,6 +5,7 @@ import NavBar from './components/NavBar'
 import Profile from './components/Profile'
 import { AuthProvider } from './contexts/AuthContext'
 import MyBorrowings from './components/MyBorrowings'
+import { Toaster } from 'react-hot-toast'
 
 const queryClient = new QueryClient()
 
@@ -15,6 +16,7 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen bg-slate-50">
             <NavBar />
+            <Toaster position="top-right" />
             <main className="max-w-7xl mx-auto px-4 py-8">
               <Routes>
                 <Route path="/" element={<Home />} />

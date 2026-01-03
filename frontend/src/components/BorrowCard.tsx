@@ -8,6 +8,7 @@ import type { AxiosError } from 'axios'
 import type { BorrowRequest } from '../types/borrowing'
 import { useNavigate } from 'react-router-dom'
 import addDays from '../utils/addDays'
+import toast from 'react-hot-toast'
 
 interface BorrowCardProps {
   item: Item
@@ -31,13 +32,13 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       queryClient.invalidateQueries({ queryKey: ['items'] })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
-      alert('Borrowing request submitted!')
+      toast.success('Borrowing request submitted!', {duration: 5000})
       navigate('/my-borrowings')
       setIsBorrowModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
       const message = error.response?.data?.error || 'Something went wrong'
-      alert(message)
+      toast.error(message, {duration: 5000})
     },
   })
 

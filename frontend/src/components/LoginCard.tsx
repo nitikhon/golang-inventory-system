@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import toast from 'react-hot-toast'
 
 const LoginCard = () => {
   const [username, setUsername] = useState('')
@@ -11,7 +12,7 @@ const LoginCard = () => {
     e.preventDefault()
 
     if (username === '' || password === '') {
-      alert('Username and Password must not be empty')
+      toast.error('Username and Password must not be empty', {duration: 5000})
     }
 
     login({ username, password })

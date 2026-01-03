@@ -6,6 +6,7 @@ import type { AxiosError } from 'axios'
 import { AuthContext } from './AuthContextType'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
@@ -48,13 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userProfile)
         queryClient.setQueryData(['user'], userProfile)
       } catch {
-        alert('Fetch profile failed')
+        toast.error('Fetch profile failed', {duration: 5000})
       }
       setIsLoginModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
       const message = error.response?.data?.error || 'Something went wrong'
-      alert(message)
+      toast.error(message, {duration: 5000})
     },
   })
 
