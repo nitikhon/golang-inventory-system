@@ -128,7 +128,8 @@ const GhostNavItem = ({
   <button
     onClick={onClick}
     className={`
-    flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all`}
+    flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all 
+    text-slate-500 hover:bg-slate-50 hover:text-slate-900`}
   >
     {icon}
     <span className="text-sm font-medium">{label}</span>
