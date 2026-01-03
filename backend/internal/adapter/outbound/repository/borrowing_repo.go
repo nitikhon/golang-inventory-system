@@ -145,6 +145,7 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	var result entity.BorrowingStats
 	var countOngoing int64
 	var countReturned int64
+	var countCurrentlyBorrows int64
 
 	err := r.db.Model(&entity.Borrowing{}).
 		Where("user_id = ? AND borrowing_status = ?", userID, "pending").
@@ -160,8 +161,15 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	if err != nil {
 		return nil, err
 	}
-
 	result.TotalReturned = uint(countReturned)
+
+	err = r.db.Model(&entity.Borrowing{}).
+		Where("user_id = ? AND borrowing_status = ?", userID, "active").
+		Count(&countCurrentlyBorrows).Error
+	if err != nil {
+		return nil, err
+	}
+	result.CurrentlyBorrows = uint(countCurrentlyBorrows)
 
 	return &result, nil
 }

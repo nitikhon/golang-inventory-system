@@ -24,6 +24,7 @@ export interface Borrowing {
 export interface BorrowingStats {
   ongoing_borrows: number
   total_returned: number
+  currently_borrows: number
 }
 
 export interface BorrowRequest {

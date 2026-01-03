@@ -34,8 +34,9 @@ type Borrowing struct {
 }
 
 type BorrowingStats struct {
-	OnGoingBorrows uint `json:"ongoing_borrows"`
-	TotalReturned  uint `json:"total_returned"`
+	CurrentlyBorrows uint `json:"currently_borrows"`
+	OnGoingBorrows   uint `json:"ongoing_borrows"`
+	TotalReturned    uint `json:"total_returned"`
 }
 
 type BorrowRequest struct {
