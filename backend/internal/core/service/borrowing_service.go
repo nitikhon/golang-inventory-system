@@ -206,6 +206,11 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 		return nil, errors.New(errormap.ErrRejecterNotExist)
 	}
 
+	// Check if the rejecter is owner of the borrowing or admin
+	if rejecter.ID != existingBorrowing.UserID && !rejecter.IsAdmin {
+		return nil, errors.New(errormap.ErrUnauthorizedToRejectAndCancel)
+	}
+
 	// Check if the borrowing is already approved or rejected or the borrowing status is not pending
 	if existingBorrowing.ApprovalStatus != entity.APPROVAL_PENDING ||
 		existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {

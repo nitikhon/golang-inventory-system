@@ -88,26 +88,29 @@ func (h *BorrowingHandler) ApproveBorrowing(c *fiber.Ctx) error {
 
 // RejectBorrowing handles rejecting a borrowing request.
 func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
-	var borrowing entity.Borrowing
-	if err := c.BodyParser(&borrowing); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	userID := c.Locals("user_id").(uint)
+
+	if userID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	// Input validation
-	if borrowing.ID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "borrowing ID is required"})
+	borrowingID, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
-	if borrowing.RejectedBy == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "rejectedBy is required"})
+	if borrowingID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	rejectedBorrowing, err := h.service.RejectBorrowing(borrowing.ID, borrowing.RejectedBy)
+	rejectedBorrowing, err := h.service.RejectBorrowing(uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
 		case errormap.ErrBorrowingNotExist, errormap.ErrRejecterNotExist, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotPending:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
+		case errormap.ErrUnauthorizedToRejectAndCancel:
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
 		default:
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}

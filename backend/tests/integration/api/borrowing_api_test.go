@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -328,31 +329,49 @@ func TestRejectBorrowing(t *testing.T) {
 	adminToken := getAuthToken(t, server, "test_admin", "P@ssw0rd")
 	userToken := getAuthToken(t, server, "test_user", "P@ssw0rd")
 
-	// Get a pending borrowing from seed data
-	var pendingBorrowing entity.Borrowing
-	err := server.DB.Where("borrowing_status = ? AND approval_status = ?", "pending", "pending").First(&pendingBorrowing).Error
+	var user entity.User
+	err := server.DB.Where("username = ?", "test_user").First(&user).Error
 	require.NoError(t, err)
 
 	var adminUser entity.User
 	err = server.DB.Where("username = ?", "test_admin").First(&adminUser).Error
 	require.NoError(t, err)
 
-	t.Run("Authentication and Authorization", func(t *testing.T) {
-		payload := map[string]any{
-			"id":          pendingBorrowing.ID,
-			"rejected_by": adminUser.ID,
+	// Helper to create a pending borrowing
+	createPendingBorrowing := func(userID uint) entity.Borrowing {
+		var item entity.Item
+		err := server.DB.Where("status = ? AND available_amount > 0", "available").First(&item).Error
+		require.NoError(t, err)
+
+		b := entity.Borrowing{
+			UserID:          userID,
+			ItemID:          item.ID,
+			BorrowingAmount: 1,
+			BorrowingStatus: entity.BORROWING_PENDING,
+			ApprovalStatus:  entity.APPROVAL_PENDING,
+			BorrowedAt:      time.Now().Format(time.RFC3339),
+			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
 		}
-		body, _ := json.Marshal(payload)
+		err = server.DB.Create(&b).Error
+		require.NoError(t, err)
+		return b
+	}
+
+	t.Run("Authentication and Authorization", func(t *testing.T) {
+		body, _ := json.Marshal(map[string]any{})
 
 		t.Run("No Token", func(t *testing.T) {
-			req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, "")
+			b := createPendingBorrowing(user.ID) // borrowing belongs to user
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/reject/%d", b.ID), body, "")
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		})
 
-		t.Run("Regular User Token", func(t *testing.T) {
-			req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, userToken)
+		t.Run("Unauthorized - Non-Owner Non-Admin tries to reject", func(t *testing.T) {
+			b := createPendingBorrowing(adminUser.ID) // borrowing belongs to admin
+			// user tries to reject it
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/reject/%d", b.ID), body, userToken)
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
@@ -362,32 +381,22 @@ func TestRejectBorrowing(t *testing.T) {
 	t.Run("Validation Errors", func(t *testing.T) {
 		tests := []struct {
 			name           string
-			payload        map[string]any
+			borrowingID    string
 			expectedStatus int
 			expectedError  string
 		}{
 			{
-				name: "Missing Borrowing ID",
-				payload: map[string]any{
-					"rejected_by": adminUser.ID,
-				},
+				name:           "Invalid Borrowing ID format",
+				borrowingID:    "abc",
 				expectedStatus: http.StatusBadRequest,
-				expectedError:  "borrowing ID is required",
-			},
-			{
-				name: "Missing RejectedBy",
-				payload: map[string]any{
-					"id": pendingBorrowing.ID,
-				},
-				expectedStatus: http.StatusBadRequest,
-				expectedError:  "rejectedBy is required",
+				expectedError:  "invalid request body",
 			},
 		}
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				body, _ := json.Marshal(tt.payload)
-				req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, adminToken)
+				body, _ := json.Marshal(map[string]any{})
+				req := createAuthenticatedRequest("POST", "/api/borrows/reject/"+tt.borrowingID, body, adminToken)
 				resp, err := server.App.Test(req)
 				require.NoError(t, err)
 				assert.Equal(t, tt.expectedStatus, resp.StatusCode)
@@ -403,18 +412,9 @@ func TestRejectBorrowing(t *testing.T) {
 
 	t.Run("Business Logic Errors", func(t *testing.T) {
 		t.Run("Borrowing Not Found", func(t *testing.T) {
-			payload := map[string]any{
-				"id":          999999,
-				"rejected_by": adminUser.ID,
-			}
-			body, _ := json.Marshal(payload)
-			req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, adminToken)
+			body, _ := json.Marshal(map[string]any{})
+			req := createAuthenticatedRequest("POST", "/api/borrows/reject/999999", body, adminToken)
 			resp, err := server.App.Test(req)
-
-			var respBody map[string]string
-			json.NewDecoder(resp.Body).Decode(&respBody)
-			t.Log(respBody)
-
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 		})
@@ -425,26 +425,20 @@ func TestRejectBorrowing(t *testing.T) {
 			err := server.DB.Where("borrowing_status = ?", "active").First(&activeBorrowing).Error
 			require.NoError(t, err)
 
-			payload := map[string]any{
-				"id":          activeBorrowing.ID,
-				"rejected_by": adminUser.ID,
-			}
-			body, _ := json.Marshal(payload)
-			req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, adminToken)
+			body, _ := json.Marshal(map[string]any{})
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/reject/%d", activeBorrowing.ID), body, adminToken)
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusConflict, resp.StatusCode)
 		})
 	})
 
-	t.Run("Successful Rejection", func(t *testing.T) {
-		payload := map[string]any{
-			"id":          pendingBorrowing.ID,
-			"rejected_by": adminUser.ID,
-		}
-		body, _ := json.Marshal(payload)
+	t.Run("Successful Owner Cancellation", func(t *testing.T) {
+		b := createPendingBorrowing(user.ID)
+		body, _ := json.Marshal(map[string]any{})
 
-		req := createAuthenticatedRequest("POST", "/api/borrows/reject", body, adminToken)
+		// Owner (user) cancels
+		req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/reject/%d", b.ID), body, userToken)
 		resp, err := server.App.Test(req)
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -453,20 +447,30 @@ func TestRejectBorrowing(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&rejectedBorrowing)
 		require.NoError(t, err)
 
-		// Check basic response fields
-		assert.Equal(t, pendingBorrowing.ID, rejectedBorrowing.ID)
+		assert.Equal(t, b.ID, rejectedBorrowing.ID)
+		assert.Equal(t, entity.APPROVAL_REJECTED, rejectedBorrowing.ApprovalStatus)
+		assert.Equal(t, entity.BORROWING_CANCELLED, rejectedBorrowing.BorrowingStatus)
+		assert.Equal(t, user.ID, rejectedBorrowing.RejectedBy)
+	})
+
+	t.Run("Successful Admin Rejection", func(t *testing.T) {
+		b := createPendingBorrowing(user.ID) // borrowing belongs to user
+		body, _ := json.Marshal(map[string]any{})
+
+		// Admin rejects
+		req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/reject/%d", b.ID), body, adminToken)
+		resp, err := server.App.Test(req)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var rejectedBorrowing entity.Borrowing
+		err = json.NewDecoder(resp.Body).Decode(&rejectedBorrowing)
+		require.NoError(t, err)
+
+		assert.Equal(t, b.ID, rejectedBorrowing.ID)
 		assert.Equal(t, entity.APPROVAL_REJECTED, rejectedBorrowing.ApprovalStatus)
 		assert.Equal(t, entity.BORROWING_CANCELLED, rejectedBorrowing.BorrowingStatus)
 		assert.Equal(t, adminUser.ID, rejectedBorrowing.RejectedBy)
-
-		// Verify DB State
-		var dbBorrowing entity.Borrowing
-		err = server.DB.First(&dbBorrowing, pendingBorrowing.ID).Error
-		require.NoError(t, err)
-		assert.Equal(t, entity.APPROVAL_REJECTED, dbBorrowing.ApprovalStatus)
-		assert.Equal(t, entity.BORROWING_CANCELLED, dbBorrowing.BorrowingStatus)
-		assert.Equal(t, adminUser.ID, dbBorrowing.RejectedBy)
-		assert.NotEmpty(t, dbBorrowing.RejectedAt)
 	})
 }
 

@@ -1055,7 +1055,7 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 	assert.EqualError(t, err, mockErr.Error())
 }
 
-func TestRejectBorrowing_Success(t *testing.T) {
+func TestRejectBorrowing_Success_AdminReject(t *testing.T) {
 	// arrange
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 	mockDB, sqlMock := setupMockDB(t)
@@ -1103,6 +1103,96 @@ func TestRejectBorrowing_Success(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, entity.APPROVAL_REJECTED, result.ApprovalStatus)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_Success_OwnerCancel(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(2) // Same as owner
+
+	mockRejecter := &entity.User{
+		GormModel: entity.GormModel{ID: 2},
+		Username:  "test_user",
+		IsAdmin:   false,
+	}
+
+	mockBorrowing := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		UserID:          2, // Owner is 2
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_PENDING,
+	}
+
+	expectedResult := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_REJECTED,
+		ApprovedBy:      rejecterId,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectCommit()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(expectedResult, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, entity.APPROVAL_REJECTED, result.ApprovalStatus)
+	assert.NoError(t, sqlMock.ExpectationsWereMet())
+}
+
+func TestRejectBorrowing_Unauthorized(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+	rejecterId := uint(3) // Different user, not admin
+
+	mockRejecter := &entity.User{
+		GormModel: entity.GormModel{ID: 3},
+		Username:  "other_user",
+		IsAdmin:   false,
+	}
+
+	mockBorrowing := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		UserID:          2, // Owner is 2
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+		ApprovalStatus:  entity.APPROVAL_PENDING,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+
+	// act
+	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrUnauthorizedToRejectAndCancel)
 	assert.NoError(t, sqlMock.ExpectationsWereMet())
 }
 
