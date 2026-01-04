@@ -1,14 +1,20 @@
 import { Box, History, Package, User, Globe, X } from 'lucide-react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoginCard from './LoginCard'
+import { useState } from 'react'
+import NavItem from './NavItem'
+import GhostNavItem from './GhostNavItem'
+import MobileMenu from './MobileMenu'
 
 const NavBar: React.FC = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const { user, isLoginModalOpen, setIsLoginModalOpen } = useAuth()
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+      <nav className="relative sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* left: logo, brand */}
@@ -24,7 +30,7 @@ const NavBar: React.FC = () => {
                 </Link>
               </div>
 
-              {/* menu */}
+              {/* desktop menu */}
               <div className="hidden md:flex items-center gap-1">
                 <NavItem icon={<Package size={18} />} label="Inventory" to="/" />
                 {user ? (
@@ -40,7 +46,7 @@ const NavBar: React.FC = () => {
             </div>
 
             {/* right: languages, profile */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 hidden md:flex">
               <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                 <Globe size={16} />
                 <span>EN</span>
@@ -49,7 +55,6 @@ const NavBar: React.FC = () => {
               <div className="h-6 w-[1px] bg-slate-200 mx-1"></div>
 
               {/* profile */}
-
               {user ? (
                 <div className="flex items-center gap-3 pl-2 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="hidden sm:block text-right">
@@ -63,8 +68,37 @@ const NavBar: React.FC = () => {
                 <button onClick={() => setIsLoginModalOpen(true)}>Login</button>
               )}
             </div>
+
+            {/* Hamburger Button (Visible ONLY on Mobile) */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+              >
+                {/* Toggler */}
+                {isMobileMenuOpen ? (
+                  <X size={24} />
+                ) : (
+                  <div className="space-y-1.5">
+                    <span className="block w-6 h-0.5 bg-current"></span>
+                    <span className="block w-6 h-0.5 bg-current"></span>
+                    <span className="block w-6 h-0.5 bg-current"></span>
+                  </div>
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <MobileMenu
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+            user={user}
+            onLoginClick={() => setIsLoginModalOpen(true)}
+          />
+        )}
       </nav>
 
       {/* Login Modal */}
@@ -92,48 +126,5 @@ const NavBar: React.FC = () => {
     </>
   )
 }
-
-// sub-component for navbar menu
-const NavItem = ({
-  icon,
-  label,
-  to,
-}: {
-  icon: React.ReactNode
-  label?: string
-  to: string
-  active?: boolean
-}) => (
-  <NavLink
-    to={to}
-    className={({ isActive }) => `
-    flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all
-    ${isActive ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
-  `}
-  >
-    {icon}
-    {label}
-  </NavLink>
-)
-
-const GhostNavItem = ({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-}) => (
-  <button
-    onClick={onClick}
-    className={`
-    flex items-center ${label ? 'gap-2' : ''} px-4 py-2 rounded-xl text-sm font-medium transition-all 
-    text-slate-500 hover:bg-slate-50 hover:text-slate-900`}
-  >
-    {icon}
-    <span className="text-sm font-medium">{label}</span>
-  </button>
-)
 
 export default NavBar
