@@ -1,4 +1,4 @@
-import { Globe, User, Package, History } from 'lucide-react'
+import { Globe, User, Package, History, ShieldUser } from 'lucide-react'
 import type { User as UserType } from '../types/user'
 import { Link } from 'react-router-dom'
 import GhostNavItem from './GhostNavItem'
@@ -36,6 +36,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
             }}
           />
         )}
+        {user?.is_admin && <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" />}
       </div>
 
       {/* Profile */}

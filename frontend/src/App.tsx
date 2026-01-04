@@ -6,6 +6,7 @@ import Profile from './components/Profile'
 import { AuthProvider } from './contexts/AuthContext'
 import MyBorrowings from './components/MyBorrowings'
 import { Toaster } from 'react-hot-toast'
+import Admin from './components/Admin'
 
 const queryClient = new QueryClient()
 
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/my-borrowings" element={<MyBorrowings />} />
+                <Route path="/admin" element={<Admin />} />
               </Routes>
             </main>
           </div>

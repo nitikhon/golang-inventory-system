@@ -1,4 +1,5 @@
 import type { Item } from './item'
+import type { User } from './user'
 
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost'
@@ -8,6 +9,7 @@ export interface Borrowing {
   user_id: number
   item_id: number
   item: Item
+  user: User
   description: string
   borrowed_at: string
   returned_at: string

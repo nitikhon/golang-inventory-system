@@ -58,4 +58,43 @@ const cancelBorrowing = async (
   return request.data
 }
 
-export default { getBorrowingsByUserID, getBorrowingStats, createBorrowing, cancelBorrowing }
+const getBorrowingsByStatus = async (
+  status: string | undefined,
+  access_token: string | undefined
+): Promise<Borrowing[]> => {
+  const request = await axios.get(`${baseUrl}/status/${status}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${access_token}`,
+    },
+    withCredentials: true,
+  })
+  return request.data
+}
+
+const approveBorrowing = async (
+  borrowing_id: number | undefined,
+  access_token: string | undefined
+) => {
+  const request = await axios.post(
+    `${baseUrl}/approve/${borrowing_id}`,
+    {},
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${access_token}`,
+      },
+      withCredentials: true,
+    }
+  )
+  return request.data
+}
+
+export default {
+  getBorrowingsByUserID,
+  getBorrowingStats,
+  createBorrowing,
+  cancelBorrowing,
+  getBorrowingsByStatus,
+  approveBorrowing,
+}

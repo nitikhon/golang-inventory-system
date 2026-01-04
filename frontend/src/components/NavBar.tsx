@@ -1,4 +1,4 @@
-import { Box, History, Package, User, Globe, X } from 'lucide-react'
+import { Box, History, Package, User, Globe, X, ShieldUser } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoginCard from './LoginCard'
@@ -41,6 +41,9 @@ const NavBar: React.FC = () => {
                     label="My Borrowings"
                     onClick={() => setIsLoginModalOpen(true)}
                   />
+                )}
+                {user?.is_admin && (
+                  <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" />
                 )}
               </div>
             </div>
