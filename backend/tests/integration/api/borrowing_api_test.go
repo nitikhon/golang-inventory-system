@@ -195,20 +195,19 @@ func TestApproveBorrowing(t *testing.T) {
 
 	t.Run("Authentication and Authorization", func(t *testing.T) {
 		payload := map[string]any{
-			"id":          pendingBorrowing.ID,
 			"approved_by": adminUser.ID,
 		}
 		body, _ := json.Marshal(payload)
 
 		t.Run("No Token", func(t *testing.T) {
-			req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, "")
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/approve/%d", pendingBorrowing.ID), body, "")
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		})
 
 		t.Run("Regular User Token", func(t *testing.T) {
-			req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, userToken)
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/approve/%d", pendingBorrowing.ID), body, userToken)
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
@@ -218,32 +217,26 @@ func TestApproveBorrowing(t *testing.T) {
 	t.Run("Validation Errors", func(t *testing.T) {
 		tests := []struct {
 			name           string
+			borrowingID    string
 			payload        map[string]any
 			expectedStatus int
 			expectedError  string
 		}{
 			{
-				name: "Missing Borrowing ID",
+				name:        "Invalid Borrowing ID format",
+				borrowingID: "abc",
 				payload: map[string]any{
 					"approved_by": adminUser.ID,
 				},
 				expectedStatus: http.StatusBadRequest,
-				expectedError:  "borrowing ID is required",
-			},
-			{
-				name: "Missing ApprovedBy",
-				payload: map[string]any{
-					"id": pendingBorrowing.ID,
-				},
-				expectedStatus: http.StatusBadRequest,
-				expectedError:  "approvedBy is required",
+				expectedError:  errormap.ErrInvalidRequestBody,
 			},
 		}
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				body, _ := json.Marshal(tt.payload)
-				req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, adminToken)
+				req := createAuthenticatedRequest("POST", "/api/borrows/approve/"+tt.borrowingID, body, adminToken)
 				resp, err := server.App.Test(req)
 				require.NoError(t, err)
 				assert.Equal(t, tt.expectedStatus, resp.StatusCode)
@@ -260,11 +253,10 @@ func TestApproveBorrowing(t *testing.T) {
 	t.Run("Business Logic Errors", func(t *testing.T) {
 		t.Run("Borrowing Not Found", func(t *testing.T) {
 			payload := map[string]any{
-				"id":          999999,
 				"approved_by": adminUser.ID,
 			}
 			body, _ := json.Marshal(payload)
-			req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, adminToken)
+			req := createAuthenticatedRequest("POST", "/api/borrows/approve/999999", body, adminToken)
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
@@ -277,11 +269,10 @@ func TestApproveBorrowing(t *testing.T) {
 			require.NoError(t, err)
 
 			payload := map[string]any{
-				"id":          activeBorrowing.ID,
 				"approved_by": adminUser.ID,
 			}
 			body, _ := json.Marshal(payload)
-			req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, adminToken)
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/approve/%d", activeBorrowing.ID), body, adminToken)
 			resp, err := server.App.Test(req)
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusConflict, resp.StatusCode)
@@ -290,12 +281,11 @@ func TestApproveBorrowing(t *testing.T) {
 
 	t.Run("Successful Approval", func(t *testing.T) {
 		payload := map[string]any{
-			"id":          pendingBorrowing.ID,
 			"approved_by": adminUser.ID,
 		}
 		body, _ := json.Marshal(payload)
 
-		req := createAuthenticatedRequest("POST", "/api/borrows/approve", body, adminToken)
+		req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/approve/%d", pendingBorrowing.ID), body, adminToken)
 		resp, err := server.App.Test(req)
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -389,7 +379,7 @@ func TestRejectBorrowing(t *testing.T) {
 				name:           "Invalid Borrowing ID format",
 				borrowingID:    "abc",
 				expectedStatus: http.StatusBadRequest,
-				expectedError:  "invalid request body",
+				expectedError:  errormap.ErrInvalidRequestBody,
 			},
 		}
 
@@ -557,4 +547,93 @@ func TestGetBorrowingsByApprovalStatus(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestGetBorrowingByUserID(t *testing.T) {
+	server := setup.NewTestServer(t)
+	defer server.Cleanup()
+	userToken := getAuthToken(t, server, "test_user", "P@ssw0rd")
+	var user entity.User
+	err := server.DB.Where("username = ?", "test_user").First(&user).Error
+	require.NoError(t, err)
+	t.Run("Validation Errors", func(t *testing.T) {
+		req := createAuthenticatedRequest("GET", "/api/borrows/user", nil, "")
+		resp, err := server.App.Test(req)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+	t.Run("Successful Retrieval", func(t *testing.T) {
+		// Create a specific borrowing for this user
+		var item entity.Item
+		err := server.DB.Where("status = ?", "available").First(&item).Error
+		require.NoError(t, err)
+		b := entity.Borrowing{
+			UserID:          user.ID,
+			ItemID:          item.ID,
+			BorrowingAmount: 1,
+			BorrowingStatus: entity.BORROWING_PENDING,
+			ApprovalStatus:  entity.APPROVAL_PENDING,
+			BorrowedAt:      time.Now().Format(time.RFC3339),
+			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
+		}
+		err = server.DB.Create(&b).Error
+		require.NoError(t, err)
+		req := createAuthenticatedRequest("GET", "/api/borrows/user", nil, userToken)
+		resp, err := server.App.Test(req)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		var borrowings []entity.Borrowing
+		err = json.NewDecoder(resp.Body).Decode(&borrowings)
+		require.NoError(t, err)
+		found := false
+		for _, borrowing := range borrowings {
+			if borrowing.ID == b.ID {
+				found = true
+				assert.Equal(t, user.ID, borrowing.UserID)
+				assert.Equal(t, item.ID, borrowing.ItemID)
+				break
+			}
+		}
+		assert.True(t, found, "Created borrowing should be in the list")
+	})
+}
+func TestUserStats(t *testing.T) {
+	server := setup.NewTestServer(t)
+	defer server.Cleanup()
+	userToken := getAuthToken(t, server, "test_user", "P@ssw0rd")
+	var user entity.User
+	err := server.DB.Where("username = ?", "test_user").First(&user).Error
+	require.NoError(t, err)
+	var item entity.Item
+	err = server.DB.First(&item).Error
+	require.NoError(t, err)
+	// add one of each type to ensure non-zero check logic works
+	server.DB.Create(&entity.Borrowing{
+		UserID:          user.ID,
+		ItemID:          item.ID,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_PENDING,
+	})
+	server.DB.Create(&entity.Borrowing{
+		UserID:          user.ID,
+		ItemID:          item.ID,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_ACTIVE,
+	})
+	server.DB.Create(&entity.Borrowing{
+		UserID:          user.ID,
+		ItemID:          item.ID,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_RETURNED,
+	})
+	req := createAuthenticatedRequest("GET", "/api/borrows/stats", nil, userToken)
+	resp, err := server.App.Test(req)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	var stats entity.BorrowingStats
+	err = json.NewDecoder(resp.Body).Decode(&stats)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, stats.OnGoingBorrows, uint(1))
+	assert.GreaterOrEqual(t, stats.CurrentlyBorrows, uint(1))
+	assert.GreaterOrEqual(t, stats.TotalReturned, uint(1))
 }
