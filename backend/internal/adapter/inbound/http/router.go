@@ -89,7 +89,7 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		rateLimiter,
 		borrowingHandler.BorrowItem)
-	borrowingRoutes.Post("/approve",
+	borrowingRoutes.Post("/approve/:id",
 		middleware.AuthMiddleware(),
 		rateLimiter,
 		middleware.AdminOnly(),

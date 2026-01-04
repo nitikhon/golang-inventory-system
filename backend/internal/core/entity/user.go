@@ -16,3 +16,15 @@ type Token struct {
     AccessToken  string
     RefreshToken string
 }
+
+type PublicUser struct {
+    ID        uint   `json:"id"`
+    Username  string `json:"username"`
+    FirstName string `json:"first_name"`
+    LastName  string `json:"last_name"`
+}
+
+// for GORM table recognition
+func (PublicUser) TableName() string {
+    return "users"
+}

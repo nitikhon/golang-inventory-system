@@ -17,20 +17,21 @@ const (
 
 type Borrowing struct {
 	GormModel
-	UserID          uint   `json:"user_id"`
-	ItemID          uint   `json:"item_id" gorm:"index"`
-	Item            *Item  `json:"item"`
-	Description     string `json:"description"`
-	BorrowedAt      string `json:"borrowed_at"`
-	ReturnedAt      string `json:"returned_at"`
-	DueDate         string `json:"due_date"`
-	BorrowingAmount int    `json:"borrowing_amount"`
-	BorrowingStatus string `json:"borrowing_status" gorm:"type:VARCHAR(20);default:'pending';index"`
-	ApprovalStatus  string `json:"approval_status" gorm:"type:VARCHAR(20);default:'pending';index"` // pending, approved, rejected
-	ApprovedAt      string `json:"approved_at"`
-	ApprovedBy      uint   `json:"approved_by"`
-	RejectedBy      uint   `json:"rejected_by"`
-	RejectedAt      string `json:"rejected_at"`
+	UserID          uint        `json:"user_id"`
+	ItemID          uint        `json:"item_id" gorm:"index"`
+	Item            *Item       `json:"item"`
+	User            *PublicUser `json:"user" gorm:"foreignKey:UserID"`
+	Description     string      `json:"description"`
+	BorrowedAt      string      `json:"borrowed_at"`
+	ReturnedAt      string      `json:"returned_at"`
+	DueDate         string      `json:"due_date"`
+	BorrowingAmount int         `json:"borrowing_amount"`
+	BorrowingStatus string      `json:"borrowing_status" gorm:"type:VARCHAR(20);default:'pending';index"`
+	ApprovalStatus  string      `json:"approval_status" gorm:"type:VARCHAR(20);default:'pending';index"` // pending, approved, rejected
+	ApprovedAt      string      `json:"approved_at"`
+	ApprovedBy      uint        `json:"approved_by"`
+	RejectedBy      uint        `json:"rejected_by"`
+	RejectedAt      string      `json:"rejected_at"`
 }
 
 type BorrowingStats struct {

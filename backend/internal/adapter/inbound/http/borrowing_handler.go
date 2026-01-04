@@ -57,20 +57,14 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 
 // ApproveBorrowing handles approving a borrowing request.
 func (h *BorrowingHandler) ApproveBorrowing(c *fiber.Ctx) error {
-	var borrowing entity.Borrowing
-	if err := c.BodyParser(&borrowing); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	userID := c.Locals("user_id").(uint)
+
+	borrowingID, err := c.ParamsInt("id")
+	if userID == 0 || err != nil || borrowingID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	// Input validation
-	if borrowing.ID == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "borrowing ID is required"})
-	}
-	if borrowing.ApprovedBy == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "approvedBy is required"})
-	}
-
-	approvedBorrowing, err := h.service.ApproveBorrowing(borrowing.ID, borrowing.ApprovedBy)
+	approvedBorrowing, err := h.service.ApproveBorrowing(uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
 		case gorm.ErrRecordNotFound.Error():

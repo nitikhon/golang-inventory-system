@@ -23,7 +23,7 @@ func (r *BorrowingRepository) BorrowItem(borrowing *entity.Borrowing) (*entity.B
 		return &entity.Borrowing{}, err
 	}
 
-	err = r.db.Preload("Item").First(borrowing, borrowing.ID).Error
+	err = r.db.Preload("Item").Preload("User").First(borrowing, borrowing.ID).Error
     if err != nil {
         return nil, err
     }
@@ -114,7 +114,7 @@ func (r *BorrowingRepository) GetBorrowingsByItemID(itemID uint) ([]*entity.Borr
 // GetBorrowingsByBorrowingStatus retrieves borrowings by their borrowing status.
 func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing
-	err := r.db.Where("borrowing_status = ?", status).Find(&borrowings).Error
+	err := r.db.Where("borrowing_status = ?", status).Preload("Item").Preload("User").Find(&borrowings).Error
 	if err != nil {
 		return nil, err
 	}
