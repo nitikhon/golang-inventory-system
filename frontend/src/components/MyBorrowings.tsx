@@ -39,7 +39,7 @@ const MyBorrowings: React.FC = () => {
   const { mutate: cancelMutation } = useMutation({
     mutationFn: (id: number) => borrowingService.cancelBorrowing(id, token?.access_token),
     onSuccess: () => {
-      toast.success('Request cancelled successfully!', {duration: 5000})
+      toast.success('Request cancelled successfully!', { duration: 5000 })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
     },

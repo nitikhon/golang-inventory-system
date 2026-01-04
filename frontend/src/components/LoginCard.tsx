@@ -12,7 +12,7 @@ const LoginCard = () => {
     e.preventDefault()
 
     if (username === '' || password === '') {
-      toast.error('Username and Password must not be empty', {duration: 5000})
+      toast.error('Username and Password must not be empty', { duration: 5000 })
     }
 
     login({ username, password })

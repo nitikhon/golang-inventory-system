@@ -32,13 +32,13 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       queryClient.invalidateQueries({ queryKey: ['items'] })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
-      toast.success('Borrowing request submitted!', {duration: 5000})
+      toast.success('Borrowing request submitted!', { duration: 5000 })
       navigate('/my-borrowings')
       setIsBorrowModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
       const message = error.response?.data?.error || 'Something went wrong'
-      toast.error(message, {duration: 5000})
+      toast.error(message, { duration: 5000 })
     },
   })
 

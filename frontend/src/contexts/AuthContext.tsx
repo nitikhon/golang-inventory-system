@@ -49,13 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userProfile)
         queryClient.setQueryData(['user'], userProfile)
       } catch {
-        toast.error('Fetch profile failed', {duration: 5000})
+        toast.error('Fetch profile failed', { duration: 5000 })
       }
       setIsLoginModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
       const message = error.response?.data?.error || 'Something went wrong'
-      toast.error(message, {duration: 5000})
+      toast.error(message, { duration: 5000 })
     },
   })
 
