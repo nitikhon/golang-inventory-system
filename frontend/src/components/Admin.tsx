@@ -9,9 +9,12 @@ import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import type { Borrowing } from '../types/borrowing'
 import formatDate from '../utils/formatDate'
+import SearchBar from './SearchBar'
+import capitalizeSentence from '../utils/capitalizeSentence'
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'returned'>('pending')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const { user, token, isSilentLoading } = useAuth()
 
@@ -23,6 +26,19 @@ const Admin: React.FC = () => {
     queryKey: ['admin-borrowings', activeTab],
     queryFn: () => borrowingService.getBorrowingsByStatus(activeTab, token?.access_token),
     enabled: !!token?.access_token,
+  })
+
+  const filteredData = data?.filter((req: Borrowing) => {
+    const lowerTerm = searchTerm.toLowerCase()
+
+    const matchUser =
+      req.user?.username?.toLowerCase().includes(lowerTerm) ||
+      req.user?.first_name?.toLowerCase().includes(lowerTerm) ||
+      req.user?.last_name?.toLowerCase().includes(lowerTerm)
+
+    const matchItem = req.item?.name?.toLowerCase().includes(lowerTerm)
+
+    return matchUser || matchItem
   })
 
   const { mutate: approveMutation, isPending: isApproving } = useMutation({
@@ -103,6 +119,12 @@ const Admin: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
 
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Search borrowings by user or item..."
+      />
+
       {/* Tabs UI */}
       <div className="flex gap-4 border-b border-slate-200">
         {tabs.map((tab) => (
@@ -126,7 +148,7 @@ const Admin: React.FC = () => {
           {/* Header + Filters (TODO) */}
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="font-semibold text-slate-700">Requests List</h3>
-            <span className="text-xs text-slate-500">Total: {data?.length} items</span>
+            <span className="text-xs text-slate-500">Total: {filteredData?.length} items</span>
           </div>
 
           {/* Table */}
@@ -141,11 +163,12 @@ const Admin: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {data?.map((req: Borrowing) => (
+                {filteredData?.map((req: Borrowing) => (
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                     {/* User Info */}
                     <td className="px-6 py-4">
                       <div className="font-medium text-slate-900">{req.user?.username}</div>
+                      <div className="text-[10px] text-slate-600">{`${capitalizeSentence(req.user?.first_name)} ${capitalizeSentence(req.user?.last_name)}`}</div>
                     </td>
 
                     {/* Item Info */}
@@ -188,7 +211,7 @@ const Admin: React.FC = () => {
             </table>
 
             {/* Empty State */}
-            {(!data || data.length === 0) && (
+            {(!filteredData || filteredData.length === 0) && (
               <div className="p-12 text-center text-slate-500">No data found in this tab.</div>
             )}
           </div>

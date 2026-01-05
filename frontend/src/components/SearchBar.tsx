@@ -4,9 +4,10 @@ import { Search, X } from 'lucide-react'
 interface SearchBarProps {
   value: string
   onChange: (value: string) => void
+  placeholder: string
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ value, onChange }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, placeholder }) => {
   return (
     <div className="relative mb-6">
       {/* Search Icon (Left) */}
@@ -18,7 +19,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChange }) => {
       <input
         type="text"
         className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
-        placeholder="Search items..."
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

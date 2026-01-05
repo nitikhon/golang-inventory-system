@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Inventory System</h1>
 
-        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search Items..." />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {filteredItems?.map((item: Item) => (
