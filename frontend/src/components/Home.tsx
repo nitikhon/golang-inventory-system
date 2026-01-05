@@ -8,10 +8,12 @@ import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
 import BorrowCard from './BorrowCard'
 import { X } from 'lucide-react'
+import SearchBar from './SearchBar'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const { user, setIsLoginModalOpen } = useAuth()
 
@@ -29,6 +31,12 @@ const HomePage: React.FC = () => {
     queryFn: itemService.getAll,
   })
 
+  const filteredItems = data?.filter(
+    (item: Item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (isLoading) {
     return <Loading message={'Loading inventory...'} />
   }
@@ -42,10 +50,16 @@ const HomePage: React.FC = () => {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Inventory System</h1>
 
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data?.map((item: Item) => (
-            <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
-          ))}
+          {searchTerm == ''
+            ? data?.map((item: Item) => (
+                <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
+              ))
+            : filteredItems?.map((item: Item) => (
+                <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
+              ))}
         </div>
       </div>
 
