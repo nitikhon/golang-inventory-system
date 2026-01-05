@@ -94,7 +94,7 @@ const MyBorrowings: React.FC = () => {
   }
 
   if (isError) {
-    return <Error message={'Failed to load borrowings. Please check if your backend is running.'} />
+    return <Error message={'Something went wrong.'} />
   }
 
   if (borrowings?.length === 0) {

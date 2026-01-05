@@ -96,7 +96,7 @@ const Admin: React.FC = () => {
   }
 
   if (isError) {
-    return <Error message={'Failed to load items. Please check if your backend is running.'} />
+    return <Error message={'Something went wrong.'} />
   }
 
   return (

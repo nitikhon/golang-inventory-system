@@ -7,6 +7,7 @@ import { AuthContext } from './AuthContextType'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import capitalizeSentence from '../utils/capitalizeSentence'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
@@ -54,8 +55,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoginModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
-      const message = error.response?.data?.error || 'Something went wrong'
-      toast.error(message, { duration: 5000 })
+      let message = error.response?.data?.error || 'Something went wrong'
+      const status = error.response?.status
+      if (status == 500) {
+        message = 'Something went wrong'
+      }
+      toast.error(capitalizeSentence(message), { duration: 5000 })
     },
   })
 
