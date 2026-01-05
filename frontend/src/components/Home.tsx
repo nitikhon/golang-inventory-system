@@ -53,13 +53,9 @@ const HomePage: React.FC = () => {
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {searchTerm == ''
-            ? data?.map((item: Item) => (
-                <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
-              ))
-            : filteredItems?.map((item: Item) => (
-                <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
-              ))}
+          {filteredItems?.map((item: Item) => (
+            <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
+          ))}
         </div>
       </div>
 
