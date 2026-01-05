@@ -36,7 +36,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
             }}
           />
         )}
-        {user?.is_admin && <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" />}
+        {user?.is_admin && (
+          <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" onClick={onClose} />
+        )}
       </div>
 
       {/* Profile */}
