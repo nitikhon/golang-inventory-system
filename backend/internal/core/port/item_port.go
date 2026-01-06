@@ -6,7 +6,7 @@ import (
 )
 
 type ItemRepository interface {
-	GetAllItems() ([]*entity.Item, error)
+	GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error)
 	GetItemByID(id uint) (*entity.Item, error)
 	GetItemByName(name string) (*entity.Item, error)
 	Create(item *entity.Item) (*entity.Item, error)

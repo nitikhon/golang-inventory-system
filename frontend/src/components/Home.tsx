@@ -1,19 +1,25 @@
 import itemService from '../services/item'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import type { Item } from '../types/item'
 import ItemCard from './ItemCard'
 import Loading from './Loading'
 import Error from './Error'
 import { useAuth } from '../hooks/useAuth'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BorrowCard from './BorrowCard'
 import { X } from 'lucide-react'
 import SearchBar from './SearchBar'
+import type { PaginatedResponse } from '../services/pagination'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm])
 
   const { user, setIsLoginModalOpen } = useAuth()
 
@@ -26,16 +32,11 @@ const HomePage: React.FC = () => {
     setIsBorrowModalOpen(true)
   }
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['items'],
-    queryFn: itemService.getAll,
+  const { data, isLoading, isError } = useQuery<PaginatedResponse<Item>>({
+    queryKey: ['items', page, searchTerm],
+    queryFn: () => itemService.getAll(page, 12, searchTerm),
+    placeholderData: keepPreviousData,
   })
-
-  const filteredItems = data?.filter(
-    (item: Item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   if (isLoading) {
     return <Loading message={'Loading inventory...'} />
@@ -53,9 +54,29 @@ const HomePage: React.FC = () => {
         <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search Items..." />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {filteredItems?.map((item: Item) => (
+          {data?.data?.map((item: Item) => (
             <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
           ))}
+        </div>
+
+        <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+          <button
+            disabled={page === 1 || isLoading}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-slate-600">
+            Page {page} of {data?.total_pages || 1}
+          </span>
+          <button
+            disabled={page >= (data?.total_pages || 1) || isLoading}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
         </div>
       </div>
 

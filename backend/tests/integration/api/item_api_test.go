@@ -46,16 +46,16 @@ func TestGetItems(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, resp.StatusCode)
 
 			if tt.validateItems {
-				var items []entity.Item
-				err = json.NewDecoder(resp.Body).Decode(&items)
+				var result entity.PaginationResult[entity.Item]
+				err = json.NewDecoder(resp.Body).Decode(&result)
 				require.NoError(t, err)
 
 				// Should have the seeded items (5 items from setup)
-				assert.GreaterOrEqual(t, len(items), 5)
+				assert.GreaterOrEqual(t, len(result.Data), 5)
 
 				// Validate structure of first item
-				if len(items) > 0 {
-					item := items[0]
+				if len(result.Data) > 0 {
+					item := result.Data[0]
 					assert.NotEmpty(t, item.Name)
 					assert.NotEmpty(t, item.Description)
 					assert.GreaterOrEqual(t, item.TotalAmount, 0)

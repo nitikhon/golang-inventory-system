@@ -27,7 +27,11 @@ func NewItemHandler(service *service.ItemService) *ItemHandler {
 
 // GetAllItems retrieves all items.
 func (h *ItemHandler) GetAllItems(c *fiber.Ctx) error {
-	items, err := h.service.GetAllItems()
+	page := c.QueryInt("page", 1)
+    limit := c.QueryInt("limit", 12)
+    search := c.Query("search")
+
+	items, err := h.service.GetAllItems(page, limit, search)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

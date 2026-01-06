@@ -32,10 +32,13 @@ func TestNewItemService(t *testing.T) {
 func TestGetAllItems(t *testing.T) {
 	// arrange
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
-	mockItemRepo.EXPECT().GetAllItems().Return([]*entity.Item{}, nil)
+	page := 1
+	limit := 12
+	search := ""
+	mockItemRepo.EXPECT().GetAllItems(page, limit, search).Return(&entity.PaginationResult[entity.Item]{}, nil)
 
 	// act
-	items, err := mockItemService.GetAllItems()
+	items, err := mockItemService.GetAllItems(page, limit, search)
 
 	// assert
 	assert.NotNil(t, items, fmt.Sprintf("expect empty array, got %v", items))
@@ -208,7 +211,7 @@ func TestCreateItem_FailureCreateError(t *testing.T) {
 	mockItemRepo.
 		EXPECT().
 		GetItemByName("test item").
-		Return(nil, nil)            // no existing item found
+		Return(nil, nil) // no existing item found
 
 	mockItemRepo.
 		EXPECT().
@@ -229,7 +232,7 @@ func TestUpdateItem_Success(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "Updated Item",
 		Description:     "Updated Description",
 		AvailableAmount: 8,
@@ -238,7 +241,7 @@ func TestUpdateItem_Success(t *testing.T) {
 	}
 
 	currentItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "old item",
 		Description:     "Old Description",
 		AvailableAmount: 5,
@@ -247,7 +250,7 @@ func TestUpdateItem_Success(t *testing.T) {
 	}
 
 	expectedItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "updated Item", // service doesn't normalize name yet
 		Description:     "Updated Description",
 		AvailableAmount: 8,
@@ -285,7 +288,7 @@ func TestUpdateItem_FailureItemNotFound(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 999},
+		GormModel:       entity.GormModel{ID: 999},
 		Name:            "Test Item",
 		Description:     "Test Description",
 		AvailableAmount: 8,
@@ -311,7 +314,7 @@ func TestUpdateItem_SuccessUpdateToSameName(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "same item",
 		Description:     "Updated Description",
 		AvailableAmount: 8,
@@ -321,7 +324,7 @@ func TestUpdateItem_SuccessUpdateToSameName(t *testing.T) {
 
 	// existed item = to be updated item
 	existingItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "same item",
 		Description:     "Old Description",
 		AvailableAmount: 5,
@@ -330,7 +333,7 @@ func TestUpdateItem_SuccessUpdateToSameName(t *testing.T) {
 	}
 
 	expectedItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "same item",
 		Description:     "Updated Description",
 		AvailableAmount: 8,
@@ -367,7 +370,7 @@ func TestUpdateItem_FailureNameAlreadyExistsDifferentItem(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "existing name",
 		Description:     "Updated Description",
 		AvailableAmount: 8,
@@ -376,7 +379,7 @@ func TestUpdateItem_FailureNameAlreadyExistsDifferentItem(t *testing.T) {
 
 	// Different item with same name
 	existingItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 2},
+		GormModel:       entity.GormModel{ID: 2},
 		Name:            "existing name",
 		Description:     "Another item",
 		AvailableAmount: 5,
@@ -407,7 +410,7 @@ func TestUpdateItem_FailureGetItemByIDError(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "Test Item",
 		Description:     "Test Description",
 		AvailableAmount: 8,
@@ -433,7 +436,7 @@ func TestUpdateItem_FailureGetItemByNameError(t *testing.T) {
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
 
 	inputItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "Test Item",
 		Description:     "Test Description",
 		AvailableAmount: 8,
@@ -441,7 +444,7 @@ func TestUpdateItem_FailureGetItemByNameError(t *testing.T) {
 	}
 
 	currentItem := &entity.Item{
-		GormModel:           entity.GormModel{ID: 1},
+		GormModel:       entity.GormModel{ID: 1},
 		Name:            "old name",
 		Description:     "Old Description",
 		AvailableAmount: 5,

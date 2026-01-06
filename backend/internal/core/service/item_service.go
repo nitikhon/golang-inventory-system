@@ -19,7 +19,7 @@ var _ ItemServiceInterface = (*ItemService)(nil)
 
 // ItemServiceInterface defines the contract for ItemService.
 type ItemServiceInterface interface {
-	GetAllItems() ([]*entity.Item, error)
+	GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error)
 	GetItemByID(id uint) (*entity.Item, error)
 	Create(item *entity.Item) (*entity.Item, error)
 	Update(item *entity.Item) (*entity.Item, error)
@@ -34,8 +34,8 @@ func NewItemService(repo port.ItemRepository) *ItemService {
 }
 
 // GetAllItems returns all items.
-func (s *ItemService) GetAllItems() ([]*entity.Item, error) {
-	return s.repo.GetAllItems()
+func (s *ItemService) GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
+	return s.repo.GetAllItems(page, limit, search)
 }
 
 // GetItemByID returns an item by its ID.

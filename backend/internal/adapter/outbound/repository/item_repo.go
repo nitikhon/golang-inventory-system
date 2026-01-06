@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"math"
+
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -17,14 +20,35 @@ func NewItemRepository(db *gorm.DB) *ItemRepository {
 }
 
 // FindAll retrieves all items from the database.
-func (r *ItemRepository) GetAllItems() ([]*entity.Item, error) {
-	var items []*entity.Item
-	// Query all items
-	err := r.db.Unscoped().Find(&items).Error
-	if err != nil {
+func (r *ItemRepository) GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
+	var items []entity.Item
+	var total int64
+
+	query := r.db.Model(&entity.Item{})
+
+	if search != "" {
+		term := "%" + search + "%"
+		query = query.Where("name ILIKE ? OR description ILIKE ?", term, term)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
-	return items, nil
+
+	offset := util.GetOffset(page, limit)
+	if err := query.Offset(offset).Limit(limit).Find(&items).Error; err != nil {
+		return nil, err
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+	return &entity.PaginationResult[entity.Item]{
+		Data:       items,
+		TotalItems: total,
+		TotalPages: totalPages,
+		Page:       page,
+		Limit:      limit,
+	}, nil
 }
 
 // FindByID retrieves an item by its ID.
