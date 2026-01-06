@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { PaginatedResponse } from './pagination'
+import type { PaginatedResponse } from '../types/pagination'
 import type { Item } from '../types/item'
 
 const isDev = import.meta.env.DEV

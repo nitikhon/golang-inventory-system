@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { Borrowing, BorrowingStats, BorrowRequest } from '../types/borrowing'
+import type { PaginatedResponse } from '../types/pagination'
 
 const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/borrows' : '/api/borrows'

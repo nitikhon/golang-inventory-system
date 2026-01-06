@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import BorrowCard from './BorrowCard'
 import { X } from 'lucide-react'
 import SearchBar from './SearchBar'
-import type { PaginatedResponse } from '../services/pagination'
+import type { PaginatedResponse } from '../types/pagination'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
