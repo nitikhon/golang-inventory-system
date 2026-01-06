@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed ...">
         <PackageSearch size={20} />
         <h3 className="mt-4 text-lg font-bold">No available item yet</h3>
-        <p className="text-slate-500">If there should have items, Contact staff.</p>
+        <p className="text-slate-500">Please contact staff if items are missing.</p>
       </div>
     )
   }
