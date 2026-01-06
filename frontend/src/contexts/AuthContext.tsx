@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import capitalizeSentence from '../utils/capitalizeSentence'
+import Swal from 'sweetalert2'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
@@ -67,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { mutate: logoutMutation } = useMutation({
     mutationFn: userService.logout,
     onSuccess: () => {
+      toast.success('Logout success!')
       setUser(null)
       setToken(null)
       navigator('/')
@@ -84,7 +86,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const logout = () => {
-    logoutMutation()
+    Swal.fire({
+      title: 'Confirm Logout?',
+      text: 'Your session will be cleared and you will need to login again.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Logout',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logoutMutation()
+      }
+    })
   }
 
   return (
