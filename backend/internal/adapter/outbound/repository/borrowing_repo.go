@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"math"
 	"time"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
+	"github.com/nitikhon/golang-inventory-system/internal/util"
 	"gorm.io/gorm"
 )
 
@@ -24,9 +26,9 @@ func (r *BorrowingRepository) BorrowItem(borrowing *entity.Borrowing) (*entity.B
 	}
 
 	err = r.db.Preload("Item").Preload("User").First(borrowing, borrowing.ID).Error
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
 	return borrowing, nil
 }
@@ -92,13 +94,42 @@ func (r *BorrowingRepository) GetBorrowingByID(borrowingID uint) (*entity.Borrow
 }
 
 // GetBorrowingsByUserID retrieves all borrowings for a specific user.
-func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint) ([]*entity.Borrowing, error) {
-	var borrowings []*entity.Borrowing
-	err := r.db.Preload("Item").Where("user_id = ?", userID).Find(&borrowings).Error
-	if err != nil {
+func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
+	var items []entity.Borrowing
+	var total int64
+
+	query := r.db.Model(&entity.Borrowing{}).Joins("User").Joins("Item")
+
+	query = query.Where("borrowings.user_id = ?", userID)
+
+	if search != "" {
+		term := "%" + search + "%"
+		query = query.Where(`
+            "User".username ILIKE ? OR 
+            "User".first_name ILIKE ? OR
+            "Item".name ILIKE ?`,
+            term, term, term,
+        )
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
-	return borrowings, nil
+
+	offset := util.GetOffset(page, limit)
+	if err := query.Offset(offset).Limit(limit).Preload("Item").Find(&items).Error; err != nil {
+		return nil, err
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+	return &entity.PaginationResult[entity.Borrowing]{
+		Data:       items,
+		TotalItems: total,
+		TotalPages: totalPages,
+		Page:       page,
+		Limit:      limit,
+	}, nil
 }
 
 // GetBorrowingsByItemID retrieves all borrowings for a specific item.
@@ -112,13 +143,42 @@ func (r *BorrowingRepository) GetBorrowingsByItemID(itemID uint) ([]*entity.Borr
 }
 
 // GetBorrowingsByBorrowingStatus retrieves borrowings by their borrowing status.
-func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error) {
-	var borrowings []*entity.Borrowing
-	err := r.db.Where("borrowing_status = ?", status).Preload("Item").Preload("User").Find(&borrowings).Error
-	if err != nil {
+func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+	var items []entity.Borrowing
+	var total int64
+
+	query := r.db.Model(&entity.Borrowing{}).Joins("User").Joins("Item")
+
+	query = query.Where("borrowings.borrowing_status = ?", status)
+
+	if search != "" {
+		term := "%" + search + "%"
+		query = query.Where(`
+            "User".username ILIKE ? OR 
+            "User".first_name ILIKE ? OR
+            "Item".name ILIKE ?`,
+            term, term, term,
+        )
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
-	return borrowings, nil
+
+	offset := util.GetOffset(page, limit)
+	if err := query.Offset(offset).Limit(limit).Preload("Item").Preload("User").Find(&items).Error; err != nil {
+		return nil, err
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+	return &entity.PaginationResult[entity.Borrowing]{
+		Data:       items,
+		TotalItems: total,
+		TotalPages: totalPages,
+		Page:       page,
+		Limit:      limit,
+	}, nil
 }
 
 // GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
@@ -172,4 +232,13 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	result.CurrentlyBorrows = uint(countCurrentlyBorrows)
 
 	return &result, nil
+}
+
+func (r *BorrowingRepository) HasActiveBorrowing(userID, itemID uint) (bool, error) {
+    var count int64
+    err := r.db.Model(&entity.Borrowing{}).
+        Where("user_id = ? AND item_id = ? AND borrowing_status IN ?", userID, itemID, []string{"pending", "active"}).
+        Count(&count).Error
+    
+    return count > 0, err
 }

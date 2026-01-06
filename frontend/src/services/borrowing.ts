@@ -5,8 +5,13 @@ import type { PaginatedResponse } from '../types/pagination'
 const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/borrows' : '/api/borrows'
 
-const getBorrowingsByUserID = async (access_token: string | undefined): Promise<Borrowing[]> => {
-  const request = await axios.get(`${baseUrl}/user/`, {
+const getBorrowingsByUserID = async (
+  page = 1,
+  limit = 12,
+  search = '',
+  access_token: string | undefined
+): Promise<PaginatedResponse<Borrowing>> => {
+  const request = await axios.get(`${baseUrl}/user/?page=${page}&limit=${limit}&search=${search}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${access_token}`,
@@ -60,16 +65,22 @@ const cancelBorrowing = async (
 }
 
 const getBorrowingsByStatus = async (
+  page = 1,
+  limit = 12,
+  search = '',
   status: string | undefined,
   access_token: string | undefined
-): Promise<Borrowing[]> => {
-  const request = await axios.get(`${baseUrl}/status/${status}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${access_token}`,
-    },
-    withCredentials: true,
-  })
+): Promise<PaginatedResponse<Borrowing>> => {
+  const request = await axios.get(
+    `${baseUrl}/status/${status}?page=${page}&limit=${limit}&search=${search}`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${access_token}`,
+      },
+      withCredentials: true,
+    }
+  )
   return request.data
 }
 

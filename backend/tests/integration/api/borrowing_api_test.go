@@ -22,8 +22,15 @@ func TestBorrowItem(t *testing.T) {
 	userToken := getAuthToken(t, server, "test_user", "P@ssw0rd")
 
 	// Get existings items/users for valid IDs
-	var availableItem entity.Item
-	err := server.DB.Where("status = ?", "available").First(&availableItem).Error
+	// Create a fresh item to ensure no existing borrowings conflict
+	availableItem := entity.Item{
+		Name:            "Test Validation Item",
+		Description:     "Item for validation tests",
+		AvailableAmount: 10,
+		TotalAmount:     10,
+		Status:          "available",
+	}
+	err := server.DB.Create(&availableItem).Error
 	require.NoError(t, err)
 
 	var user entity.User
@@ -495,11 +502,11 @@ func TestGetBorrowingsByBorrowingStatus(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-				var borrowings []entity.Borrowing
-				err = json.NewDecoder(resp.Body).Decode(&borrowings)
+				var result entity.PaginationResult[entity.Borrowing]
+				err = json.NewDecoder(resp.Body).Decode(&result)
 				require.NoError(t, err)
 
-				for _, b := range borrowings {
+				for _, b := range result.Data {
 					assert.Equal(t, status, b.BorrowingStatus)
 				}
 			})
@@ -582,11 +589,13 @@ func TestGetBorrowingByUserID(t *testing.T) {
 		resp, err := server.App.Test(req)
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		var borrowings []entity.Borrowing
-		err = json.NewDecoder(resp.Body).Decode(&borrowings)
+
+		var result entity.PaginationResult[entity.Borrowing]
+		err = json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
+
 		found := false
-		for _, borrowing := range borrowings {
+		for _, borrowing := range result.Data {
 			if borrowing.ID == b.ID {
 				found = true
 				assert.Equal(t, user.ID, borrowing.UserID)

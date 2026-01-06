@@ -102,7 +102,7 @@ func TestBorrowItem_Success(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return([]*entity.Borrowing{}, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
@@ -296,15 +296,6 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 		Status:          "available",
 	}
 
-	// Existing pending borrowing for the same item
-	existingBorrowing := []*entity.Borrowing{
-		{
-			UserID:          2,
-			ItemID:          1,
-			BorrowingStatus: entity.BORROWING_PENDING,
-		},
-	}
-
 	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
@@ -313,7 +304,7 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(existingBorrowing, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(true, nil)
 
 	// act
 	result, err := service.BorrowItem(borrowingInput)
@@ -323,7 +314,7 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 	assert.EqualError(t, err, errormap.ErrAlreadyBorrowed)
 }
 
-func TestBorrowItem_GetBorrowingsRepoError(t *testing.T) {
+func TestBorrowItem_HasActiveBorrowingRepoError(t *testing.T) {
 	// arrange
 	service, mockBorrowingRepo, mockItemRepo, mockUserRepo := setupBorrowingServiceMock(t)
 
@@ -349,7 +340,7 @@ func TestBorrowItem_GetBorrowingsRepoError(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, mockErr)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, mockErr)
 
 	// act
 	result, err := service.BorrowItem(borrowingInput)
@@ -385,7 +376,7 @@ func TestBorrowItem_BorrowRepoError(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return([]*entity.Borrowing{}, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(nil, mockErr)
 
 	// act
@@ -414,15 +405,6 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 		Status:          "available",
 	}
 
-	// User has pending borrowing for a DIFFERENT item (item 1)
-	existingBorrowing := []*entity.Borrowing{
-		{
-			UserID:          2,
-			ItemID:          1, // Different item
-			BorrowingStatus: entity.BORROWING_PENDING,
-		},
-	}
-
 	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          3, // Different item
@@ -439,7 +421,7 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(existingBorrowing, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
@@ -477,7 +459,7 @@ func TestBorrowItem_InvalidDueDateFormat(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 
 	// act
 	result, err := service.BorrowItem(borrowingInput)
@@ -513,7 +495,7 @@ func TestBorrowItem_InvalidDueDate(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 
 	// act
 	result, err := service.BorrowItem(borrowingInput)
@@ -540,15 +522,6 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 		Status:          "available",
 	}
 
-	// User has a returned borrowing for the same item (not pending)
-	existingBorrowing := []*entity.Borrowing{
-		{
-			UserID:          2,
-			ItemID:          1,
-			BorrowingStatus: entity.BORROWING_RETURNED, // Already returned
-		},
-	}
-
 	borrowingInput := entity.BorrowRequest{
 		UserID:          2,
 		ItemID:          1,
@@ -565,7 +538,7 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
 	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(borrowingInput.UserID).Return(existingBorrowing, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
@@ -1337,16 +1310,25 @@ func TestGetBorrowingsByBorrowingStatus_Success(t *testing.T) {
 	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
 
 	status := entity.BORROWING_PENDING
-	expectedBorrowings := []*entity.Borrowing{
-		{
-			BorrowingStatus: entity.BORROWING_PENDING,
+	search := ""
+	page := 1
+	limit := 10
+	expectedBorrowings := &entity.PaginationResult[entity.Borrowing]{
+		Data: []entity.Borrowing{
+			{
+				BorrowingStatus: entity.BORROWING_PENDING,
+			},
 		},
+		TotalItems: 1,
+		TotalPages: 1,
+		Page:       1,
+		Limit:      10,
 	}
 
-	mockBorrowingRepo.EXPECT().GetBorrowingsByBorrowingStatus(status).Return(expectedBorrowings, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByBorrowingStatus(status, search, page, limit).Return(expectedBorrowings, nil)
 
 	// act
-	result, err := service.GetBorrowingsByBorrowingStatus(status)
+	result, err := service.GetBorrowingsByBorrowingStatus(status, search, page, limit)
 
 	// assert
 	assert.Nil(t, err)
@@ -1379,13 +1361,22 @@ func TestGetBorrowingsByUserID_Success(t *testing.T) {
 	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
 
 	id := uint(1)
+	page := 1
+	limit := 10
+	search := ""
 
-	expectedBorrowings := []*entity.Borrowing{}
+	expectedBorrowings := &entity.PaginationResult[entity.Borrowing]{
+		Data:       []entity.Borrowing{},
+		TotalItems: 0,
+		TotalPages: 0,
+		Page:       1,
+		Limit:      10,
+	}
 
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(id).Return(expectedBorrowings, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(id, page, limit, search).Return(expectedBorrowings, nil)
 
 	// act
-	result, err := service.GetBorrowingsByUserID(id)
+	result, err := service.GetBorrowingsByUserID(id, page, limit, search)
 
 	// assert
 	assert.Nil(t, err)

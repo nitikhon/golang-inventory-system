@@ -1,34 +1,54 @@
 // MyBorrowings.tsx (Skeleton)
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import borrowingService from '../services/borrowing'
 import { useAuth } from '../hooks/useAuth'
 import type React from 'react'
 import Loading from './Loading'
 import Error from './Error'
 import formatDate from '../utils/formatDate'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Activity, Clock, PackageCheck, PackageSearch } from 'lucide-react'
 import StatCard from './StatCard'
 import Swal from 'sweetalert2'
 import toast from 'react-hot-toast'
+import Pagination from './Pagination'
+import SearchBar from './SearchBar'
+import useDebounce from '../hooks/useDebounce'
 
 const MyBorrowings: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+
   const { user, token, isSilentLoading, setIsLoginModalOpen } = useAuth()
 
   const navigate = useNavigate()
 
   const queryClient = useQueryClient()
 
+  const debouncedSearch = useDebounce(searchTerm, 500)
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
   const {
     data: borrowings,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['my-borrowings', user?.id],
-    queryFn: () => borrowingService.getBorrowingsByUserID(token?.access_token),
+    queryKey: ['my-borrowings', debouncedSearch, page, user?.id],
+    queryFn: () =>
+      borrowingService.getBorrowingsByUserID(page, 12, debouncedSearch, token?.access_token),
     enabled: !!user?.id,
+    placeholderData: keepPreviousData,
   })
+
+  useEffect(() => {
+    if (borrowings?.total_pages && page > borrowings.total_pages) {
+      setPage(borrowings.total_pages)
+    }
+  }, [borrowings?.data, page])
 
   const { data } = useQuery({
     queryKey: ['stats'],
@@ -97,7 +117,7 @@ const MyBorrowings: React.FC = () => {
     return <Error message={'Something went wrong.'} />
   }
 
-  if (borrowings?.length === 0) {
+  if (borrowings?.total_items === 0 && !searchTerm) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed ...">
         <PackageSearch size={20} />
@@ -135,6 +155,12 @@ const MyBorrowings: React.FC = () => {
 
       <h1 className="text-2xl font-bold text-slate-800">My Borrowing History</h1>
 
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Search borrowings by user or item..."
+      />
+
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Desktop / Ipad / Widescreen */}
         <table className="hidden md:table w-full text-left border-collapse">
@@ -158,7 +184,7 @@ const MyBorrowings: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {borrowings?.map((borrow) => (
+            {borrowings?.data?.map((borrow) => (
               <tr key={borrow.id} className="border-b border-slate-50 last:border-0">
                 <th className="py-4 px-6" scope="row">
                   {borrow.item?.name ?? 'Unknown Item'}
@@ -189,7 +215,7 @@ const MyBorrowings: React.FC = () => {
 
         {/* Mobile */}
         <div className="md:hidden divide-y divide-slate-100">
-          {borrowings?.map((borrow) => (
+          {borrowings?.data?.map((borrow) => (
             <div key={borrow.id} className="p-4 space-y-3">
               {/* Header: name + status */}
               <div className="flex justify-between items-start">
@@ -225,7 +251,23 @@ const MyBorrowings: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {borrowings?.total_items === 0 && (
+          <div className="flex flex-col items-center justify-center p-12 text-slate-500">
+            <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
+            <p>No results found for "{searchTerm}"</p>
+          </div>
+        )}
       </div>
+
+      {(borrowings?.total_items || 0) > 0 && (
+        <Pagination
+          page={page}
+          totalPages={borrowings?.total_pages || 1}
+          isLoading={isLoading}
+          handlePageChange={setPage}
+        />
+      )}
     </div>
   )
 }

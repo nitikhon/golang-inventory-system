@@ -17,9 +17,9 @@ type BorrowingServiceInterface interface {
 	BorrowItem(borrowing entity.BorrowRequest) (*entity.Borrowing, error)
 	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
-	GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error)
+	GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
 	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
-	GetBorrowingsByUserID(borrowerId uint) ([]*entity.Borrowing, error)
+	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
 	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
 }
 
@@ -65,14 +65,12 @@ func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowi
 	}
 
 	// Check if the user has already borrowed this item
-	existingBorrowings, err := s.borrowingRepo.GetBorrowingsByUserID(req.UserID)
+	exists, err := s.borrowingRepo.HasActiveBorrowing(req.UserID, req.ItemID)
 	if err != nil {
 		return nil, err
 	}
-	for _, existing := range existingBorrowings {
-		if existing.ItemID == req.ItemID && existing.BorrowingStatus == "pending" {
-			return nil, errors.New(errormap.ErrAlreadyBorrowed)
-		}
+	if exists {
+		return nil, errors.New(errormap.ErrAlreadyBorrowed)
 	}
 
 	borrowsAt := time.Now()
@@ -230,8 +228,8 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 }
 
 // GetBorrowingByStatus retrieves borrowings by their status.
-func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status string) ([]*entity.Borrowing, error) {
-	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status)
+func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status, search, page, limit)
 }
 
 // GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
@@ -239,8 +237,8 @@ func (s *BorrowingService) GetBorrowingsByApprovalStatus(status string) ([]*enti
 	return s.borrowingRepo.GetBorrowingsByApprovalStatus(status)
 }
 
-func (s *BorrowingService) GetBorrowingsByUserID(id uint) ([]*entity.Borrowing, error) {
-	return s.borrowingRepo.GetBorrowingsByUserID(id)
+func (s *BorrowingService) GetBorrowingsByUserID(id uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
+	return s.borrowingRepo.GetBorrowingsByUserID(id, page, limit, search)
 }
 
 func (s *BorrowingService) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {

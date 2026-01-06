@@ -116,12 +116,16 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
 	status := c.Params("status")
 
+	page := c.QueryInt("page", 1)
+    limit := c.QueryInt("limit", 12)
+    search := c.Query("search")
+
 	// Input validation
 	if !isValidBorrowingStatus(status) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid borrowing status"})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(status)
+	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(status, search, page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -147,11 +151,15 @@ func (h *BorrowingHandler) GetBorrowingsByApprovalStatus(c *fiber.Ctx) error {
 func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
+	page := c.QueryInt("page", 1)
+    limit := c.QueryInt("limit", 12)
+    search := c.Query("search")
+
 	if userID == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByUserID(uint(userID))
+	borrowings, err := h.service.GetBorrowingsByUserID(uint(userID), page, limit, search)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

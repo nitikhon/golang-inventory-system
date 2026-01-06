@@ -7,9 +7,11 @@ import Error from './Error'
 import { useAuth } from '../hooks/useAuth'
 import { useEffect, useState } from 'react'
 import BorrowCard from './BorrowCard'
-import { X } from 'lucide-react'
+import { PackageSearch, X } from 'lucide-react'
 import SearchBar from './SearchBar'
 import type { PaginatedResponse } from '../types/pagination'
+import Pagination from './Pagination'
+import useDebounce from '../hooks/useDebounce'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
@@ -17,9 +19,11 @@ const HomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
 
+  const debouncedSearch = useDebounce(searchTerm, 500)
+
   useEffect(() => {
     setPage(1)
-  }, [searchTerm])
+  }, [debouncedSearch])
 
   const { user, setIsLoginModalOpen } = useAuth()
 
@@ -33,8 +37,8 @@ const HomePage: React.FC = () => {
   }
 
   const { data, isLoading, isError } = useQuery<PaginatedResponse<Item>>({
-    queryKey: ['items', page, searchTerm],
-    queryFn: () => itemService.getAll(page, 12, searchTerm),
+    queryKey: ['items', page, debouncedSearch],
+    queryFn: () => itemService.getAll(page, 9, debouncedSearch),
     placeholderData: keepPreviousData,
   })
 
@@ -44,6 +48,16 @@ const HomePage: React.FC = () => {
 
   if (isError) {
     return <Error message={'Something went wrong.'} />
+  }
+
+  if (data?.total_items === 0 && !searchTerm) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed ...">
+        <PackageSearch size={20} />
+        <h3 className="mt-4 text-lg font-bold">No available item yet</h3>
+        <p className="text-slate-500">If there should have items, Contact staff.</p>
+      </div>
+    )
   }
 
   return (
@@ -59,25 +73,21 @@ const HomePage: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex justify-center items-center gap-4 mt-8 pb-8">
-          <button
-            disabled={page === 1 || isLoading}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-slate-600">
-            Page {page} of {data?.total_pages || 1}
-          </span>
-          <button
-            disabled={page >= (data?.total_pages || 1) || isLoading}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
+        {data?.total_items === 0 && (
+          <div className="flex flex-col items-center justify-center p-12 text-slate-500">
+            <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
+            <p>No results found for "{searchTerm}"</p>
+          </div>
+        )}
+
+        {(data?.total_items || 0) > 0 && (
+          <Pagination
+            page={page}
+            totalPages={data?.total_pages || 1}
+            isLoading={isLoading}
+            handlePageChange={setPage}
+          />
+        )}
       </div>
 
       {/* item model */}
