@@ -68,11 +68,11 @@ const getBorrowingsByStatus = async (
   page = 1,
   limit = 12,
   search = '',
-  status: string | undefined,
+  statuses: string | undefined,
   access_token: string | undefined
 ): Promise<PaginatedResponse<Borrowing>> => {
   const request = await axios.get(
-    `${baseUrl}/status/${status}?page=${page}&limit=${limit}&search=${search}`,
+    `${baseUrl}/status/?status=${statuses}&page=${page}&limit=${limit}&search=${search}`,
     {
       headers: {
         'Content-Type': 'application/json',

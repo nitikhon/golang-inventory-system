@@ -115,6 +115,8 @@ func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint, page, limit int
 	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
+	
+	query = query.Order("due_date DESC")
 
 	offset := util.GetOffset(page, limit)
 	if err := query.Offset(offset).Limit(limit).Preload("Item").Find(&items).Error; err != nil {
@@ -143,13 +145,13 @@ func (r *BorrowingRepository) GetBorrowingsByItemID(itemID uint) ([]*entity.Borr
 }
 
 // GetBorrowingsByBorrowingStatus retrieves borrowings by their borrowing status.
-func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
 	var items []entity.Borrowing
 	var total int64
 
 	query := r.db.Model(&entity.Borrowing{}).Joins("User").Joins("Item")
 
-	query = query.Where("borrowings.borrowing_status = ?", status)
+	query = query.Where("borrowings.borrowing_status IN ?", status)
 
 	if search != "" {
 		term := "%" + search + "%"
@@ -160,10 +162,12 @@ func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status, search stri
             term, term, term,
         )
 	}
-
+	
 	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
+
+	query = query.Order("due_date DESC")
 
 	offset := util.GetOffset(page, limit)
 	if err := query.Offset(offset).Limit(limit).Preload("Item").Preload("User").Find(&items).Error; err != nil {

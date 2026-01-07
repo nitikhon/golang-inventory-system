@@ -17,7 +17,7 @@ type BorrowingServiceInterface interface {
 	BorrowItem(borrowing entity.BorrowRequest) (*entity.Borrowing, error)
 	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
-	GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
+	GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
 	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
 	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
@@ -228,7 +228,7 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 }
 
 // GetBorrowingByStatus retrieves borrowings by their status.
-func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
 	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status, search, page, limit)
 }
 

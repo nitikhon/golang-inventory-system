@@ -17,7 +17,7 @@ import useDebounce from '../hooks/useDebounce'
 import { useTranslation } from '../hooks/useTranslation'
 
 const Admin: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'returned'>('pending')
+  const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'history'>('pending')
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
 
@@ -36,14 +36,19 @@ const Admin: React.FC = () => {
 
   const { data, isLoading, isError } = useQuery<PaginatedResponse<Borrowing>>({
     queryKey: ['admin-borrowings', page, activeTab, debouncedSearch],
-    queryFn: () =>
-      borrowingService.getBorrowingsByStatus(
+    queryFn: () => {
+      let status = String(activeTab)
+      if (activeTab === 'history') {
+        status = 'returned,overdue,cancelled,lost'
+      }
+      return borrowingService.getBorrowingsByStatus(
         page,
         12,
         debouncedSearch,
-        activeTab,
+        status,
         token?.access_token
-      ),
+      )
+    },
     enabled: !!token?.access_token,
   })
 

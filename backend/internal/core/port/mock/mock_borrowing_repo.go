@@ -125,7 +125,7 @@ func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByApproverID(arg0 in
 }
 
 // GetBorrowingsByBorrowingStatus mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByBorrowingStatus(arg0, arg1 string, arg2, arg3 int) (*entity.PaginationResult[entity.Borrowing], error) {
+func (m *MockBorrowingRepository) GetBorrowingsByBorrowingStatus(arg0 []string, arg1 string, arg2, arg3 int) (*entity.PaginationResult[entity.Borrowing], error) {
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetBorrowingsByBorrowingStatus", arg0, arg1, arg2, arg3)
         ret0, _ := ret[0].(*entity.PaginationResult[entity.Borrowing])

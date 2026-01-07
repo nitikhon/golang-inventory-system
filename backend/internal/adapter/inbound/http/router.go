@@ -98,7 +98,7 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		rateLimiter,
 		borrowingHandler.RejectBorrowing)
-	borrowingRoutes.Get("/status/:status",
+	borrowingRoutes.Get("/status/",
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),
 		borrowingHandler.GetBorrowingsByBorrowingStatus)

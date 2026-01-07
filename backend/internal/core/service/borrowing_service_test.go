@@ -1309,7 +1309,7 @@ func TestGetBorrowingsByBorrowingStatus_Success(t *testing.T) {
 	// arrange
 	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
 
-	status := entity.BORROWING_PENDING
+	status := []string{entity.BORROWING_PENDING}
 	search := ""
 	page := 1
 	limit := 10

@@ -478,7 +478,7 @@ func TestGetBorrowingsByBorrowingStatus(t *testing.T) {
 	adminToken := getAuthToken(t, server, "test_admin", "P@ssw0rd")
 
 	t.Run("Validation Errors", func(t *testing.T) {
-		req := createAuthenticatedRequest("GET", "/api/borrows/status/invalid_status", nil, adminToken)
+		req := createAuthenticatedRequest("GET", "/api/borrows/status/?status=ok", nil, adminToken)
 		resp, err := server.App.Test(req)
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -497,7 +497,7 @@ func TestGetBorrowingsByBorrowingStatus(t *testing.T) {
 
 		for _, status := range validStatuses {
 			t.Run("Status: "+status, func(t *testing.T) {
-				req := createAuthenticatedRequest("GET", "/api/borrows/status/"+status, nil, adminToken)
+				req := createAuthenticatedRequest("GET", "/api/borrows/status/", nil, adminToken)
 				resp, err := server.App.Test(req)
 				require.NoError(t, err)
 				assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -511,6 +511,21 @@ func TestGetBorrowingsByBorrowingStatus(t *testing.T) {
 				}
 			})
 		}
+
+		t.Run("More than one valid status ", func(t *testing.T) {
+			req := createAuthenticatedRequest("GET", "/api/borrows/status/", nil, adminToken)
+			resp, err := server.App.Test(req)
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var result entity.PaginationResult[entity.Borrowing]
+			err = json.NewDecoder(resp.Body).Decode(&result)
+			require.NoError(t, err)
+
+			for _, b := range result.Data {
+				assert.Contains(t, validStatuses, b.BorrowingStatus)
+			}
+		})
 	})
 }
 

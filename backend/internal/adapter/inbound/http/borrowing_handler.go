@@ -1,6 +1,8 @@
 package http
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
@@ -114,18 +116,23 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 
 // GetBorrowingsByStatus handles fetching borrowings by status.
 func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
-	status := c.Params("status")
+	statusParam := c.Query("status")
+
+	var statuses []string
+	if statusParam != "" {
+		statuses = strings.Split(statusParam, ",")
+	}
 
 	page := c.QueryInt("page", 1)
-    limit := c.QueryInt("limit", 12)
-    search := c.Query("search")
+	limit := c.QueryInt("limit", 12)
+	search := c.Query("search")
 
 	// Input validation
-	if !isValidBorrowingStatus(status) {
+	if !isValidBorrowingStatus(statuses) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid borrowing status"})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(status, search, page, limit)
+	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(statuses, search, page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -182,13 +189,19 @@ func (h *BorrowingHandler) UserStats(c *fiber.Ctx) error {
 	return c.JSON(borrowingStat)
 }
 
-func isValidBorrowingStatus(status string) bool {
-	return status == entity.BORROWING_PENDING ||
-		status == entity.BORROWING_ACTIVE ||
-		status == entity.BORROWING_RETURNED ||
-		status == entity.BORROWING_OVERDUE ||
-		status == entity.BORROWING_CANCELLED ||
-		status == entity.BORROWING_LOST
+func isValidBorrowingStatus(statuses []string) bool {
+	for _, status := range statuses {
+		if status != entity.BORROWING_PENDING &&
+		status != entity.BORROWING_ACTIVE &&
+		status != entity.BORROWING_RETURNED &&
+		status != entity.BORROWING_OVERDUE &&
+		status != entity.BORROWING_CANCELLED &&
+		status != entity.BORROWING_LOST {
+			return false
+		}
+	}
+
+	return true
 }
 
 func isValidApprovalStatus(status string) bool {
