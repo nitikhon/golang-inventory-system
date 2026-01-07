@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const LoginCard = () => {
   const [username, setUsername] = useState('')

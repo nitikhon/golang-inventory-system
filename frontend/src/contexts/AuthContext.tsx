@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import capitalizeSentence from '../utils/capitalizeSentence'
 import Swal from 'sweetalert2'
-import { useTranslation } from './LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()

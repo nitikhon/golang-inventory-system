@@ -12,7 +12,7 @@ import SearchBar from './SearchBar'
 import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)

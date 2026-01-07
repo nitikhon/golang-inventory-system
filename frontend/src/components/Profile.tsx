@@ -14,7 +14,7 @@ import borrowingService from '../services/borrowing'
 import { useQuery } from '@tanstack/react-query'
 import formatDate from '../utils/formatDate'
 import StatCard from './StatCard'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const Profile: React.FC = () => {
   const { user, token, logout } = useAuth()

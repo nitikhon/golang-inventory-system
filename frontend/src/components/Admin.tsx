@@ -14,7 +14,7 @@ import capitalizeSentence from '../utils/capitalizeSentence'
 import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'returned'>('pending')

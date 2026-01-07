@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Item } from '../types/item'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 interface ItemCardProps {
   item: Item

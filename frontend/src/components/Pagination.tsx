@@ -1,4 +1,4 @@
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 interface PaginationProps {
   page: number

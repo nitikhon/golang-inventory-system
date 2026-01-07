@@ -14,7 +14,7 @@ import toast from 'react-hot-toast'
 import Pagination from './Pagination'
 import SearchBar from './SearchBar'
 import useDebounce from '../hooks/useDebounce'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const MyBorrowings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')

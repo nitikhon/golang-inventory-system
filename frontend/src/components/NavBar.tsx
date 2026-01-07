@@ -6,7 +6,7 @@ import { useState } from 'react'
 import NavItem from './NavItem'
 import GhostNavItem from './GhostNavItem'
 import MobileMenu from './MobileMenu'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 const NavBar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)

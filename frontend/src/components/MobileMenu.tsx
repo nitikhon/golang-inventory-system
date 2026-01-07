@@ -3,7 +3,7 @@ import type { User as UserType } from '../types/user'
 import { Link } from 'react-router-dom'
 import GhostNavItem from './GhostNavItem'
 import NavItem from './NavItem'
-import { useTranslation } from '../contexts/LanguageContext'
+import { useTranslation } from '../hooks/useTranslation'
 
 interface MobileMenuProps {
   isOpen: boolean
