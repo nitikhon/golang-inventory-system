@@ -14,12 +14,14 @@ import capitalizeSentence from '../utils/capitalizeSentence'
 import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
+import { useTranslation } from '../contexts/LanguageContext'
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'returned'>('pending')
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
 
+  const { t } = useTranslation() // Hook
   const { user, token, isSilentLoading } = useAuth()
 
   const navigate = useNavigate()
@@ -48,7 +50,7 @@ const Admin: React.FC = () => {
   const { mutate: approveMutation, isPending: isApproving } = useMutation({
     mutationFn: (id: number) => borrowingService.approveBorrowing(id, token?.access_token),
     onSuccess: () => {
-      toast.success('Request approved successfully!', { duration: 5000 })
+      toast.success(t.admin.messages.approveSuccess, { duration: 5000 })
       queryClient.invalidateQueries({ queryKey: ['admin-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
@@ -58,7 +60,7 @@ const Admin: React.FC = () => {
   const { mutate: cancelMutation, isPending: isRejecting } = useMutation({
     mutationFn: (id: number) => borrowingService.cancelBorrowing(id, token?.access_token),
     onSuccess: () => {
-      toast.success('Request cancelled successfully!', { duration: 5000 })
+      toast.success(t.admin.messages.cancelSuccess, { duration: 5000 })
       queryClient.invalidateQueries({ queryKey: ['admin-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
@@ -67,13 +69,13 @@ const Admin: React.FC = () => {
 
   const handleCancel = (id: number) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t.admin.dialog.title,
+      text: t.admin.dialog.text,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, reject it!',
+      confirmButtonText: t.admin.dialog.confirmReject,
     }).then((result) => {
       if (result.isConfirmed) {
         cancelMutation(id)
@@ -83,13 +85,13 @@ const Admin: React.FC = () => {
 
   const handleApprove = (id: number) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t.admin.dialog.title,
+      text: t.admin.dialog.text,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, approve it!',
+      confirmButtonText: t.admin.dialog.confirmApprove,
     }).then((result) => {
       if (result.isConfirmed) {
         approveMutation(id)
@@ -104,29 +106,29 @@ const Admin: React.FC = () => {
   }, [user, isSilentLoading, navigate])
 
   const tabs = [
-    { id: 'pending', label: 'Pending Requests' },
-    { id: 'active', label: 'Active Borrows' },
-    { id: 'returned', label: 'History' },
+    { id: 'pending', label: t.admin.tabs.pending },
+    { id: 'active', label: t.admin.tabs.active },
+    { id: 'returned', label: t.admin.tabs.history },
   ] as const
 
   if (isSilentLoading || !user?.is_admin) return null
 
   if (isLoading) {
-    return <Loading message={'Loading inventory...'} />
+    return <Loading message={t.inventory.loading} />
   }
 
   if (isError) {
-    return <Error message={'Something went wrong.'} />
+    return <Error message={t.common.error} />
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t.admin.title}</h1>
 
       <SearchBar
         value={searchTerm}
         onChange={setSearchTerm}
-        placeholder="Search borrowings by user or item..."
+        placeholder={t.admin.searchPlaceholder}
       />
 
       {/* Tabs UI */}
@@ -134,7 +136,7 @@ const Admin: React.FC = () => {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id as any)}
             className={`pb-2 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === tab.id
                 ? 'border-blue-600 text-blue-600' // Active State
@@ -151,8 +153,8 @@ const Admin: React.FC = () => {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Header + Filters (TODO) */}
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 className="font-semibold text-slate-700">Requests List</h3>
-            <span className="text-xs text-slate-500">Total: {data?.data?.length} items</span>
+            <h3 className="font-semibold text-slate-700">{t.admin.requestsList}</h3>
+            <span className="text-xs text-slate-500">{t.inventory.labels.total}: {data?.data?.length} {t.inventory.labels.items}</span>
           </div>
 
           {/* Table */}
@@ -160,10 +162,10 @@ const Admin: React.FC = () => {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-500 font-medium">
                 <tr>
-                  <th className="px-6 py-3">User</th>
-                  <th className="px-6 py-3">Item Detail</th>
-                  <th className="px-6 py-3">Dates</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
+                  <th className="px-6 py-3">{t.admin.table.user}</th>
+                  <th className="px-6 py-3">{t.admin.table.itemDetail}</th>
+                  <th className="px-6 py-3">{t.admin.table.dates}</th>
+                  <th className="px-6 py-3 text-right">{t.admin.table.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -178,12 +180,12 @@ const Admin: React.FC = () => {
                     {/* Item Info */}
                     <td className="px-6 py-4">
                       <div className="font-medium text-slate-900">{req.item?.name}</div>
-                      <div className="text-xs text-slate-500">Qty: {req.borrowing_amount}</div>
+                      <div className="text-xs text-slate-500">{t.admin.table.qty}: {req.borrowing_amount}</div>
                     </td>
 
                     {/* Date */}
                     <td className="px-6 py-4 text-slate-500">
-                      <div>Due: {formatDate(req.due_date)}</div>
+                      <div>{t.admin.table.due}: {formatDate(req.due_date)}</div>
                     </td>
 
                     {/* Actions (only Pending Tab) */}
@@ -196,7 +198,7 @@ const Admin: React.FC = () => {
                             border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => handleApprove(req.id)}
                           >
-                            {isApproving ? 'Approving...' : 'Approve'}
+                            {isApproving ? t.admin.actions.approving : t.admin.actions.approve}
                           </button>
                           <button
                             disabled={isApproving}
@@ -204,7 +206,7 @@ const Admin: React.FC = () => {
                             border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => handleCancel(req.id)}
                           >
-                            {isRejecting ? 'Rejecting...' : 'Reject'}
+                            {isRejecting ? t.admin.actions.rejecting : t.admin.actions.reject}
                           </button>
                         </>
                       )}
@@ -216,7 +218,7 @@ const Admin: React.FC = () => {
 
             {/* Empty State */}
             {(!data?.data || data?.data.length === 0) && (
-              <div className="p-12 text-center text-slate-500">No data found in this tab.</div>
+              <div className="p-12 text-center text-slate-500">{t.common.noResults}</div>
             )}
           </div>
         </div>

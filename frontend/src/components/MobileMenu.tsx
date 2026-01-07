@@ -3,6 +3,7 @@ import type { User as UserType } from '../types/user'
 import { Link } from 'react-router-dom'
 import GhostNavItem from './GhostNavItem'
 import NavItem from './NavItem'
+import { useTranslation } from '../contexts/LanguageContext'
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -12,24 +13,30 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginClick }) => {
+  const { t, language, setLanguage } = useTranslation()
+
+  const toggleLanguage = () => {
+    setLanguage((prev) => (prev === 'en' ? 'th' : 'en'))
+  }
+
   if (!isOpen) return null
 
   return (
     <div className="md:hidden absolute top-16 left-0 w-full bg-slate-50 border-b border-slate-200 shadow-xl z-40 p-4 flex flex-col gap-4">
       {/* Navigation Menus */}
       <div className="flex flex-col gap-2 border-b border-slate-200 pb-4">
-        <NavItem icon={<Package size={18} />} label="Inventory" to="/" onClick={onClose} />
+        <NavItem icon={<Package size={18} />} label={t.nav.inventory} to="/" onClick={onClose} />
         {user ? (
           <NavItem
             icon={<History size={18} />}
-            label="My Borrowings"
+            label={t.nav.myBorrowings}
             to="/my-borrowings"
             onClick={onClose}
           />
         ) : (
           <GhostNavItem
             icon={<History size={18} />}
-            label="My Borrowings"
+            label={t.nav.myBorrowings}
             onClick={() => {
               onLoginClick
               onClose
@@ -37,7 +44,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
           />
         )}
         {user?.is_admin && (
-          <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" onClick={onClose} />
+          <NavItem icon={<ShieldUser size={18} />} label={t.nav.admin} to="/admin" onClick={onClose} />
         )}
       </div>
 
@@ -51,7 +58,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
             <div>
               <p className="font-bold text-sm">{user.first_name}</p>
               <Link to="/profile" className="text-xs text-blue-600" onClick={onClose}>
-                View Profile
+                {t.nav.profile}
               </Link>
             </div>
           </div>
@@ -62,14 +69,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
               onClose
             }}
           >
-            Sign In
+            {t.auth.signIn}
           </button>
         )}
 
         {/* Language */}
-        <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+        <button 
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
           <Globe size={16} />
-          <span>EN</span>
+          <span>{language === 'en' ? 'EN' : 'TH'}</span>
         </button>
       </div>
     </div>

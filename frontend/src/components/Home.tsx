@@ -12,6 +12,7 @@ import SearchBar from './SearchBar'
 import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
+import { useTranslation } from '../contexts/LanguageContext'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
@@ -20,6 +21,7 @@ const HomePage: React.FC = () => {
   const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(searchTerm, 500)
+  const { t } = useTranslation()
 
   useEffect(() => {
     setPage(1)
@@ -43,19 +45,19 @@ const HomePage: React.FC = () => {
   })
 
   if (isLoading) {
-    return <Loading message={'Loading inventory...'} />
+    return <Loading message={t.inventory.loading} />
   }
 
   if (isError) {
-    return <Error message={'Something went wrong.'} />
+    return <Error message={t.common.error} />
   }
 
   if (data?.total_items === 0 && !searchTerm) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed ...">
         <PackageSearch size={20} />
-        <h3 className="mt-4 text-lg font-bold">No available item yet</h3>
-        <p className="text-slate-500">Please contact staff if items are missing.</p>
+        <h3 className="mt-4 text-lg font-bold">{t.inventory.noItems}</h3>
+        <p className="text-slate-500">{t.inventory.contactStaff}</p>
       </div>
     )
   }
@@ -63,9 +65,9 @@ const HomePage: React.FC = () => {
   return (
     <>
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Inventory System</h1>
+        <h1 className="text-2xl font-bold mb-4">{t.inventory.title}</h1>
 
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search Items..." />
+        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder={t.search.placeholder} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data?.data?.map((item: Item) => (
@@ -76,7 +78,7 @@ const HomePage: React.FC = () => {
         {data?.total_items === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500">
             <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
-            <p>No results found for "{searchTerm}"</p>
+            <p>{t.common.noResults} "{searchTerm}"</p>
           </div>
         )}
 

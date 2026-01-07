@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import MyBorrowings from './components/MyBorrowings'
 import { Toaster } from 'react-hot-toast'
 import Admin from './components/Admin'
+import { LanguageProvider } from './contexts/LanguageContext'
 
 const queryClient = new QueryClient()
 
@@ -14,20 +15,22 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <div className="min-h-screen bg-slate-50">
-            <NavBar />
-            <Toaster position="top-right" />
-            <main className="max-w-7xl mx-auto px-4 py-8">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/my-borrowings" element={<MyBorrowings />} />
-                <Route path="/admin" element={<Admin />} />
-              </Routes>
-            </main>
-          </div>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <div className="min-h-screen bg-slate-50">
+              <NavBar />
+              <Toaster position="top-right" />
+              <main className="max-w-7xl mx-auto px-4 py-8">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/my-borrowings" element={<MyBorrowings />} />
+                  <Route path="/admin" element={<Admin />} />
+                </Routes>
+              </main>
+            </div>
+          </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </QueryClientProvider>
   )

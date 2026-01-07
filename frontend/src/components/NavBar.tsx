@@ -1,4 +1,4 @@
-import { Box, History, Package, User, Globe, X, ShieldUser } from 'lucide-react'
+import { Box, History, Package, User, X, ShieldUser } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoginCard from './LoginCard'
@@ -6,11 +6,18 @@ import { useState } from 'react'
 import NavItem from './NavItem'
 import GhostNavItem from './GhostNavItem'
 import MobileMenu from './MobileMenu'
+import { useTranslation } from '../contexts/LanguageContext'
 
 const NavBar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const { user, isLoginModalOpen, setIsLoginModalOpen } = useAuth()
+
+  const { language, setLanguage, t } = useTranslation()
+
+  const toggleLang = () => {
+      setLanguage(prev => prev === 'en' ? 'th' : 'en')
+  }
 
   return (
     <>
@@ -25,34 +32,37 @@ const NavBar: React.FC = () => {
                 </div>
                 <Link to="/">
                   <span className="text-xl font-bold text-slate-900 tracking-tight">
-                    INV.SYSTEM
+                    {t.nav.brand}
                   </span>
                 </Link>
               </div>
 
               {/* desktop menu */}
               <div className="hidden md:flex items-center gap-1">
-                <NavItem icon={<Package size={18} />} label="Inventory" to="/" />
+                <NavItem icon={<Package size={18} />} label={t.nav.inventory} to="/" />
                 {user ? (
-                  <NavItem icon={<History size={18} />} label="My Borrowings" to="/my-borrowings" />
+                  <NavItem icon={<History size={18} />} label={t.nav.myBorrowings} to="/my-borrowings" />
                 ) : (
                   <GhostNavItem
                     icon={<History size={18} />}
-                    label="My Borrowings"
+                    label={t.nav.myBorrowings}
                     onClick={() => setIsLoginModalOpen(true)}
                   />
                 )}
                 {user?.is_admin && (
-                  <NavItem icon={<ShieldUser size={18} />} label="Admin" to="/admin" />
+                  <NavItem icon={<ShieldUser size={18} />} label={t.nav.admin} to="/admin" />
                 )}
               </div>
             </div>
 
             {/* right: languages, profile */}
             <div className="flex items-center gap-4 hidden md:flex">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                <Globe size={16} />
-                <span>EN</span>
+              <button 
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 
+                rounded-lg transition-colors"
+                onClick={toggleLang}
+              >
+                <span>{language === 'en' ? '🇹🇭 TH' : '🇬🇧 EN'}</span>
               </button>
 
               <div className="h-6 w-[1px] bg-slate-200 mx-1"></div>
@@ -62,13 +72,13 @@ const NavBar: React.FC = () => {
                 <div className="flex items-center gap-3 pl-2 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="hidden sm:block text-right">
                     <p className="text-xs font-bold text-slate-900">{`${user?.first_name} ${user?.last_name}`}</p>
-                    <p className="text-[10px] text-slate-500">username: {`${user?.username}`}</p>
+                    <p className="text-[10px] text-slate-500">{t.auth.username}: {`${user?.username}`}</p>
                   </div>
 
                   <NavItem icon={<User size={32} />} to="/profile" />
                 </div>
               ) : (
-                <button onClick={() => setIsLoginModalOpen(true)}>Login</button>
+                <button onClick={() => setIsLoginModalOpen(true)}>{t.auth.loginButton}</button>
               )}
             </div>
 

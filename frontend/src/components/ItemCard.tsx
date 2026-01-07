@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Item } from '../types/item'
+import { useTranslation } from '../contexts/LanguageContext'
 
 interface ItemCardProps {
   item: Item
@@ -7,6 +8,7 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
+  const { t } = useTranslation()
   const isAvailable = item.status === 'available'
   const isBorrowed = item.status === 'borrowed'
   const canBorrow =
@@ -15,15 +17,25 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
   const getButtonText = () => {
     switch (item.status) {
       case 'available':
-        return item.available_amount > 0 ? 'Borrow Item' : 'Out of Stock'
+        return item.available_amount > 0 ? t.inventory.actions.borrow : t.inventory.actions.outOfStock
       case 'borrowed':
-        return item.available_amount > 0 ? 'Borrow More' : 'Out of Stock'
+        return item.available_amount > 0 ? t.inventory.actions.borrowMore : t.inventory.actions.outOfStock
       case 'maintenance':
-        return 'Under Maintenance'
+        return t.inventory.actions.underMaintenance
       case 'lost':
-        return 'Item Lost'
+        return t.inventory.actions.itemLost
       default:
-        return 'Unavailable'
+        return t.inventory.status.unavailable
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'available': return t.inventory.status.available
+      case 'borrowed': return t.inventory.status.borrowed
+      case 'maintenance': return t.inventory.status.maintenance
+      case 'lost': return t.inventory.status.lost
+      default: return t.inventory.status.unavailable
     }
   }
 
@@ -51,13 +63,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
             <span
               className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${getBadgeColor()}`}
             >
-              {item.status}
+              {getStatusText(item.status)}
             </span>
 
             {/* item amount */}
             {(isAvailable || isBorrowed) && (
               <span className="text-sm font-medium text-slate-400">
-                {item.available_amount}/{item.total_amount} items
+                {item.available_amount}/{item.total_amount} {t.inventory.labels.items}
               </span>
             )}
           </div>

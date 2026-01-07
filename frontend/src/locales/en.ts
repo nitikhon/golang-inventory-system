@@ -1,21 +1,167 @@
 export const en = {
+  common: {
+    loading: 'Loading...',
+    error: 'Something went wrong.',
+    noResults: 'No results found for',
+    success: 'Success',
+    processing: 'Processing...',
+    unknownItem: 'Unknown Item',
+  },
   inventory: {
     title: 'Inventory System',
     loading: 'Loading inventory...',
-    loadingError: 'Failed to load items. Please check if your backend is running.',
+    noItems: 'No available item yet',
+    contactStaff: 'Please contact staff if items are missing.',
     status: {
       available: 'Available',
-      unavailable: 'Borrowed',
+      borrowed: 'Borrowed',
       maintenance: 'Maintenance',
+      lost: 'Lost',
+      unavailable: 'Unavailable',
+    },
+    borrowingStatus: {
+      pending: 'Pending',
+      active: 'Active',
+      returned: 'Returned',
+      overdue: 'Overdue',
+      rejected: 'Rejected',
+      cancelled: 'Cancelled',
+    },
+    placeholders: {
+      borrowReason: 'Why are you borrowing this?',
     },
     actions: {
       borrow: 'Borrow Item',
+      borrowMore: 'Borrow More',
       outOfStock: 'Out of Stock',
       return: 'Return Item',
+      underMaintenance: 'Under Maintenance',
+      itemLost: 'Item Lost',
     },
     labels: {
       items: 'items',
       description: 'Description',
+      total: 'Total',
+      available: 'Available',
     },
+  },
+  admin: {
+    title: 'Admin Dashboard',
+    searchPlaceholder: 'Search borrowings by user or item...',
+    tabs: {
+      pending: 'Pending Requests',
+      active: 'Active Borrows',
+      history: 'History',
+    },
+    requestsList: 'Requests List',
+    table: {
+      user: 'User',
+      itemDetail: 'Item Detail',
+      dates: 'Dates',
+      actions: 'Actions',
+      qty: 'Qty',
+      due: 'Due',
+    },
+    actions: {
+      approve: 'Approve',
+      approving: 'Approving...',
+      reject: 'Reject',
+      rejecting: 'Rejecting...',
+    },
+    dialog: {
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      confirmApprove: 'Yes, approve it!',
+      confirmReject: 'Yes, reject it!',
+    },
+    messages: {
+      approveSuccess: 'Request approved successfully!',
+      cancelSuccess: 'Request cancelled successfully!',
+    },
+  },
+  myBorrowings: {
+    title: 'My Borrowing History',
+    searchPlaceholder: 'Search borrowings by user or item...',
+    stats: {
+      ongoing: 'Ongoing Borrows',
+      returned: 'Total Returned',
+      current: 'Currently Borrows',
+    },
+    table: {
+      itemName: 'Item Name',
+      date: 'Date',
+      amount: 'Amount',
+      status: 'Status',
+      action: 'Action',
+    },
+    actions: {
+      cancel: 'Cancel',
+      cancelRequest: 'Cancel Request',
+    },
+    messages: {
+      cancelSuccess: 'Request cancelled successfully!',
+      borrowSuccess: 'Borrowing request submitted!',
+    },
+    empty: {
+      title: 'No borrowings yet',
+      description: 'Items you borrow will appear here.',
+      backHome: 'Back to Home Page',
+    },
+  },
+  profile: {
+    roles: {
+      admin: 'Admin',
+      user: 'Standard User',
+    },
+    stats: {
+      ongoing: 'Ongoing Borrows',
+      returned: 'Total Returned',
+      accountStatus: 'Account Status',
+      active: 'Active',
+      inactive: 'Unactive',
+    },
+    details: {
+      title: 'Account Details',
+      email: 'Email Address',
+      phone: 'Phone',
+      memberSince: 'Member Since',
+    },
+    actions: {
+      signOut: 'Sign Out from System',
+      signOutMessage: 'Your session will be cleared and you will need to login again.',
+      signOutCancel: 'Cancel'
+    },
+  },
+  auth: {
+    signIn: 'Sign In',
+    subtitle: 'Access your inventory dashboard',
+    username: 'Username',
+    usernamePlaceholder: 'Enter your username',
+    password: 'Password',
+    loginButton: 'Login to System',
+    authenticating: 'Authenticating...',
+    validation: {
+      empty: 'Username and Password must not be empty',
+    },
+    logoutTitle: 'Confirm Sign Out?',
+    logoutText: 'Your session will be cleared and you will need to login again.',
+    logoutSuccess: 'Sign Out success!'
+  },
+  nav: {
+    brand: 'INV.SYSTEM',
+    inventory: 'Inventory',
+    myBorrowings: 'My Borrowings',
+    admin: 'Admin',
+    login: 'Login',
+    logout: 'Logout',
+    profile: 'Profile',
+  },
+  pagination: {
+    previous: 'Previous',
+    next: 'Next',
+    pageInfo: 'Page {page} of {totalPages}',
+  },
+  search: {
+    placeholder: 'Search Items...',
   },
 }

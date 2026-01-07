@@ -9,10 +9,13 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import capitalizeSentence from '../utils/capitalizeSentence'
 import Swal from 'sweetalert2'
+import { useTranslation } from './LanguageContext'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const navigator = useNavigate()
+
+  const { t } = useTranslation()
 
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<Token | null>(null)
@@ -51,15 +54,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userProfile)
         queryClient.setQueryData(['user'], userProfile)
       } catch {
-        toast.error('Fetch profile failed', { duration: 5000 })
+        toast.error(t.common.error, { duration: 5000 })
       }
       setIsLoginModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
-      let message = error.response?.data?.error || 'Something went wrong'
+      let message = error.response?.data?.error || t.common.error
       const status = error.response?.status
       if (status == 500) {
-        message = 'Something went wrong'
+        message = t.common.error
       }
       toast.error(capitalizeSentence(message), { duration: 5000 })
     },
@@ -68,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { mutate: logoutMutation } = useMutation({
     mutationFn: userService.logout,
     onSuccess: () => {
-      toast.success('Logout success!')
+      toast.success(t.auth.logoutSuccess)
       setUser(null)
       setToken(null)
       navigator('/')
@@ -87,13 +90,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     Swal.fire({
-      title: 'Confirm Logout?',
-      text: 'Your session will be cleared and you will need to login again.',
+      title: t.auth.logoutTitle,
+      text: t.auth.logoutText,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Logout',
+      confirmButtonText: t.profile.actions.signOut,
+      cancelButtonText: t.profile.actions.signOutCancel
     }).then((result) => {
       if (result.isConfirmed) {
         logoutMutation()

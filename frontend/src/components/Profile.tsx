@@ -14,9 +14,11 @@ import borrowingService from '../services/borrowing'
 import { useQuery } from '@tanstack/react-query'
 import formatDate from '../utils/formatDate'
 import StatCard from './StatCard'
+import { useTranslation } from '../contexts/LanguageContext'
 
 const Profile: React.FC = () => {
   const { user, token, logout } = useAuth()
+  const { t } = useTranslation()
 
   const { data } = useQuery({
     queryKey: ['stats'],
@@ -24,7 +26,7 @@ const Profile: React.FC = () => {
     enabled: !!token?.access_token,
   })
 
-  if (!user) return <p>Please login</p>
+  if (!user) return <p>{t.nav.login}</p>
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -40,7 +42,7 @@ const Profile: React.FC = () => {
           <p className="text-slate-500 font-medium">@{user?.username}</p>
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
             <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full uppercase tracking-wider">
-              {user?.is_admin ? 'Admin' : 'Standard User'}
+              {user?.is_admin ? t.profile.roles.admin : t.profile.roles.user}
             </span>
           </div>
         </div>
@@ -50,32 +52,32 @@ const Profile: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon={<Clock className="text-amber-500" />}
-          label="Ongoing Borrows"
+          label={t.profile.stats.ongoing}
           value={String(data?.ongoing_borrows ?? 0)}
         />
         <StatCard
           icon={<PackageCheck className="text-emerald-500" />}
-          label="Total Returned"
+          label={t.profile.stats.returned}
           value={String(data?.total_returned ?? 0)}
         />
         <StatCard
           icon={<ShieldCheck className="text-blue-500" />}
-          label="Account Status"
-          value={user.deleted_at === null ? 'Active' : 'Unactive'}
+          label={t.profile.stats.accountStatus}
+          value={user.deleted_at === null ? t.profile.stats.active : t.profile.stats.inactive}
         />
       </div>
 
       {/* detailed info section */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-8 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="font-semibold text-slate-800">Account Details</h2>
+          <h2 className="font-semibold text-slate-800">{t.profile.details.title}</h2>
         </div>
         <div className="p-8 space-y-6">
-          <InfoRow icon={<Mail size={18} />} label="Email Address" value={user?.email} />
-          <InfoRow icon={<Building size={18} />} label="Phone" value={user?.phone} />
+          <InfoRow icon={<Mail size={18} />} label={t.profile.details.email} value={user?.email} />
+          <InfoRow icon={<Building size={18} />} label={t.profile.details.phone} value={user?.phone} />
           <InfoRow
             icon={<Calendar size={18} />}
-            label="Member Since"
+            label={t.profile.details.memberSince}
             value={formatDate(user?.created_at)}
           />
         </div>
@@ -90,10 +92,10 @@ const Profile: React.FC = () => {
                     transition-all active:scale-[0.98]"
         >
           <LogOut size={20} />
-          Sign Out from System
+          {t.profile.actions.signOut}
         </button>
         <p className="text-center text-slate-400 text-xs mt-4">
-          Your session will be cleared and you will need to login again.
+          {t.profile.actions.signOutMessage}
         </p>
       </div>
     </div>

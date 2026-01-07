@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import addDays from '../utils/addDays'
 import toast from 'react-hot-toast'
 import capitalizeSentence from '../utils/capitalizeSentence'
+import { useTranslation } from '../contexts/LanguageContext'
 
 interface BorrowCardProps {
   item: Item
@@ -23,6 +24,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
     due_date: addDays(new Date(), 7).toISOString().split('T')[0],
   })
 
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, token } = useAuth()
@@ -33,15 +35,15 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       queryClient.invalidateQueries({ queryKey: ['items'] })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
-      toast.success('Borrowing request submitted!', { duration: 5000 })
+      toast.success(t.myBorrowings.messages.borrowSuccess, { duration: 5000 })
       navigate('/my-borrowings')
       setIsBorrowModalOpen(false)
     },
     onError: (error: AxiosError<{ error: string }>) => {
-      let message = error.response?.data?.error || 'Something went wrong'
+      let message = error.response?.data?.error || t.common.error
       const status = error.response?.status
       if (status == 500) {
-        message = 'Something went wrong'
+        message = t.common.error
       }
       toast.error(capitalizeSentence(message), { duration: 5000 })
     },
@@ -85,11 +87,11 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       {/* Header: item's name, amount*/}
       <div>
         <h2 className="text-xl font-bold">{item.name}</h2>
-        <p className="text-sm text-slate-500">Available: {item.available_amount} items</p>
+        <p className="text-sm text-slate-500">{t.inventory.labels.available}: {item.available_amount} {t.inventory.labels.items}</p>
       </div>
       {/* Input: borrow amount */}
       <div>
-        <label className="block text-sm font-medium">Quantity</label>
+        <label className="block text-sm font-medium">{t.admin.table.qty}</label>
         <input
           name="amount"
           type="number"
@@ -102,7 +104,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       </div>
       {/* Input: due date */}
       <div>
-        <label className="block text-sm font-medium">Return Date</label>
+        <label className="block text-sm font-medium">{t.admin.table.due}</label>
         <input
           name="due_date"
           type="date"
@@ -113,13 +115,13 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       </div>
       {/* Input: description */}
       <div>
-        <label className="block text-sm font-medium">Description</label>
+        <label className="block text-sm font-medium">{t.inventory.labels.description}</label>
         <textarea
           name="description"
           value={borrowForm.description}
           onChange={handleChange}
           className="w-full p-2 border rounded-lg"
-          placeholder="Why are you borrowing this?"
+          placeholder={t.inventory.placeholders.borrowReason}
         />
       </div>
       {/* submit */}
@@ -128,7 +130,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
         disabled={isPending}
         className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700"
       >
-        {isPending ? 'Processing...' : 'Confirm Borrowing'}
+        {isPending ? t.common.processing : t.inventory.actions.borrow}
       </button>
     </form>
   )

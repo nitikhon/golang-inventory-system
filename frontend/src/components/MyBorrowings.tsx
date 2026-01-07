@@ -15,11 +15,13 @@ import toast from 'react-hot-toast'
 import Pagination from './Pagination'
 import SearchBar from './SearchBar'
 import useDebounce from '../hooks/useDebounce'
+import { useTranslation } from '../contexts/LanguageContext'
 
 const MyBorrowings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
 
+  const { t } = useTranslation()
   const { user, token, isSilentLoading, setIsLoginModalOpen } = useAuth()
 
   const navigate = useNavigate()
@@ -59,7 +61,7 @@ const MyBorrowings: React.FC = () => {
   const { mutate: cancelMutation } = useMutation({
     mutationFn: (id: number) => borrowingService.cancelBorrowing(id, token?.access_token),
     onSuccess: () => {
-      toast.success('Request cancelled successfully!', { duration: 5000 })
+      toast.success(t.myBorrowings.messages.cancelSuccess, { duration: 5000 })
       queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
     },
@@ -67,13 +69,13 @@ const MyBorrowings: React.FC = () => {
 
   const handleCancel = (id: number) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t.admin.dialog.title,
+      text: t.admin.dialog.text,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, cancel it!',
+      confirmButtonText: t.admin.dialog.confirmReject,
     }).then((result) => {
       if (result.isConfirmed) {
         cancelMutation(id)
@@ -99,6 +101,18 @@ const MyBorrowings: React.FC = () => {
     }
   }
 
+  const getStatusText = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending': return t.inventory.borrowingStatus.pending
+      case 'active': return t.inventory.borrowingStatus.active
+      case 'returned': return t.inventory.borrowingStatus.returned
+      case 'overdue': return t.inventory.borrowingStatus.overdue
+      case 'rejected': return t.inventory.borrowingStatus.rejected
+      case 'cancelled': return t.inventory.borrowingStatus.cancelled
+      default: return status
+    }
+  }
+
   useEffect(() => {
     if (!isSilentLoading && !user) {
       setIsLoginModalOpen(true)
@@ -106,28 +120,28 @@ const MyBorrowings: React.FC = () => {
   }, [user, setIsLoginModalOpen])
 
   if (!user) {
-    return <p>Please login</p>
+    return <p>{t.nav.login}</p>
   }
 
   if (isLoading || isSilentLoading) {
-    return <Loading message={'Loading borrowings'} />
+    return <Loading message={t.inventory.loading} />
   }
 
   if (isError) {
-    return <Error message={'Something went wrong.'} />
+    return <Error message={t.common.error} />
   }
 
   if (borrowings?.total_items === 0 && !searchTerm) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed ...">
         <PackageSearch size={20} />
-        <h3 className="mt-4 text-lg font-bold">No borrowings yet</h3>
-        <p className="text-slate-500">Items you borrow will appear here.</p>
+        <h3 className="mt-4 text-lg font-bold">{t.myBorrowings.empty.title}</h3>
+        <p className="text-slate-500">{t.myBorrowings.empty.description}</p>
         <button
           className="mt-6 p-3 rounded-lg bg-blue-500 text-white"
           onClick={() => navigate('/')}
         >
-          Back to Home Page
+          {t.myBorrowings.empty.backHome}
         </button>
       </div>
     )
@@ -138,27 +152,27 @@ const MyBorrowings: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
           icon={<Clock className="text-amber-500" />}
-          label="Ongoing Borrows"
+          label={t.myBorrowings.stats.ongoing}
           value={String(data?.ongoing_borrows ?? 0)}
         />
         <StatCard
           icon={<PackageCheck className="text-emerald-500" />}
-          label="Total Returned"
+          label={t.myBorrowings.stats.returned}
           value={String(data?.total_returned ?? 0)}
         />
         <StatCard
           icon={<Activity className="text-blue-500" />}
-          label="Currently Borrows"
+          label={t.myBorrowings.stats.current}
           value={String(data?.currently_borrows ?? 0)}
         />
       </div>
 
-      <h1 className="text-2xl font-bold text-slate-800">My Borrowing History</h1>
+      <h1 className="text-2xl font-bold text-slate-800">{t.myBorrowings.title}</h1>
 
       <SearchBar
         value={searchTerm}
         onChange={setSearchTerm}
-        placeholder="Search borrowings by user or item..."
+        placeholder={t.myBorrowings.searchPlaceholder}
       />
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -167,19 +181,19 @@ const MyBorrowings: React.FC = () => {
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr className="hover:bg-slate-50/50">
               <th className="py-4 px-6" scope="col">
-                Item Name
+                {t.myBorrowings.table.itemName}
               </th>
               <th className="py-4 px-6" scope="col">
-                Date
+                {t.myBorrowings.table.date}
               </th>
               <th className="py-4 px-6" scope="col">
-                Amount
+                {t.myBorrowings.table.amount}
               </th>
               <th className="py-4 px-6" scope="col">
-                Status
+                {t.myBorrowings.table.status}
               </th>
               <th className="py-4 px-6" scope="col">
-                Action
+                {t.myBorrowings.table.action}
               </th>
             </tr>
           </thead>
@@ -187,14 +201,14 @@ const MyBorrowings: React.FC = () => {
             {borrowings?.data?.map((borrow) => (
               <tr key={borrow.id} className="border-b border-slate-50 last:border-0">
                 <th className="py-4 px-6" scope="row">
-                  {borrow.item?.name ?? 'Unknown Item'}
+                  {borrow.item?.name ?? t.common.unknownItem}
                 </th>
                 <td>{formatDate(borrow.borrowed_at)}</td>
                 <td>{borrow.borrowing_amount}</td>
                 <td className="py-4 px-6">
                   <span className={getStatusStyles(borrow.borrowing_status)}>
                     <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-60"></span>
-                    {borrow.borrowing_status}
+                    {getStatusText(borrow.borrowing_status)}
                   </span>
                 </td>
                 <td className="py-4 px-6">
@@ -204,7 +218,7 @@ const MyBorrowings: React.FC = () => {
                       className="w-full py-2 text-sm text-red-600 font-medium bg-red-50 rounded-lg 
                     active:bg-red-100 transition-colors border border-red-700"
                     >
-                      Cancel
+                      {t.myBorrowings.actions.cancel}
                     </button>
                   )}
                 </td>
@@ -222,17 +236,17 @@ const MyBorrowings: React.FC = () => {
                 <span className="font-semibold text-slate-900">{borrow.item?.name}</span>
                 <span className={getStatusStyles(borrow.borrowing_status)}>
                   <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-60"></span>
-                  {borrow.borrowing_status}
+                  {getStatusText(borrow.borrowing_status)}
                 </span>
               </div>
               {/* Details*/}
               <div className="grid grid-cols-2 gap-2 text-sm text-slate-500">
                 <div>
-                  <p className="text-xs text-slate-400">Date</p>
+                  <p className="text-xs text-slate-400">{t.myBorrowings.table.date}</p>
                   <p>{formatDate(borrow.borrowed_at)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">Amount</p>
+                  <p className="text-xs text-slate-400">{t.myBorrowings.table.amount}</p>
                   <p>{borrow.borrowing_amount}</p>
                 </div>
               </div>
@@ -244,7 +258,7 @@ const MyBorrowings: React.FC = () => {
                     className="w-full py-2 text-sm text-red-600 font-medium bg-red-50 rounded-lg 
                     active:bg-red-100 transition-colors border border-red-700"
                   >
-                    Cancel Request
+                    {t.myBorrowings.actions.cancelRequest}
                   </button>
                 </div>
               )}
@@ -255,7 +269,7 @@ const MyBorrowings: React.FC = () => {
         {borrowings?.total_items === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500">
             <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
-            <p>No results found for "{searchTerm}"</p>
+            <p>{t.common.noResults} "{searchTerm}"</p>
           </div>
         )}
       </div>
