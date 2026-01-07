@@ -9,6 +9,7 @@ type BorrowingRepository interface {
 	BorrowItem(borrowing *entity.Borrowing) (*entity.Borrowing, error)
 	ApproveBorrowingWithTx(tx *gorm.DB, borrowingId, approverId uint) (*entity.Borrowing, error)
 	RejectBorrowingWithTx(tx *gorm.DB, borrowingId, rejecterId uint) (*entity.Borrowing, error)
+	ReturnBorrowingWithTx(tx *gorm.DB, borrowingId uint, status string) (*entity.Borrowing, error)
 	GetAllBorrowings() ([]*entity.Borrowing, error)
 	GetBorrowingByID(borrowingID uint) (*entity.Borrowing, error)
 	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)

@@ -67,16 +67,20 @@ export const en = {
       approving: 'Approving...',
       reject: 'Reject',
       rejecting: 'Rejecting...',
+      return: 'Mark as Return',
+      returning: 'Process Returning...',
     },
     dialog: {
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
       confirmApprove: 'Yes, approve it!',
       confirmReject: 'Yes, reject it!',
+      confirmReturn: 'Yes, return it!',
     },
     messages: {
       approveSuccess: 'Request approved successfully!',
       cancelSuccess: 'Request cancelled successfully!',
+      returnSuccess: 'Request returned successfully!',
     },
   },
   myBorrowings: {

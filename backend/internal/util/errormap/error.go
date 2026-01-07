@@ -15,6 +15,7 @@ const (
 	ErrInvalidDueDateFormat          = "invalid due_date format, expected RFC3339"
 	ErrInvalidDueDateValue           = "due date cannot be before the borrowed at date"
 	ErrUnauthorizedToRejectAndCancel = "no permission to reject/cancel the borrowing"
+	ErrBorrowingNotActive           = "borrowing is not active"
 
 	// Item errors
 	ErrItemNotFound            = "item not found"

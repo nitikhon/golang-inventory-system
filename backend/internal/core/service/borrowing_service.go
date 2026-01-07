@@ -17,6 +17,7 @@ type BorrowingServiceInterface interface {
 	BorrowItem(borrowing entity.BorrowRequest) (*entity.Borrowing, error)
 	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
+	ReturnBorrowing(borrowerId uint) (*entity.Borrowing, error)
 	GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
 	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
@@ -216,6 +217,67 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 	}
 
 	result, err := s.borrowingRepo.RejectBorrowingWithTx(tx, borrowerId, rejecterId)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+	committed = true
+	return result, nil
+}
+
+// RejectBorrowing rejects a borrowing request.
+func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing, error) {
+	db := s.itemRepo.GetDB()
+	tx := db.Begin()
+	committed := false
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+		if !committed {
+			tx.Rollback()
+		}
+	}()
+
+	// Check if the borrowing exists
+	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(borrowingId)
+	if err != nil {
+		return nil, err
+	}
+	if existingBorrowing == nil {
+		return nil, errors.New(errormap.ErrBorrowingNotExist)
+	}
+
+	// Check if the borrowing is active or not
+	if existingBorrowing.BorrowingStatus != entity.BORROWING_ACTIVE {
+		return nil, errors.New(errormap.ErrBorrowingNotActive)
+	}
+
+	now := time.Now()
+    status := entity.BORROWING_RETURNED
+
+	// assume that we don't have legacy data with wrong format
+	dueDate, _ := time.Parse(time.RFC3339, existingBorrowing.DueDate)
+
+	if now.After(dueDate) {
+        status = entity.BORROWING_OVERDUE
+    }
+
+	item, err := s.itemRepo.GetItemByIDForUpdate(tx, existingBorrowing.ItemID)
+	if err != nil {
+		return nil, err
+	}
+	item.AvailableAmount += existingBorrowing.BorrowingAmount
+
+	if _, err := s.itemRepo.UpdateWithTx(tx, item); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	result, err := s.borrowingRepo.ReturnBorrowingWithTx(tx, borrowingId, status)
 	if err != nil {
 		tx.Rollback()
 		return nil, err

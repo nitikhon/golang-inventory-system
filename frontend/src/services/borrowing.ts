@@ -102,6 +102,24 @@ const approveBorrowing = async (
   return request.data
 }
 
+const returnBorrowing = async (
+  borrowing_id: number | undefined,
+  access_token: string | undefined
+) => {
+  const request = await axios.post(
+    `${baseUrl}/return/${borrowing_id}`,
+    {},
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${access_token}`,
+      },
+      withCredentials: true,
+    }
+  )
+  return request.data
+}
+
 export default {
   getBorrowingsByUserID,
   getBorrowingStats,
@@ -109,4 +127,5 @@ export default {
   cancelBorrowing,
   getBorrowingsByStatus,
   approveBorrowing,
+  returnBorrowing,
 }

@@ -73,6 +73,23 @@ func (r *BorrowingRepository) RejectBorrowingWithTx(tx *gorm.DB, borrowingId, re
 	return &updatedBorrowing, nil
 }
 
+func (r *BorrowingRepository) ReturnBorrowingWithTx(tx *gorm.DB, borrowingId uint, status string) (*entity.Borrowing, error) {
+	err := tx.Model(&entity.Borrowing{}).Where("id = ?", borrowingId).
+		Updates(&entity.Borrowing{
+			BorrowingStatus: status,
+			ReturnedAt:      time.Now().Format(time.RFC3339),
+		}).Error
+	if err != nil {
+		return &entity.Borrowing{}, err
+	}
+
+	var updatedBorrowing entity.Borrowing
+	if err := tx.First(&updatedBorrowing, borrowingId).Error; err != nil {
+		return &entity.Borrowing{}, err
+	}
+	return &updatedBorrowing, nil
+}
+
 // GetAllBorrowings retrieves all borrowing records from the database.
 func (r *BorrowingRepository) GetAllBorrowings() ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing

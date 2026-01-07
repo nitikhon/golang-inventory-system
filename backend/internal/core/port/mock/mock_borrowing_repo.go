@@ -213,3 +213,18 @@ func (mr *MockBorrowingRepositoryMockRecorder) RejectBorrowingWithTx(arg0, arg1,
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RejectBorrowingWithTx", reflect.TypeOf((*MockBorrowingRepository)(nil).RejectBorrowingWithTx), arg0, arg1, arg2)
 }
+
+// ReturnBorrowingWithTx mocks base method.
+func (m *MockBorrowingRepository) ReturnBorrowingWithTx(arg0 *gorm.DB, arg1 uint, arg2 string) (*entity.Borrowing, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ReturnBorrowingWithTx", arg0, arg1, arg2)
+        ret0, _ := ret[0].(*entity.Borrowing)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// ReturnBorrowingWithTx indicates an expected call of ReturnBorrowingWithTx.
+func (mr *MockBorrowingRepositoryMockRecorder) ReturnBorrowingWithTx(arg0, arg1, arg2 interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReturnBorrowingWithTx", reflect.TypeOf((*MockBorrowingRepository)(nil).ReturnBorrowingWithTx), arg0, arg1, arg2)
+}

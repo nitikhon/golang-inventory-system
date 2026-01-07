@@ -98,6 +98,10 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		rateLimiter,
 		borrowingHandler.RejectBorrowing)
+	borrowingRoutes.Post("/return/:id",
+		middleware.AuthMiddleware(),
+		middleware.AdminOnly(),
+		borrowingHandler.ReturnBorrowing)
 	borrowingRoutes.Get("/status/",
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),

@@ -67,16 +67,20 @@ export const th = {
       approving: 'กำลังอนุมัติ...',
       reject: 'ปฏิเสธ',
       rejecting: 'กำลังปฏิเสธ...',
+      return: 'คืนรายการ',
+      returning: 'กำลังประมวลผล...',
     },
     dialog: {
       title: 'ยืนยันการทำรายการ?',
       text: 'คุณจะไม่สามารถย้อนกลับการกระทำนี้ได้!',
       confirmApprove: 'ใช่, อนุมัติ!',
       confirmReject: 'ใช่, ปฏิเสธ!',
+      confirmReturn: 'ใช่, ยืนยันการคืนรายการ!',
     },
     messages: {
       approveSuccess: 'อนุมัติคำขอเรียบร้อยแล้ว!',
-      cancelSuccess: 'ไม่อนุมัติคำขอเรียบร้อยแล้ว!',
+      cancelSuccess: 'ปฏิเสธคำขอเรียบร้อยแล้ว!',
+      returnSuccess: 'คืนรายการเรียบร้อยแล้ว!',
     },
   },
   myBorrowings: {

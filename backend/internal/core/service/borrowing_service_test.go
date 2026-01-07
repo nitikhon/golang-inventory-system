@@ -1400,3 +1400,140 @@ func TestGetBorrowingsStats_Success(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedBorrowings, result)
 }
+
+func TestReturnBorrowing_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+
+	mockBorrowing := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_ACTIVE,
+		DueDate:         time.Now().Add(24 * time.Hour).Format(time.RFC3339),
+	}
+
+	mockItem := &entity.Item{
+		GormModel:       entity.GormModel{ID: 1},
+		Name:            "office chair ergonomic",
+		AvailableAmount: 4,
+		TotalAmount:     6,
+	}
+
+	expectedResult := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		BorrowingStatus: entity.BORROWING_RETURNED,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectCommit()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
+	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().ReturnBorrowingWithTx(gomock.Any(), borrowingId, entity.BORROWING_RETURNED).Return(expectedResult, nil)
+
+	// act
+	result, err := service.ReturnBorrowing(borrowingId)
+
+	// assert
+	assert.Nil(t, err)
+	assert.Equal(t, entity.BORROWING_RETURNED, result.BorrowingStatus)
+}
+
+func TestReturnBorrowing_Success_Overdue(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+
+	// Due date in the past
+	mockBorrowing := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		UserID:          2,
+		ItemID:          1,
+		BorrowingAmount: 1,
+		BorrowingStatus: entity.BORROWING_ACTIVE,
+		DueDate:         time.Now().Add(-24 * time.Hour).Format(time.RFC3339),
+	}
+
+	mockItem := &entity.Item{
+		GormModel:       entity.GormModel{ID: 1},
+		Name:            "office chair ergonomic",
+		AvailableAmount: 4,
+	}
+
+	expectedResult := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		BorrowingStatus: entity.BORROWING_OVERDUE,
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectCommit()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
+	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().ReturnBorrowingWithTx(gomock.Any(), borrowingId, entity.BORROWING_OVERDUE).Return(expectedResult, nil)
+
+	// act
+	result, err := service.ReturnBorrowing(borrowingId)
+
+	// assert
+	assert.Nil(t, err)
+	assert.Equal(t, entity.BORROWING_OVERDUE, result.BorrowingStatus)
+}
+
+func TestReturnBorrowing_NotExist(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(999)
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, nil)
+
+	// act
+	result, err := service.ReturnBorrowing(borrowingId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrBorrowingNotExist)
+}
+
+func TestReturnBorrowing_NotActive(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, mockItemRepo, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	borrowingId := uint(1)
+
+	mockBorrowing := &entity.Borrowing{
+		GormModel:       entity.GormModel{ID: 1},
+		BorrowingStatus: entity.BORROWING_PENDING, // Not Active
+	}
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
+
+	mockItemRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+
+	// act
+	result, err := service.ReturnBorrowing(borrowingId)
+
+	// assert
+	assert.Nil(t, result)
+	assert.EqualError(t, err, errormap.ErrBorrowingNotActive)
+}

@@ -114,6 +114,29 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 	return c.JSON(rejectedBorrowing)
 }
 
+func (h *BorrowingHandler) ReturnBorrowing(c *fiber.Ctx) error {
+	borrowingID, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
+	}
+	if borrowingID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
+	}
+
+	returnedBorrowing, err := h.service.ReturnBorrowing(uint(borrowingID))
+	if err != nil {
+		switch err.Error() {
+		case errormap.ErrBorrowingNotExist, gorm.ErrRecordNotFound.Error():
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		case errormap.ErrBorrowingNotActive:
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": err.Error()})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+	}
+	return c.JSON(returnedBorrowing)
+}
+
 // GetBorrowingsByStatus handles fetching borrowings by status.
 func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
 	statusParam := c.Query("status")

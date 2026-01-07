@@ -72,6 +72,16 @@ const Admin: React.FC = () => {
     },
   })
 
+  const { mutate: returnMutation, isPending: isReturning } = useMutation({
+    mutationFn: (id: number) => borrowingService.returnBorrowing(id, token?.access_token),
+    onSuccess: () => {
+      toast.success(t.admin.messages.returnSuccess, { duration: 5000 })
+      queryClient.invalidateQueries({ queryKey: ['admin-borrowings'] })
+      queryClient.invalidateQueries({ queryKey: ['my-borrowings'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
+    },
+  })
+
   const handleCancel = (id: number) => {
     Swal.fire({
       title: t.admin.dialog.title,
@@ -100,6 +110,22 @@ const Admin: React.FC = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         approveMutation(id)
+      }
+    })
+  }
+
+  const handleReturn = (id: number) => {
+    Swal.fire({
+      title: t.admin.dialog.title,
+      text: t.admin.dialog.text,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: t.admin.dialog.confirmReturn,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        returnMutation(id)
       }
     })
   }
@@ -199,8 +225,9 @@ const Admin: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Actions (only Pending Tab) */}
+                    {/* Actions (only Pending and Active Tab) */}
                     <td className="px-6 py-4 text-right space-x-2">
+                      {/* approve or reject */}
                       {activeTab === 'pending' && (
                         <>
                           <button
@@ -218,6 +245,20 @@ const Admin: React.FC = () => {
                             onClick={() => handleCancel(req.id)}
                           >
                             {isRejecting ? t.admin.actions.rejecting : t.admin.actions.reject}
+                          </button>
+                        </>
+                      )}
+
+                      {/* mark as returned */}
+                      {activeTab === 'active' && (
+                        <>
+                          <button
+                            disabled={isReturning}
+                            className="text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg border 
+                            border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => handleReturn(req.id)}
+                          >
+                            {isReturning ? t.admin.actions.returning : t.admin.actions.return}
                           </button>
                         </>
                       )}

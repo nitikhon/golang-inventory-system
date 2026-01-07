@@ -661,3 +661,95 @@ func TestUserStats(t *testing.T) {
 	assert.GreaterOrEqual(t, stats.CurrentlyBorrows, uint(1))
 	assert.GreaterOrEqual(t, stats.TotalReturned, uint(1))
 }
+
+func TestReturnBorrowing(t *testing.T) {
+	server := setup.NewTestServer(t)
+	defer server.Cleanup()
+
+	// Helper to get tokens
+	adminToken := getAuthToken(t, server, "test_admin", "P@ssw0rd")
+
+	var user entity.User
+	err := server.DB.Where("username = ?", "test_user").First(&user).Error
+	require.NoError(t, err)
+
+	// Helper to create an active borrowing
+	createActiveBorrowing := func() entity.Borrowing {
+		var item entity.Item
+		// Find item with stock
+		err := server.DB.Where("status = ? AND available_amount > 0", "available").First(&item).Error
+		require.NoError(t, err)
+
+		b := entity.Borrowing{
+			UserID:          user.ID,
+			ItemID:          item.ID,
+			BorrowingAmount: 1,
+			BorrowingStatus: entity.BORROWING_ACTIVE,
+			ApprovalStatus:  entity.APPROVAL_APPROVED,
+			BorrowedAt:      time.Now().Format(time.RFC3339),
+			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
+		}
+		err = server.DB.Create(&b).Error
+		require.NoError(t, err)
+		return b
+	}
+
+	t.Run("Validation Errors", func(t *testing.T) {
+		req := createAuthenticatedRequest("POST", "/api/borrows/return/abc", nil, adminToken)
+		resp, err := server.App.Test(req)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("Business Logic Errors", func(t *testing.T) {
+		t.Run("Borrowing Not Found", func(t *testing.T) {
+			req := createAuthenticatedRequest("POST", "/api/borrows/return/999999", nil, adminToken)
+			resp, err := server.App.Test(req)
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		})
+
+		t.Run("Borrowing Not Active", func(t *testing.T) {
+			// Create pending borrowing
+			var item entity.Item
+			server.DB.First(&item)
+			b := entity.Borrowing{
+				UserID:          user.ID,
+				ItemID:          item.ID,
+				BorrowingAmount: 1,
+				BorrowingStatus: entity.BORROWING_PENDING,
+			}
+			server.DB.Create(&b)
+
+			req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/return/%d", b.ID), nil, adminToken)
+			resp, err := server.App.Test(req)
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusConflict, resp.StatusCode)
+		})
+	})
+
+	t.Run("Successful Return", func(t *testing.T) {
+		b := createActiveBorrowing()
+
+		// Capture item amount before return
+		var itemBefore entity.Item
+		server.DB.First(&itemBefore, b.ItemID)
+
+		req := createAuthenticatedRequest("POST", fmt.Sprintf("/api/borrows/return/%d", b.ID), nil, adminToken)
+		resp, err := server.App.Test(req)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var returnedBorrowing entity.Borrowing
+		err = json.NewDecoder(resp.Body).Decode(&returnedBorrowing)
+		require.NoError(t, err)
+
+		assert.Equal(t, entity.BORROWING_RETURNED, returnedBorrowing.BorrowingStatus)
+		assert.NotEmpty(t, returnedBorrowing.ReturnedAt)
+
+		// Verify Item Stock Increased
+		var itemAfter entity.Item
+		server.DB.First(&itemAfter, b.ItemID)
+		assert.Equal(t, itemBefore.AvailableAmount+b.BorrowingAmount, itemAfter.AvailableAmount)
+	})
+}
