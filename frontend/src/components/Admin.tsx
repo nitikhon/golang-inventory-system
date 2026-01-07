@@ -21,7 +21,7 @@ const Admin: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
 
-  const { t } = useTranslation() // Hook
+  const { t } = useTranslation()
   const { user, token, isSilentLoading } = useAuth()
 
   const navigate = useNavigate()

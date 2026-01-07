@@ -1,4 +1,3 @@
-// MyBorrowings.tsx (Skeleton)
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import borrowingService from '../services/borrowing'
 import { useAuth } from '../hooks/useAuth'
