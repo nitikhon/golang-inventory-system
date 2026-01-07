@@ -113,7 +113,7 @@ const Admin: React.FC = () => {
   const tabs = [
     { id: 'pending', label: t.admin.tabs.pending },
     { id: 'active', label: t.admin.tabs.active },
-    { id: 'returned', label: t.admin.tabs.history },
+    { id: 'history', label: t.admin.tabs.history },
   ] as const
 
   if (isSilentLoading || !user?.is_admin) return null
@@ -159,7 +159,9 @@ const Admin: React.FC = () => {
           {/* Header + Filters (TODO) */}
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="font-semibold text-slate-700">{t.admin.requestsList}</h3>
-            <span className="text-xs text-slate-500">{t.inventory.labels.total}: {data?.data?.length} {t.inventory.labels.items}</span>
+            <span className="text-xs text-slate-500">
+              {t.inventory.labels.total}: {data?.data?.length} {t.inventory.labels.items}
+            </span>
           </div>
 
           {/* Table */}
@@ -185,12 +187,16 @@ const Admin: React.FC = () => {
                     {/* Item Info */}
                     <td className="px-6 py-4">
                       <div className="font-medium text-slate-900">{req.item?.name}</div>
-                      <div className="text-xs text-slate-500">{t.admin.table.qty}: {req.borrowing_amount}</div>
+                      <div className="text-xs text-slate-500">
+                        {t.admin.table.qty}: {req.borrowing_amount}
+                      </div>
                     </td>
 
                     {/* Date */}
                     <td className="px-6 py-4 text-slate-500">
-                      <div>{t.admin.table.due}: {formatDate(req.due_date)}</div>
+                      <div>
+                        {t.admin.table.due}: {formatDate(req.due_date)}
+                      </div>
                     </td>
 
                     {/* Actions (only Pending Tab) */}

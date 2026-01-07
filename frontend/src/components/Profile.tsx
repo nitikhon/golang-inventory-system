@@ -74,7 +74,11 @@ const Profile: React.FC = () => {
         </div>
         <div className="p-8 space-y-6">
           <InfoRow icon={<Mail size={18} />} label={t.profile.details.email} value={user?.email} />
-          <InfoRow icon={<Building size={18} />} label={t.profile.details.phone} value={user?.phone} />
+          <InfoRow
+            icon={<Building size={18} />}
+            label={t.profile.details.phone}
+            value={user?.phone}
+          />
           <InfoRow
             icon={<Calendar size={18} />}
             label={t.profile.details.memberSince}

@@ -129,7 +129,7 @@ export const en = {
     actions: {
       signOut: 'Sign Out from System',
       signOutMessage: 'Your session will be cleared and you will need to login again.',
-      signOutCancel: 'Cancel'
+      signOutCancel: 'Cancel',
     },
   },
   auth: {
@@ -145,7 +145,7 @@ export const en = {
     },
     logoutTitle: 'Confirm Sign Out?',
     logoutText: 'Your session will be cleared and you will need to login again.',
-    logoutSuccess: 'Sign Out success!'
+    logoutSuccess: 'Sign Out success!',
   },
   nav: {
     brand: 'INV.SYSTEM',

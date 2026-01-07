@@ -17,9 +17,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
   const getButtonText = () => {
     switch (item.status) {
       case 'available':
-        return item.available_amount > 0 ? t.inventory.actions.borrow : t.inventory.actions.outOfStock
+        return item.available_amount > 0
+          ? t.inventory.actions.borrow
+          : t.inventory.actions.outOfStock
       case 'borrowed':
-        return item.available_amount > 0 ? t.inventory.actions.borrowMore : t.inventory.actions.outOfStock
+        return item.available_amount > 0
+          ? t.inventory.actions.borrowMore
+          : t.inventory.actions.outOfStock
       case 'maintenance':
         return t.inventory.actions.underMaintenance
       case 'lost':
@@ -31,11 +35,16 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'available': return t.inventory.status.available
-      case 'borrowed': return t.inventory.status.borrowed
-      case 'maintenance': return t.inventory.status.maintenance
-      case 'lost': return t.inventory.status.lost
-      default: return t.inventory.status.unavailable
+      case 'available':
+        return t.inventory.status.available
+      case 'borrowed':
+        return t.inventory.status.borrowed
+      case 'maintenance':
+        return t.inventory.status.maintenance
+      case 'lost':
+        return t.inventory.status.lost
+      default:
+        return t.inventory.status.unavailable
     }
   }
 

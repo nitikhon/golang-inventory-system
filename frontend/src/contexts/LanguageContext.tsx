@@ -3,7 +3,6 @@ import { en } from '../locales/en'
 import { th } from '../locales/th'
 import { LanguageContext } from './LanguageContextType'
 
-
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<'en' | 'th'>('en')
 

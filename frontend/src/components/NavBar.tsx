@@ -16,7 +16,7 @@ const NavBar: React.FC = () => {
   const { language, setLanguage, t } = useTranslation()
 
   const toggleLang = () => {
-      setLanguage(prev => prev === 'en' ? 'th' : 'en')
+    setLanguage((prev) => (prev === 'en' ? 'th' : 'en'))
   }
 
   return (
@@ -41,7 +41,11 @@ const NavBar: React.FC = () => {
               <div className="hidden md:flex items-center gap-1">
                 <NavItem icon={<Package size={18} />} label={t.nav.inventory} to="/" />
                 {user ? (
-                  <NavItem icon={<History size={18} />} label={t.nav.myBorrowings} to="/my-borrowings" />
+                  <NavItem
+                    icon={<History size={18} />}
+                    label={t.nav.myBorrowings}
+                    to="/my-borrowings"
+                  />
                 ) : (
                   <GhostNavItem
                     icon={<History size={18} />}
@@ -57,7 +61,7 @@ const NavBar: React.FC = () => {
 
             {/* right: languages, profile */}
             <div className="flex items-center gap-4 hidden md:flex">
-              <button 
+              <button
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 
                 rounded-lg transition-colors"
                 onClick={toggleLang}
@@ -72,7 +76,9 @@ const NavBar: React.FC = () => {
                 <div className="flex items-center gap-3 pl-2 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="hidden sm:block text-right">
                     <p className="text-xs font-bold text-slate-900">{`${user?.first_name} ${user?.last_name}`}</p>
-                    <p className="text-[10px] text-slate-500">{t.auth.username}: {`${user?.username}`}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {t.auth.username}: {`${user?.username}`}
+                    </p>
                   </div>
 
                   <NavItem icon={<User size={32} />} to="/profile" />

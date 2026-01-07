@@ -44,7 +44,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
           />
         )}
         {user?.is_admin && (
-          <NavItem icon={<ShieldUser size={18} />} label={t.nav.admin} to="/admin" onClick={onClose} />
+          <NavItem
+            icon={<ShieldUser size={18} />}
+            label={t.nav.admin}
+            to="/admin"
+            onClick={onClose}
+          />
         )}
       </div>
 
@@ -74,9 +79,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, onLoginC
         )}
 
         {/* Language */}
-        <button 
+        <button
           onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+        >
           <Globe size={16} />
           <span>{language === 'en' ? 'EN' : 'TH'}</span>
         </button>

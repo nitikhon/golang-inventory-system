@@ -25,7 +25,9 @@ const Pagination: React.FC<PaginationProps> = ({
         {t.pagination.previous}
       </button>
       <span className="text-sm text-slate-600">
-        {t.pagination.pageInfo.replace('{page}', String(page)).replace('{totalPages}', String(totalPages || 1))}
+        {t.pagination.pageInfo
+          .replace('{page}', String(page))
+          .replace('{totalPages}', String(totalPages || 1))}
       </span>
       <button
         disabled={page >= (totalPages || 1) || isLoading}

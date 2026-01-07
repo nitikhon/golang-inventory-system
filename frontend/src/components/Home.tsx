@@ -78,7 +78,9 @@ const HomePage: React.FC = () => {
         {data?.total_items === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500">
             <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
-            <p>{t.common.noResults} "{searchTerm}"</p>
+            <p>
+              {t.common.noResults} "{searchTerm}"
+            </p>
           </div>
         )}
 

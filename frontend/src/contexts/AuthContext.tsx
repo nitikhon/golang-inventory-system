@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: t.profile.actions.signOut,
-      cancelButtonText: t.profile.actions.signOutCancel
+      cancelButtonText: t.profile.actions.signOutCancel,
     }).then((result) => {
       if (result.isConfirmed) {
         logoutMutation()

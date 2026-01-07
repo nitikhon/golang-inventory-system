@@ -102,13 +102,20 @@ const MyBorrowings: React.FC = () => {
 
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending': return t.inventory.borrowingStatus.pending
-      case 'active': return t.inventory.borrowingStatus.active
-      case 'returned': return t.inventory.borrowingStatus.returned
-      case 'overdue': return t.inventory.borrowingStatus.overdue
-      case 'rejected': return t.inventory.borrowingStatus.rejected
-      case 'cancelled': return t.inventory.borrowingStatus.cancelled
-      default: return status
+      case 'pending':
+        return t.inventory.borrowingStatus.pending
+      case 'active':
+        return t.inventory.borrowingStatus.active
+      case 'returned':
+        return t.inventory.borrowingStatus.returned
+      case 'overdue':
+        return t.inventory.borrowingStatus.overdue
+      case 'rejected':
+        return t.inventory.borrowingStatus.rejected
+      case 'cancelled':
+        return t.inventory.borrowingStatus.cancelled
+      default:
+        return status
     }
   }
 
@@ -268,7 +275,9 @@ const MyBorrowings: React.FC = () => {
         {borrowings?.total_items === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500">
             <PackageSearch size={48} className="text-slate-200 mb-4" strokeWidth={1.5} />
-            <p>{t.common.noResults} "{searchTerm}"</p>
+            <p>
+              {t.common.noResults} "{searchTerm}"
+            </p>
           </div>
         )}
       </div>

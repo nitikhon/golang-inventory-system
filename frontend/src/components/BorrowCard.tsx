@@ -87,7 +87,9 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
       {/* Header: item's name, amount*/}
       <div>
         <h2 className="text-xl font-bold">{item.name}</h2>
-        <p className="text-sm text-slate-500">{t.inventory.labels.available}: {item.available_amount} {t.inventory.labels.items}</p>
+        <p className="text-sm text-slate-500">
+          {t.inventory.labels.available}: {item.available_amount} {t.inventory.labels.items}
+        </p>
       </div>
       {/* Input: borrow amount */}
       <div>
