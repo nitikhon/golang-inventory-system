@@ -26,6 +26,7 @@ export const th = {
       overdue: 'เกินกำหนด',
       rejected: 'ถูกปฏิเสธ',
       cancelled: 'ยกเลิกแล้ว',
+      lost: 'สูญหาย',
     },
     placeholders: {
       borrowReason: 'ระบุเหตุผลการยืม...',
@@ -61,6 +62,8 @@ export const th = {
       actions: 'จัดการ',
       qty: 'จำนวน',
       due: 'กำหนดคืน',
+      details: 'หมายเหตุ',
+      status: 'สถานะ',
     },
     actions: {
       approve: 'อนุมัติ',

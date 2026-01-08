@@ -26,6 +26,7 @@ export const en = {
       overdue: 'Overdue',
       rejected: 'Rejected',
       cancelled: 'Cancelled',
+      lost: 'Lost',
     },
     placeholders: {
       borrowReason: 'Why are you borrowing this?',
@@ -61,6 +62,8 @@ export const en = {
       actions: 'Actions',
       qty: 'Qty',
       due: 'Due',
+      details: 'Details',
+      status: 'Status',
     },
     actions: {
       approve: 'Approve',

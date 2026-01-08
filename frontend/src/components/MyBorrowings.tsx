@@ -15,6 +15,7 @@ import Pagination from './Pagination'
 import SearchBar from './SearchBar'
 import useDebounce from '../hooks/useDebounce'
 import { useTranslation } from '../hooks/useTranslation'
+import StatusBadge from './StatusBadge'
 
 const MyBorrowings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -80,43 +81,6 @@ const MyBorrowings: React.FC = () => {
         cancelMutation(id)
       }
     })
-  }
-
-  const getStatusStyles = (status: string) => {
-    const baseClasses =
-      'px-2.5 py-1 rounded-full text-xs font-semibold border inline-flex items-center shadow-sm'
-
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return `${baseClasses} bg-amber-50 text-amber-700 border-amber-200`
-      case 'active':
-        return `${baseClasses} bg-blue-50 text-blue-700 border-blue-200`
-      case 'returned':
-        return `${baseClasses} bg-emerald-50 text-emerald-700 border-emerald-200`
-      case 'overdue':
-        return `${baseClasses} bg-rose-50 text-rose-700 border-rose-200`
-      default:
-        return `${baseClasses} bg-slate-50 text-slate-600 border-slate-200`
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return t.inventory.borrowingStatus.pending
-      case 'active':
-        return t.inventory.borrowingStatus.active
-      case 'returned':
-        return t.inventory.borrowingStatus.returned
-      case 'overdue':
-        return t.inventory.borrowingStatus.overdue
-      case 'rejected':
-        return t.inventory.borrowingStatus.rejected
-      case 'cancelled':
-        return t.inventory.borrowingStatus.cancelled
-      default:
-        return status
-    }
   }
 
   useEffect(() => {
@@ -212,10 +176,7 @@ const MyBorrowings: React.FC = () => {
                 <td>{formatDate(borrow.borrowed_at)}</td>
                 <td>{borrow.borrowing_amount}</td>
                 <td className="py-4 px-6">
-                  <span className={getStatusStyles(borrow.borrowing_status)}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-60"></span>
-                    {getStatusText(borrow.borrowing_status)}
-                  </span>
+                  <StatusBadge borrowing_status={borrow.borrowing_status} />
                 </td>
                 <td className="py-4 px-6">
                   {borrow.borrowing_status === 'pending' && (
@@ -240,10 +201,7 @@ const MyBorrowings: React.FC = () => {
               {/* Header: name + status */}
               <div className="flex justify-between items-start">
                 <span className="font-semibold text-slate-900">{borrow.item?.name}</span>
-                <span className={getStatusStyles(borrow.borrowing_status)}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-60"></span>
-                  {getStatusText(borrow.borrowing_status)}
-                </span>
+                <StatusBadge borrowing_status={borrow.borrowing_status} />
               </div>
               {/* Details*/}
               <div className="grid grid-cols-2 gap-2 text-sm text-slate-500">

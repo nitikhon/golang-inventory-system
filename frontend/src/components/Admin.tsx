@@ -15,6 +15,7 @@ import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
 import { useTranslation } from '../hooks/useTranslation'
+import StatusBadge from './StatusBadge'
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'history'>('pending')
@@ -198,7 +199,15 @@ const Admin: React.FC = () => {
                   <th className="px-6 py-3">{t.admin.table.user}</th>
                   <th className="px-6 py-3">{t.admin.table.itemDetail}</th>
                   <th className="px-6 py-3">{t.admin.table.dates}</th>
-                  <th className="px-6 py-3 text-right">{t.admin.table.actions}</th>
+                  <th className="px-6 py-3">{t.admin.table.details}</th>
+
+                  {(activeTab === 'history' || activeTab === 'active') && (
+                    <th className="px-6 py-3">{t.admin.table.status}</th>
+                  )}
+
+                  {(activeTab === 'pending' || activeTab === 'active') && (
+                    <th className="px-6 py-3">{t.admin.table.actions}</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -225,44 +234,60 @@ const Admin: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Actions (only Pending and Active Tab) */}
-                    <td className="px-6 py-4 text-right space-x-2">
-                      {/* approve or reject */}
-                      {activeTab === 'pending' && (
-                        <>
-                          <button
-                            disabled={isApproving}
-                            className="text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg border 
-                            border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => handleApprove(req.id)}
-                          >
-                            {isApproving ? t.admin.actions.approving : t.admin.actions.approve}
-                          </button>
-                          <button
-                            disabled={isApproving}
-                            className="text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg border 
-                            border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => handleCancel(req.id)}
-                          >
-                            {isRejecting ? t.admin.actions.rejecting : t.admin.actions.reject}
-                          </button>
-                        </>
-                      )}
-
-                      {/* mark as returned */}
-                      {activeTab === 'active' && (
-                        <>
-                          <button
-                            disabled={isReturning}
-                            className="text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg border 
-                            border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => handleReturn(req.id)}
-                          >
-                            {isReturning ? t.admin.actions.returning : t.admin.actions.return}
-                          </button>
-                        </>
-                      )}
+                    <td
+                      className="px-6 py-4 text-slate-500 text-sm line-clamp-2 max-w-xs"
+                      title={req.description}
+                    >
+                      <div>{req.description}</div>
                     </td>
+
+                    {/* status */}
+                    {(activeTab === 'history' || activeTab === 'active') && (
+                      <td className="px-6 py-4 space-x-2">
+                        <StatusBadge borrowing_status={req.borrowing_status} />
+                      </td>
+                    )}
+
+                    {/* Actions only Pending and Active Tab if history turns into status */}
+                    {(activeTab === 'pending' || activeTab === 'active') && (
+                      <td className="px-6 py-4 space-x-2">
+                        {/* approve or reject */}
+                        {activeTab === 'pending' && (
+                          <>
+                            <button
+                              disabled={isApproving}
+                              className="text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg border 
+                            border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => handleApprove(req.id)}
+                            >
+                              {isApproving ? t.admin.actions.approving : t.admin.actions.approve}
+                            </button>
+                            <button
+                              disabled={isApproving}
+                              className="text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg border 
+                            border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => handleCancel(req.id)}
+                            >
+                              {isRejecting ? t.admin.actions.rejecting : t.admin.actions.reject}
+                            </button>
+                          </>
+                        )}
+
+                        {/* mark as returned */}
+                        {activeTab === 'active' && (
+                          <>
+                            <button
+                              disabled={isReturning}
+                              className="text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg border 
+                            border-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => handleReturn(req.id)}
+                            >
+                              {isReturning ? t.admin.actions.returning : t.admin.actions.return}
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
