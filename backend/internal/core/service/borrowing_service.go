@@ -19,7 +19,6 @@ type BorrowingServiceInterface interface {
 	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
 	ReturnBorrowing(borrowerId uint) (*entity.Borrowing, error)
 	GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
-	GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error)
 	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
 	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
 }
@@ -99,7 +98,6 @@ func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowi
 		BorrowingAmount: req.BorrowingAmount,
 		BorrowedAt:      borrowsAt.Format(time.RFC3339),
 		DueDate:         req.DueDate,
-		ApprovalStatus:  "pending",
 		BorrowingStatus: "pending",
 	}
 
@@ -139,8 +137,7 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 	}
 
 	// Check if the borrowing is already approved or rejected or the borrowing status is not pending
-	if existingBorrowing.ApprovalStatus != entity.APPROVAL_PENDING ||
-		existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
+	if existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
 		return nil, errors.New(errormap.ErrBorrowingNotPending)
 	}
 
@@ -211,8 +208,7 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 	}
 
 	// Check if the borrowing is already approved or rejected or the borrowing status is not pending
-	if existingBorrowing.ApprovalStatus != entity.APPROVAL_PENDING ||
-		existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
+	if existingBorrowing.BorrowingStatus != entity.BORROWING_PENDING {
 		return nil, errors.New(errormap.ErrBorrowingNotPending)
 	}
 
@@ -257,14 +253,14 @@ func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing,
 	}
 
 	now := time.Now()
-    status := entity.BORROWING_RETURNED
+	status := entity.BORROWING_RETURNED
 
 	// assume that we don't have legacy data with wrong format
 	dueDate, _ := time.Parse(time.RFC3339, existingBorrowing.DueDate)
 
 	if now.After(dueDate) {
-        status = entity.BORROWING_OVERDUE
-    }
+		status = entity.BORROWING_OVERDUE
+	}
 
 	item, err := s.itemRepo.GetItemByIDForUpdate(tx, existingBorrowing.ItemID)
 	if err != nil {
@@ -292,11 +288,6 @@ func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing,
 // GetBorrowingByStatus retrieves borrowings by their status.
 func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
 	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status, search, page, limit)
-}
-
-// GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
-func (s *BorrowingService) GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error) {
-	return s.borrowingRepo.GetBorrowingsByApprovalStatus(status)
 }
 
 func (s *BorrowingService) GetBorrowingsByUserID(id uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {

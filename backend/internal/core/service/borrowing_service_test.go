@@ -97,7 +97,6 @@ func TestBorrowItem_Success(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
@@ -416,7 +415,6 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 		ItemID:          3,
 		BorrowingAmount: 2,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
@@ -533,7 +531,6 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
@@ -569,7 +566,6 @@ func TestApproveBorrowing_Success(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockItem := &entity.Item{
@@ -586,7 +582,6 @@ func TestApproveBorrowing_Success(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_ACTIVE,
-		ApprovalStatus:  entity.APPROVAL_APPROVED,
 		ApprovedBy:      approverId,
 	}
 
@@ -606,7 +601,6 @@ func TestApproveBorrowing_Success(t *testing.T) {
 	// assert
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, entity.APPROVAL_APPROVED, result.ApprovalStatus)
 	assert.Equal(t, approverId, result.ApprovedBy)
 
 	// Verify all sqlmock expectations were met
@@ -673,7 +667,6 @@ func TestApproveBorrowing_ApproverNotExist(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -706,7 +699,6 @@ func TestApproveBorrowing_ApproverRepoError(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -745,7 +737,6 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyApproved(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_ACTIVE,
-		ApprovalStatus:  entity.APPROVAL_APPROVED,
 	}
 
 	sqlMock.ExpectBegin()
@@ -783,8 +774,7 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyRejected(t *testing.T) {
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
-		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_REJECTED,
+		BorrowingStatus: entity.BORROWING_CANCELLED,
 	}
 
 	sqlMock.ExpectBegin()
@@ -822,7 +812,6 @@ func TestApproveBorrowing_ItemNotExist(t *testing.T) {
 		ItemID:          999, // Non-existent item
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -862,7 +851,6 @@ func TestApproveBorrowing_ItemRepoError(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -901,7 +889,6 @@ func TestApproveBorrowing_NotEnoughItemsForApproval(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 5, // Requesting more than available
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	// Item with limited availability
@@ -950,7 +937,6 @@ func TestApproveBorrowing_UpdateWithTxError(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockItem := &entity.Item{
@@ -999,7 +985,6 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	mockItem := &entity.Item{
@@ -1048,7 +1033,6 @@ func TestRejectBorrowing_Success_AdminReject(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	expectedResult := &entity.Borrowing{
@@ -1056,8 +1040,7 @@ func TestRejectBorrowing_Success_AdminReject(t *testing.T) {
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
-		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_REJECTED,
+		BorrowingStatus: entity.BORROWING_REJECTED,
 		ApprovedBy:      rejecterId,
 	}
 
@@ -1075,7 +1058,7 @@ func TestRejectBorrowing_Success_AdminReject(t *testing.T) {
 	// assert
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, entity.APPROVAL_REJECTED, result.ApprovalStatus)
+	assert.Equal(t, entity.BORROWING_REJECTED, result.BorrowingStatus)
 	assert.NoError(t, sqlMock.ExpectationsWereMet())
 }
 
@@ -1099,7 +1082,6 @@ func TestRejectBorrowing_Success_OwnerCancel(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	expectedResult := &entity.Borrowing{
@@ -1107,8 +1089,7 @@ func TestRejectBorrowing_Success_OwnerCancel(t *testing.T) {
 		UserID:          2,
 		ItemID:          1,
 		BorrowingAmount: 1,
-		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_REJECTED,
+		BorrowingStatus: entity.BORROWING_REJECTED,
 		ApprovedBy:      rejecterId,
 	}
 
@@ -1126,7 +1107,7 @@ func TestRejectBorrowing_Success_OwnerCancel(t *testing.T) {
 	// assert
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, entity.APPROVAL_REJECTED, result.ApprovalStatus)
+	assert.Equal(t, entity.BORROWING_REJECTED, result.BorrowingStatus)
 	assert.NoError(t, sqlMock.ExpectationsWereMet())
 }
 
@@ -1150,7 +1131,6 @@ func TestRejectBorrowing_Unauthorized(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -1206,7 +1186,6 @@ func TestRejectBorrowing_RejecterNotExist(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -1245,7 +1224,6 @@ func TestRejectBorrowing_BorrowingNotPending(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_ACTIVE,
-		ApprovalStatus:  entity.APPROVAL_APPROVED,
 	}
 
 	sqlMock.ExpectBegin()
@@ -1285,7 +1263,6 @@ func TestRejectBorrowing_RepoError(t *testing.T) {
 		ItemID:          1,
 		BorrowingAmount: 1,
 		BorrowingStatus: entity.BORROWING_PENDING,
-		ApprovalStatus:  entity.APPROVAL_PENDING,
 	}
 
 	sqlMock.ExpectBegin()
@@ -1329,27 +1306,6 @@ func TestGetBorrowingsByBorrowingStatus_Success(t *testing.T) {
 
 	// act
 	result, err := service.GetBorrowingsByBorrowingStatus(status, search, page, limit)
-
-	// assert
-	assert.Nil(t, err)
-	assert.Equal(t, expectedBorrowings, result)
-}
-
-func TestGetBorrowingsByApprovalStatus_Success(t *testing.T) {
-	// arrange
-	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
-
-	status := entity.APPROVAL_APPROVED
-	expectedBorrowings := []*entity.Borrowing{
-		{
-			ApprovalStatus: entity.APPROVAL_APPROVED,
-		},
-	}
-
-	mockBorrowingRepo.EXPECT().GetBorrowingsByApprovalStatus(status).Return(expectedBorrowings, nil)
-
-	// act
-	result, err := service.GetBorrowingsByApprovalStatus(status)
 
 	// assert
 	assert.Nil(t, err)

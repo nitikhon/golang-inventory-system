@@ -8,11 +8,7 @@ const (
 	BORROWING_OVERDUE   = "overdue"
 	BORROWING_CANCELLED = "cancelled"
 	BORROWING_LOST      = "lost"
-
-	// ApprovalStatus constants
-	APPROVAL_PENDING  = "pending"
-	APPROVAL_APPROVED = "approved"
-	APPROVAL_REJECTED = "rejected"
+	BORROWING_REJECTED  = "rejected"
 )
 
 type Borrowing struct {
@@ -27,7 +23,6 @@ type Borrowing struct {
 	DueDate         string      `json:"due_date"`
 	BorrowingAmount int         `json:"borrowing_amount"`
 	BorrowingStatus string      `json:"borrowing_status" gorm:"type:VARCHAR(20);default:'pending';index"`
-	ApprovalStatus  string      `json:"approval_status" gorm:"type:VARCHAR(20);default:'pending';index"` // pending, approved, rejected
 	ApprovedAt      string      `json:"approved_at"`
 	ApprovedBy      uint        `json:"approved_by"`
 	RejectedBy      uint        `json:"rejected_by"`

@@ -193,7 +193,7 @@ func TestApproveBorrowing(t *testing.T) {
 
 	// Get a pending borrowing from seed data ("wireless keyboard" borrowing is pending)
 	var pendingBorrowing entity.Borrowing
-	err := server.DB.Where("borrowing_status = ? AND approval_status = ?", "pending", "pending").First(&pendingBorrowing).Error
+	err := server.DB.Where("borrowing_status = ?", "pending").First(&pendingBorrowing).Error
 	require.NoError(t, err)
 
 	var adminUser entity.User
@@ -303,7 +303,6 @@ func TestApproveBorrowing(t *testing.T) {
 
 		// Check basic response fields
 		assert.Equal(t, pendingBorrowing.ID, approvedBorrowing.ID)
-		assert.Equal(t, entity.APPROVAL_APPROVED, approvedBorrowing.ApprovalStatus)
 		assert.Equal(t, adminUser.ID, approvedBorrowing.ApprovedBy)
 
 		// Verify DB State
@@ -312,7 +311,6 @@ func TestApproveBorrowing(t *testing.T) {
 		t.Log(dbBorrowing)
 		t.Log(dbBorrowing.ApprovedAt)
 		require.NoError(t, err)
-		assert.Equal(t, entity.APPROVAL_APPROVED, dbBorrowing.ApprovalStatus)
 		assert.Equal(t, adminUser.ID, dbBorrowing.ApprovedBy)
 		assert.NotEmpty(t, dbBorrowing.ApprovedAt)
 	})
@@ -345,7 +343,6 @@ func TestRejectBorrowing(t *testing.T) {
 			ItemID:          item.ID,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 			BorrowedAt:      time.Now().Format(time.RFC3339),
 			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
 		}
@@ -445,7 +442,6 @@ func TestRejectBorrowing(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, b.ID, rejectedBorrowing.ID)
-		assert.Equal(t, entity.APPROVAL_REJECTED, rejectedBorrowing.ApprovalStatus)
 		assert.Equal(t, entity.BORROWING_CANCELLED, rejectedBorrowing.BorrowingStatus)
 		assert.Equal(t, user.ID, rejectedBorrowing.RejectedBy)
 	})
@@ -465,7 +461,6 @@ func TestRejectBorrowing(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, b.ID, rejectedBorrowing.ID)
-		assert.Equal(t, entity.APPROVAL_REJECTED, rejectedBorrowing.ApprovalStatus)
 		assert.Equal(t, entity.BORROWING_CANCELLED, rejectedBorrowing.BorrowingStatus)
 		assert.Equal(t, adminUser.ID, rejectedBorrowing.RejectedBy)
 	})
@@ -529,48 +524,6 @@ func TestGetBorrowingsByBorrowingStatus(t *testing.T) {
 	})
 }
 
-func TestGetBorrowingsByApprovalStatus(t *testing.T) {
-	server := setup.NewTestServer(t)
-	defer server.Cleanup()
-
-	adminToken := getAuthToken(t, server, "test_admin", "P@ssw0rd")
-
-	t.Run("Validation Errors", func(t *testing.T) {
-		req := createAuthenticatedRequest("GET", "/api/borrows/approval-status/invalid_status", nil, adminToken)
-		resp, err := server.App.Test(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-
-		var respBody map[string]string
-		json.NewDecoder(resp.Body).Decode(&respBody)
-		assert.Equal(t, "invalid approval status", respBody["error"])
-	})
-
-	t.Run("Successful Retrieval", func(t *testing.T) {
-		validStatuses := []string{
-			entity.APPROVAL_PENDING,
-			entity.APPROVAL_APPROVED,
-		}
-
-		for _, status := range validStatuses {
-			t.Run("Status: "+status, func(t *testing.T) {
-				req := createAuthenticatedRequest("GET", "/api/borrows/approval-status/"+status, nil, adminToken)
-				resp, err := server.App.Test(req)
-				require.NoError(t, err)
-				assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-				var borrowings []entity.Borrowing
-				err = json.NewDecoder(resp.Body).Decode(&borrowings)
-				require.NoError(t, err)
-
-				for _, b := range borrowings {
-					assert.Equal(t, status, b.ApprovalStatus)
-				}
-			})
-		}
-	})
-}
-
 func TestGetBorrowingByUserID(t *testing.T) {
 	server := setup.NewTestServer(t)
 	defer server.Cleanup()
@@ -594,7 +547,6 @@ func TestGetBorrowingByUserID(t *testing.T) {
 			ItemID:          item.ID,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 			BorrowedAt:      time.Now().Format(time.RFC3339),
 			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
 		}
@@ -685,7 +637,6 @@ func TestReturnBorrowing(t *testing.T) {
 			ItemID:          item.ID,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 			BorrowedAt:      time.Now().Format(time.RFC3339),
 			DueDate:         time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339),
 		}

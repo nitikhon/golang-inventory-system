@@ -162,22 +162,6 @@ func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
 	return c.JSON(borrowings)
 }
 
-// GetBorrowingsByApprovalStatus handles fetching borrowings by approval status.
-func (h *BorrowingHandler) GetBorrowingsByApprovalStatus(c *fiber.Ctx) error {
-	status := c.Params("status")
-
-	// Input validation
-	if !isValidApprovalStatus(status) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid approval status"})
-	}
-
-	borrowings, err := h.service.GetBorrowingsByApprovalStatus(status)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-	return c.JSON(borrowings)
-}
-
 func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
@@ -225,10 +209,4 @@ func isValidBorrowingStatus(statuses []string) bool {
 	}
 
 	return true
-}
-
-func isValidApprovalStatus(status string) bool {
-	return status == entity.APPROVAL_PENDING ||
-		status == entity.APPROVAL_APPROVED ||
-		status == entity.APPROVAL_REJECTED
 }

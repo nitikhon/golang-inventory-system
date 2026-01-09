@@ -94,21 +94,6 @@ func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingByID(arg0 interface{}
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingByID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingByID), arg0)
 }
 
-// GetBorrowingsByApprovalStatus mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByApprovalStatus(arg0 string) ([]*entity.Borrowing, error) {
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingsByApprovalStatus", arg0)
-        ret0, _ := ret[0].([]*entity.Borrowing)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}
-
-// GetBorrowingsByApprovalStatus indicates an expected call of GetBorrowingsByApprovalStatus.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByApprovalStatus(arg0 interface{}) *gomock.Call {
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByApprovalStatus", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByApprovalStatus), arg0)
-}
-
 // GetBorrowingsByApproverID mocks base method.
 func (m *MockBorrowingRepository) GetBorrowingsByApproverID(arg0 uint) ([]*entity.Borrowing, error) {
         m.ctrl.T.Helper()

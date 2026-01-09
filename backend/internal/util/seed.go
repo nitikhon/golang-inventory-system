@@ -252,7 +252,6 @@ func seedBorrowings(db *gorm.DB) error {
 			DueDate:         "2023-12-31T00:00:00Z",
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 		},
 		// Active
 		{
@@ -265,7 +264,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		// Returned
 		{
@@ -279,7 +277,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_RETURNED,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		// Overdue
 		{
@@ -292,7 +289,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_OVERDUE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		// Rejected
 		{
@@ -304,7 +300,6 @@ func seedBorrowings(db *gorm.DB) error {
 			RejectedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_CANCELLED,
-			ApprovalStatus:  entity.APPROVAL_REJECTED,
 		},
 		// Lost
 		{
@@ -317,7 +312,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_LOST,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		// More mock data for User 2 (John)
 		{
@@ -330,7 +324,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          2, // john_doe
@@ -340,7 +333,6 @@ func seedBorrowings(db *gorm.DB) error {
 			DueDate:         "2023-12-05T18:00:00Z",
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 		},
 		{
 			UserID:          2,  // john_doe
@@ -353,7 +345,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_RETURNED,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 
 		// Mock data for User 3 (Jane)
@@ -367,7 +358,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -379,7 +369,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -389,7 +378,6 @@ func seedBorrowings(db *gorm.DB) error {
 			DueDate:         "2023-12-15T18:00:00Z",
 			BorrowingAmount: 2,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -401,7 +389,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_OVERDUE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -414,7 +401,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_RETURNED,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -426,7 +412,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -438,7 +423,6 @@ func seedBorrowings(db *gorm.DB) error {
 			RejectedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_CANCELLED,
-			ApprovalStatus:  entity.APPROVAL_REJECTED,
 		},
 		{
 			UserID:          3, // jane_smith
@@ -451,7 +435,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_RETURNED,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 		{
 			UserID:          3,  // jane_smith
@@ -464,7 +447,6 @@ func seedBorrowings(db *gorm.DB) error {
 			ApprovedBy:      1,
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_RETURNED,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 		},
 	}
 

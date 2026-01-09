@@ -1,8 +1,7 @@
 import type { Item } from './item'
 import type { User } from './user'
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
-export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost'
+export type BorrowingStatus = 'pending' | 'active' | 'returned' | 'overdue' | 'cancelled' | 'lost' | 'rejected'
 
 export interface Borrowing {
   id: number
@@ -16,7 +15,6 @@ export interface Borrowing {
   due_date: string
   borrowing_amount: number
   borrowing_status: BorrowingStatus
-  approval_status: ApprovalStatus
   approval_at: string
   approved_by: number
   rejected_at: string

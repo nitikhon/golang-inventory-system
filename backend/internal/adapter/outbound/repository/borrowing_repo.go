@@ -38,7 +38,6 @@ func (r *BorrowingRepository) ApproveBorrowingWithTx(tx *gorm.DB, borrowingId, a
 	err := tx.Model(&entity.Borrowing{}).Where("id = ?", borrowingId).
 		Updates(&entity.Borrowing{
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
 			ApprovedBy:      approverId,
 			ApprovedAt:      time.Now().Format(time.RFC3339),
 		}).Error
@@ -58,7 +57,6 @@ func (r *BorrowingRepository) RejectBorrowingWithTx(tx *gorm.DB, borrowingId, re
 	err := tx.Model(&entity.Borrowing{}).Where("id = ?", borrowingId).
 		Updates(&entity.Borrowing{
 			BorrowingStatus: entity.BORROWING_CANCELLED,
-			ApprovalStatus:  entity.APPROVAL_REJECTED,
 			RejectedBy:      rejecterId,
 			RejectedAt:      time.Now().Format(time.RFC3339),
 		}).Error
@@ -125,14 +123,14 @@ func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint, page, limit int
             "User".username ILIKE ? OR 
             "User".first_name ILIKE ? OR
             "Item".name ILIKE ?`,
-            term, term, term,
-        )
+			term, term, term,
+		)
 	}
 
 	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
-	
+
 	query = query.Order("due_date DESC")
 
 	offset := util.GetOffset(page, limit)
@@ -176,10 +174,10 @@ func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status []string, se
             "User".username ILIKE ? OR 
             "User".first_name ILIKE ? OR
             "Item".name ILIKE ?`,
-            term, term, term,
-        )
+			term, term, term,
+		)
 	}
-	
+
 	if err := query.Count(&total).Error; err != nil {
 		return nil, err
 	}
@@ -200,16 +198,6 @@ func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status []string, se
 		Page:       page,
 		Limit:      limit,
 	}, nil
-}
-
-// GetBorrowingsByApprovalStatus retrieves borrowings by their approval status.
-func (r *BorrowingRepository) GetBorrowingsByApprovalStatus(status string) ([]*entity.Borrowing, error) {
-	var borrowings []*entity.Borrowing
-	err := r.db.Where("approval_status = ?", status).Find(&borrowings).Error
-	if err != nil {
-		return nil, err
-	}
-	return borrowings, nil
 }
 
 // GetBorrowingsByApproverID retrieves borrowings approved by a specific user.
@@ -256,10 +244,10 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 }
 
 func (r *BorrowingRepository) HasActiveBorrowing(userID, itemID uint) (bool, error) {
-    var count int64
-    err := r.db.Model(&entity.Borrowing{}).
-        Where("user_id = ? AND item_id = ? AND borrowing_status IN ?", userID, itemID, []string{"pending", "active"}).
-        Count(&count).Error
-    
-    return count > 0, err
+	var count int64
+	err := r.db.Model(&entity.Borrowing{}).
+		Where("user_id = ? AND item_id = ? AND borrowing_status IN ?", userID, itemID, []string{"pending", "active"}).
+		Count(&count).Error
+
+	return count > 0, err
 }

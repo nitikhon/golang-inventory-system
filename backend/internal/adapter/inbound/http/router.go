@@ -106,10 +106,6 @@ func SetupRoutes(
 		middleware.AuthMiddleware(),
 		middleware.AdminOnly(),
 		borrowingHandler.GetBorrowingsByBorrowingStatus)
-	borrowingRoutes.Get("/approval-status/:status",
-		middleware.AuthMiddleware(),
-		middleware.AdminOnly(),
-		borrowingHandler.GetBorrowingsByApprovalStatus)
 	borrowingRoutes.Get("/user",
 		middleware.AuthMiddleware(),
 		borrowingHandler.GetBorrowingByUserID)

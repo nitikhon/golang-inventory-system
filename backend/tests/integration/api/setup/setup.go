@@ -305,9 +305,9 @@ func seedTestData(t *testing.T, db *gorm.DB) error {
 			DueDate:         "2023-02-01T10:00:00Z",
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_ACTIVE,
-			ApprovalStatus:  entity.APPROVAL_APPROVED,
-			ApprovedAt:      "2023-01-01T10:05:00Z",
-			ApprovedBy:      findUserID(users, "test_admin"),
+
+			ApprovedAt: "2023-01-01T10:05:00Z",
+			ApprovedBy: findUserID(users, "test_admin"),
 		},
 		{
 			UserID:          findUserID(users, "test_user"),
@@ -317,7 +317,6 @@ func seedTestData(t *testing.T, db *gorm.DB) error {
 			DueDate:         "2023-02-15T14:30:00Z",
 			BorrowingAmount: 1,
 			BorrowingStatus: entity.BORROWING_PENDING,
-			ApprovalStatus:  entity.APPROVAL_PENDING,
 		},
 	}
 
