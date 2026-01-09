@@ -1493,3 +1493,36 @@ func TestReturnBorrowing_NotActive(t *testing.T) {
 	assert.Nil(t, result)
 	assert.EqualError(t, err, errormap.ErrBorrowingNotActive)
 }
+
+func TestMarkOverdueItemsWithTx_Success(t *testing.T) {
+	// arrange
+	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectCommit()
+
+	mockBorrowingRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().MarkOverdueItemsWithTx(gomock.Any())
+
+	// act
+	err := service.MarkOverdueItems()
+
+	// assert
+	assert.Nil(t, err)
+}
+
+func TestMarkOverdueItems_Error(t *testing.T) {
+    // arrange
+	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
+	mockDB, sqlMock := setupMockDB(t)
+
+    sqlMock.ExpectBegin()
+    sqlMock.ExpectRollback()
+    
+    mockBorrowingRepo.EXPECT().GetDB().Return(mockDB)
+    mockBorrowingRepo.EXPECT().MarkOverdueItemsWithTx(gomock.Any()).Return(errors.New("db error"))
+
+    err := service.MarkOverdueItems()
+    assert.Error(t, err)
+}

@@ -251,3 +251,18 @@ func (r *BorrowingRepository) HasActiveBorrowing(userID, itemID uint) (bool, err
 
 	return count > 0, err
 }
+
+// GetDB helps other layers to access the db
+func (r *BorrowingRepository) GetDB() *gorm.DB {
+	return r.db
+}
+
+func (r *BorrowingRepository) MarkOverdueItemsWithTx(tx *gorm.DB) error {
+	query := tx.Model(&entity.Borrowing{})
+
+	err := query.
+		Where(`borrowing_status = 'active' AND CAST(due_date AS DATE) < CURRENT_DATE`).
+		Updates(&entity.Borrowing{BorrowingStatus: entity.BORROWING_OVERDUE}).Error
+
+	return err
+}

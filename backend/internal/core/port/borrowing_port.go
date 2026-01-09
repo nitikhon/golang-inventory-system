@@ -18,4 +18,6 @@ type BorrowingRepository interface {
 	GetBorrowingsByApproverID(approverID uint) ([]*entity.Borrowing, error)
 	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
 	HasActiveBorrowing(userID, itemID uint) (bool, error)
+	MarkOverdueItemsWithTx(tx *gorm.DB) error
+	GetDB() *gorm.DB
 }

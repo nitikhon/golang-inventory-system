@@ -21,6 +21,7 @@ type BorrowingServiceInterface interface {
 	GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
 	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
 	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
+	MarkOverdueItems() error
 }
 
 // BorrowingService provides the use cases for borrowing operations.
@@ -258,7 +259,9 @@ func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing,
 	// assume that we don't have legacy data with wrong format
 	dueDate, _ := time.Parse(time.RFC3339, existingBorrowing.DueDate)
 
-	if now.After(dueDate) {
+	currentDate := now.Truncate(24 * time.Hour)
+	dueDateDate := dueDate.Truncate(24 * time.Hour)
+	if currentDate.After(dueDateDate) {
 		status = entity.BORROWING_OVERDUE
 	}
 
@@ -296,4 +299,31 @@ func (s *BorrowingService) GetBorrowingsByUserID(id uint, page, limit int, searc
 
 func (s *BorrowingService) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {
 	return s.borrowingRepo.GetUserBorrowingStats(userID)
+}
+
+func (s *BorrowingService) MarkOverdueItems() error {
+	db := s.borrowingRepo.GetDB()
+	tx := db.Begin()
+	committed := false
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+		if !committed {
+			tx.Rollback()
+		}
+	}()
+
+	err := s.borrowingRepo.MarkOverdueItemsWithTx(tx)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+	committed = true
+
+	return nil
 }

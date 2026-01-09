@@ -5,10 +5,10 @@
 package mock_port
 
 import (
-        gomock "github.com/golang/mock/gomock"
         entity "github.com/nitikhon/golang-inventory-system/internal/core/entity"
         gorm "gorm.io/gorm"
         reflect "reflect"
+        gomock "github.com/golang/mock/gomock"
 )
 
 // MockBorrowingRepository is a mock of BorrowingRepository interface.
@@ -154,6 +154,20 @@ func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByUserID(arg0, arg1,
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByUserID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByUserID), arg0, arg1, arg2, arg3)
 }
 
+// GetDB mocks base method.
+func (m *MockBorrowingRepository) GetDB() *gorm.DB {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetDB")
+        ret0, _ := ret[0].(*gorm.DB)
+        return ret0
+}
+
+// GetDB indicates an expected call of GetDB.
+func (mr *MockBorrowingRepositoryMockRecorder) GetDB() *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDB", reflect.TypeOf((*MockBorrowingRepository)(nil).GetDB))
+}
+
 // GetUserBorrowingStats mocks base method.
 func (m *MockBorrowingRepository) GetUserBorrowingStats(arg0 uint) (*entity.BorrowingStats, error) {
         m.ctrl.T.Helper()
@@ -182,6 +196,20 @@ func (m *MockBorrowingRepository) HasActiveBorrowing(arg0, arg1 uint) (bool, err
 func (mr *MockBorrowingRepositoryMockRecorder) HasActiveBorrowing(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasActiveBorrowing", reflect.TypeOf((*MockBorrowingRepository)(nil).HasActiveBorrowing), arg0, arg1)
+}
+
+// MarkOverdueItemsWithTx mocks base method.
+func (m *MockBorrowingRepository) MarkOverdueItemsWithTx(arg0 *gorm.DB) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "MarkOverdueItemsWithTx", arg0)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// MarkOverdueItemsWithTx indicates an expected call of MarkOverdueItemsWithTx.
+func (mr *MockBorrowingRepositoryMockRecorder) MarkOverdueItemsWithTx(arg0 interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkOverdueItemsWithTx", reflect.TypeOf((*MockBorrowingRepository)(nil).MarkOverdueItemsWithTx), arg0)
 }
 
 // RejectBorrowingWithTx mocks base method.

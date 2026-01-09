@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/storage/redis/v3"
 	"github.com/joho/godotenv"
 	"github.com/nitikhon/golang-inventory-system/internal/adapter/inbound/http"
@@ -14,7 +16,6 @@ import (
 	"github.com/nitikhon/golang-inventory-system/internal/config"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
 	"github.com/nitikhon/golang-inventory-system/internal/util"
-	"github.com/gofiber/fiber/v2/middleware/cors" 
 )
 
 func main() {
@@ -53,11 +54,11 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-        AllowOrigins:     "http://localhost:5173", 
-        AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
-        AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
-        AllowCredentials: true, 
-    }))
+		AllowOrigins:     "http://localhost:5173",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
+		AllowCredentials: true,
+	}))
 
 	// app.Static("/", "/app/dist")
 
@@ -76,6 +77,13 @@ func main() {
 	// app.Get("/*", func(c *fiber.Ctx) error {
 	// 	return c.SendFile("/app/dist/index.html")
 	// })
+
+	go func() {
+		for {
+			time.Sleep(1 * time.Hour)
+			borrowingService.MarkOverdueItems()
+		}
+	}()
 
 	// Start the server
 	err = app.Listen(fmt.Sprintf("%s:%s", config.Host, config.Port))
