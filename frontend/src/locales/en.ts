@@ -45,6 +45,11 @@ export const en = {
       total: 'Total',
       available: 'Available',
     },
+    borrowErr: {
+      negativeAmount: 'Amount cannot be negative',
+      invalidAmoumt: 'Borrowing amount cannot exceed available item',
+      invalidDate: 'Due date must be at least today',
+    },
   },
   admin: {
     title: 'Admin Dashboard',

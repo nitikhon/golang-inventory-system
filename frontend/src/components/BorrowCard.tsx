@@ -58,16 +58,30 @@ const BorrowCard: React.FC<BorrowCardProps> = ({ item, setIsBorrowModalOpen }) =
     }))
   }
 
+  const swalFire = (title: string, text: string, icon: SweetAlertIcon) => {
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: icon,
+    })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (borrowForm.amount <= 0) {
+      swalFire('Error', t.inventory.borrowErr.negativeAmount, 'error')
+      return
     }
 
     if (borrowForm.amount > item.available_amount) {
+      swalFire('Error', t.inventory.borrowErr.invalidAmoumt, 'error')
+      return
     }
 
     if (new Date(borrowForm.due_date) <= new Date()) {
+      swalFire('Error', t.inventory.borrowErr.invalidDate, 'error')
+      return
     }
 
     if (user && token) {

@@ -45,6 +45,11 @@ export const th = {
       total: 'ทั้งหมด',
       available: 'คงเหลือ',
     },
+    borrowErr: {
+      negativeAmount: 'จำนวนที่ยืมต้องมากกว่า 0',
+      invalidAmoumt: 'จำนวนที่ยืมต้องไม่เกินจำนวนครุภันฑ์',
+      invalidDate: 'ไม่สามารถเลือก วันที่ผ่านมาแล้วได้',
+    },
   },
   admin: {
     title: 'แดชบอร์ดผู้ดูแลระบบ',
