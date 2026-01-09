@@ -7,18 +7,20 @@ import Error from './Error'
 import { useAuth } from '../hooks/useAuth'
 import { useEffect, useState } from 'react'
 import BorrowCard from './BorrowCard'
-import { PackageSearch, X } from 'lucide-react'
+import { PackageSearch, Plus, X } from 'lucide-react'
 import SearchBar from './SearchBar'
 import type { PaginatedResponse } from '../types/pagination'
 import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
 import { useTranslation } from '../hooks/useTranslation'
+import AddItemModal from './AddItemModal'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false)
 
   const debouncedSearch = useDebounce(searchTerm, 500)
   const { t } = useTranslation()
@@ -65,7 +67,18 @@ const HomePage: React.FC = () => {
   return (
     <>
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">{t.inventory.title}</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold mb-4">{t.inventory.title}</h1>
+          {user?.is_admin && (
+            <button
+              onClick={() => setIsAddItemModalOpen((prev) => !prev)}
+              className="bg-blue-600 text-white rounded-lg px-2 py-2 mb-4 hover:bg-blue-700 transition-colors shadow-sm font-medium flex items-center gap-2"
+            >
+              <Plus size={20} />
+              {t.additemmodal.actions.createItem}
+            </button>
+          )}
+        </div>
 
         <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder={t.search.placeholder} />
 
@@ -94,7 +107,7 @@ const HomePage: React.FC = () => {
         )}
       </div>
 
-      {/* item model */}
+      {/* item modal */}
       {isBorrowModalOpen && selectedItem && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"
@@ -115,6 +128,11 @@ const HomePage: React.FC = () => {
             <BorrowCard item={selectedItem} setIsBorrowModalOpen={setIsBorrowModalOpen} />
           </div>
         </div>
+      )}
+
+      {/* add item modal */}
+      {isAddItemModalOpen && (
+        <AddItemModal isOpen={isAddItemModalOpen} onClose={setIsAddItemModalOpen} />
       )}
     </>
   )

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { PaginatedResponse } from '../types/pagination'
-import type { Item } from '../types/item'
+import type { Item, ItemCreateRequest } from '../types/item'
 
 const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/items' : '/api/items'
@@ -10,4 +10,15 @@ const getAll = async (page = 1, limit = 12, search = ''): Promise<PaginatedRespo
   return request.data
 }
 
-export default { getAll }
+const create = async (data: ItemCreateRequest, access_token: string | undefined): Promise<Item> => {
+  const request = await axios.post(`${baseUrl}?`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${access_token}`,
+    },
+    withCredentials: true,
+  })
+  return request.data
+}
+
+export default { getAll, create }

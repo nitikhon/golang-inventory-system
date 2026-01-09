@@ -249,6 +249,9 @@ func validateItemInput(item *entity.Item) error {
 	}
 
 	// Set default status if empty
+	if item.Status == "" {
+		item.Status = "available"
+	}
 
 	return nil
 }

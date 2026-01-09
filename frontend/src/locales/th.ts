@@ -176,4 +176,26 @@ export const th = {
   search: {
     placeholder: 'ค้นหาครุภัณฑ์...',
   },
+  additemmodal: {
+    header: 'รายละเอียดครุภัณฑ์',
+    labels: {
+      name: 'ชื่อ',
+      description: 'รายละเอียด',
+      total_amount: 'จำนวน',
+      status: 'สถานะ',
+    },
+    createSuccess: 'เพิ่มครุภัณฑ์สำเร็จ!',
+    createErr: {
+      emptyName: 'ระบุชื่อของครุภัณฑ์',
+      emptyDesc: 'ระบุรายละเอียดของครุภัณฑ์',
+      invalidTotalAmount: 'จำนวนครุภัณฑ์ต้องมีอย่างน้อยหนึ่งชิ้น',
+    },
+    placeholder: {
+      description: 'รายละเอียด...',
+    },
+    actions: {
+      createItem: 'เพิ่มครุภัณฑ์',
+      pendingItem: 'กำลังประมวลผล...',
+    },
+  },
 }

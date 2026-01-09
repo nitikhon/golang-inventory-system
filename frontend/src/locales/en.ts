@@ -176,4 +176,26 @@ export const en = {
   search: {
     placeholder: 'Search Items...',
   },
+  additemmodal: {
+    header: 'New Item',
+    labels: {
+      name: 'Name',
+      description: 'Description',
+      total_amount: 'Total Amount',
+      status: 'Status',
+    },
+    createSuccess: 'Item added!',
+    createErr: {
+      emptyName: 'Item name must not be empty',
+      emptyDesc: 'Item description must not be empty',
+      invalidTotalAmount: 'Item total amount must be at least 1',
+    },
+    placeholder: {
+      description: 'Device details...',
+    },
+    actions: {
+      createItem: 'Add Item',
+      pendingItem: 'Processing...',
+    },
+  },
 }
