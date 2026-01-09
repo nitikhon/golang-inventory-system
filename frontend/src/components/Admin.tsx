@@ -40,7 +40,10 @@ const Admin: React.FC = () => {
     queryFn: () => {
       let status = String(activeTab)
       if (activeTab === 'history') {
-        status = 'returned,overdue,cancelled,lost'
+        status = 'returned,cancelled,lost,rejected'
+      }
+      if (activeTab === 'active') {
+        status = 'active,overdue'
       }
       return borrowingService.getBorrowingsByStatus(
         page,

@@ -203,7 +203,8 @@ func isValidBorrowingStatus(statuses []string) bool {
 		status != entity.BORROWING_RETURNED &&
 		status != entity.BORROWING_OVERDUE &&
 		status != entity.BORROWING_CANCELLED &&
-		status != entity.BORROWING_LOST {
+		status != entity.BORROWING_LOST &&
+		status != entity.BORROWING_REJECTED {
 			return false
 		}
 	}
