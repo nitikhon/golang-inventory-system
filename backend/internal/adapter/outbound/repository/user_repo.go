@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -18,8 +19,8 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 // CreateUser adds a new user to the database.
-func (r *UserRepository) CreateUser(user *entity.User) (*entity.User, error) {
-	err := r.db.Create(user).Error
+func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
+	err := r.db.WithContext(ctx).Create(user).Error
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -27,8 +28,8 @@ func (r *UserRepository) CreateUser(user *entity.User) (*entity.User, error) {
 }
 
 // UpdateUser updates an existing user's details in the database.
-func (r *UserRepository) UpdateUser(user *entity.User) (*entity.User, error) {
-	result := r.db.Model(&entity.User{}).Where("id = ?", user.ID).
+func (r *UserRepository) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", user.ID).
 		Select("first_name", "last_name", "phone", "email", "password", "updated_at").
 		Updates(user)
 	if result.Error != nil {
@@ -38,15 +39,15 @@ func (r *UserRepository) UpdateUser(user *entity.User) (*entity.User, error) {
 		return &entity.User{}, gorm.ErrRecordNotFound
 	}
 	var updatedUser entity.User
-	if err := r.db.First(&updatedUser, user.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&updatedUser, user.ID).Error; err != nil {
 		return &entity.User{}, err
 	}
 	return &updatedUser, nil
 }
 
 // DeleteUser removes a user from the database by their ID. (soft delete)
-func (r *UserRepository) DeleteUser(id uint) error {
-	result := r.db.Delete(&entity.User{}, id)
+func (r *UserRepository) DeleteUser(ctx context.Context, id uint) error {
+	result := r.db.WithContext(ctx).Delete(&entity.User{}, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -57,9 +58,9 @@ func (r *UserRepository) DeleteUser(id uint) error {
 }
 
 // GetAllUsers retrieves all users from the database.
-func (r *UserRepository) GetAllUsers() ([]*entity.User, error) {
+func (r *UserRepository) GetAllUsers(ctx context.Context) ([]*entity.User, error) {
 	var users []*entity.User
-	err := r.db.Unscoped().Find(&users).Error
+	err := r.db.WithContext(ctx).Unscoped().Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +68,9 @@ func (r *UserRepository) GetAllUsers() ([]*entity.User, error) {
 }
 
 // GetUserByID retrieves a user by their ID.
-func (r *UserRepository) GetUserByID(id uint) (*entity.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id uint) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Where("id = ?", id).Take(&user).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).Take(&user).Error
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -77,9 +78,9 @@ func (r *UserRepository) GetUserByID(id uint) (*entity.User, error) {
 }
 
 // GetUserByUsername retrieves a user by their username.
-func (r *UserRepository) GetUserByUsername(username string) (*entity.User, error) {
+func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Where("username = ?", username).Take(&user).Error
+	err := r.db.WithContext(ctx).Where("username = ?", username).Take(&user).Error
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -87,9 +88,9 @@ func (r *UserRepository) GetUserByUsername(username string) (*entity.User, error
 }
 
 // GetUserByEmail retrieves a user by their email.
-func (r *UserRepository) GetUserByEmail(email string) (*entity.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Where("email = ?", email).Take(&user).Error
+	err := r.db.WithContext(ctx).Where("email = ?", email).Take(&user).Error
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -97,9 +98,9 @@ func (r *UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 }
 
 // GetUserByPhone retrieves a user by their phone number.
-func (r *UserRepository) GetUserByPhone(phone string) (*entity.User, error) {
+func (r *UserRepository) GetUserByPhone(ctx context.Context, phone string) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Where("phone = ?", phone).Take(&user).Error
+	err := r.db.WithContext(ctx).Where("phone = ?", phone).Take(&user).Error
 	if err != nil {
 		return &entity.User{}, err
 	}
@@ -107,8 +108,8 @@ func (r *UserRepository) GetUserByPhone(phone string) (*entity.User, error) {
 }
 
 // UpdateRefreshToken updates only the refresh token
-func (r *UserRepository) UpdateRefreshToken(userID uint, refreshToken string) error {
-	result := r.db.Model(&entity.User{}).Where("id = ?", userID).
+func (r *UserRepository) UpdateRefreshToken(ctx context.Context, userID uint, refreshToken string) error {
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).
 		Update("refresh_token", refreshToken)
 
 	if result.Error != nil {
@@ -118,12 +119,12 @@ func (r *UserRepository) UpdateRefreshToken(userID uint, refreshToken string) er
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
-	
+
 	return nil
 }
 
 // UpdateUserProfile updates general profile fields
-func (r *UserRepository) UpdateUserProfile(userID uint, updates map[string]any) (*entity.User, error) {
+func (r *UserRepository) UpdateUserProfile(ctx context.Context, userID uint, updates map[string]any) (*entity.User, error) {
 	allowedFields := map[string]bool{
 		"first_name": true,
 		"last_name":  true,
@@ -141,7 +142,7 @@ func (r *UserRepository) UpdateUserProfile(userID uint, updates map[string]any) 
 		return nil, errors.New("no valid fields to update")
 	}
 
-	result := r.db.Model(&entity.User{}).Where("id = ?", userID).Updates(filteredUpdates)
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).Updates(filteredUpdates)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -150,13 +151,13 @@ func (r *UserRepository) UpdateUserProfile(userID uint, updates map[string]any) 
 	}
 
 	var user entity.User
-	err := r.db.First(&user, userID).Error
+	err := r.db.WithContext(ctx).First(&user, userID).Error
 	return &user, err
 }
 
 // UpdateUserPassword updates user password with validation
-func (r *UserRepository) UpdateUserPassword(userID uint, hashedPassword string) error {
-	result := r.db.Model(&entity.User{}).Where("id = ?", userID).
+func (r *UserRepository) UpdateUserPassword(ctx context.Context, userID uint, hashedPassword string) error {
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).
 		Update("password", hashedPassword)
 
 	if result.Error != nil {
@@ -169,8 +170,8 @@ func (r *UserRepository) UpdateUserPassword(userID uint, hashedPassword string) 
 }
 
 // UpdateUserEmail updates user email with validation
-func (r *UserRepository) UpdateUserEmail(userID uint, email string) error {
-	result := r.db.Model(&entity.User{}).Where("id = ?", userID).
+func (r *UserRepository) UpdateUserEmail(ctx context.Context, userID uint, email string) error {
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).
 		Update("email", email)
 
 	if result.Error != nil {
@@ -183,8 +184,8 @@ func (r *UserRepository) UpdateUserEmail(userID uint, email string) error {
 }
 
 // UpdateUserAdminStatus updates admin status (admin only)
-func (r *UserRepository) UpdateUserAdminStatus(userID uint, isAdmin bool) error {
-	result := r.db.Model(&entity.User{}).Where("id = ?", userID).
+func (r *UserRepository) UpdateUserAdminStatus(ctx context.Context, userID uint, isAdmin bool) error {
+	result := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).
 		Update("is_admin", isAdmin)
 
 	if result.Error != nil {

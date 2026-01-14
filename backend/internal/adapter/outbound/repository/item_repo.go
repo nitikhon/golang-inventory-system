@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"math"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -20,11 +21,11 @@ func NewItemRepository(db *gorm.DB) *ItemRepository {
 }
 
 // FindAll retrieves all items from the database.
-func (r *ItemRepository) GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
+func (r *ItemRepository) GetAllItems(ctx context.Context, page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
 	var items []entity.Item
 	var total int64
 
-	query := r.db.Model(&entity.Item{})
+	query := r.db.WithContext(ctx).Model(&entity.Item{})
 
 	if search != "" {
 		term := "%" + search + "%"
@@ -52,7 +53,7 @@ func (r *ItemRepository) GetAllItems(page, limit int, search string) (*entity.Pa
 }
 
 // FindByID retrieves an item by its ID.
-func (r *ItemRepository) GetItemByID(id uint) (*entity.Item, error) {
+func (r *ItemRepository) GetItemByID(ctx context.Context, id uint) (*entity.Item, error) {
 	var item entity.Item
 	// Query item by ID
 	err := r.db.Where("id = ?", id).Take(&item).Error
@@ -62,9 +63,9 @@ func (r *ItemRepository) GetItemByID(id uint) (*entity.Item, error) {
 	return &item, nil
 }
 
-func (r *ItemRepository) GetItemByName(name string) (*entity.Item, error) {
+func (r *ItemRepository) GetItemByName(ctx context.Context, name string) (*entity.Item, error) {
 	var item entity.Item
-	err := r.db.Where("name = ?", name).Take(&item).Error
+	err := r.db.WithContext(ctx).Where("name = ?", name).Take(&item).Error
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +73,9 @@ func (r *ItemRepository) GetItemByName(name string) (*entity.Item, error) {
 }
 
 // Create adds a new item to the database.
-func (r *ItemRepository) Create(item *entity.Item) (*entity.Item, error) {
+func (r *ItemRepository) Create(ctx context.Context, item *entity.Item) (*entity.Item, error) {
 	// Save item to database
-	err := r.db.Create(&item).Error
+	err := r.db.WithContext(ctx).Create(&item).Error
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +83,9 @@ func (r *ItemRepository) Create(item *entity.Item) (*entity.Item, error) {
 }
 
 // Update modifies an existing item in the database.
-func (r *ItemRepository) Update(item *entity.Item) (*entity.Item, error) {
+func (r *ItemRepository) Update(ctx context.Context, item *entity.Item) (*entity.Item, error) {
 	// Update item fields
-	result := r.db.Model(&entity.Item{}).Where("id = ?", item.ID).Updates(item)
+	result := r.db.WithContext(ctx).Model(&entity.Item{}).Where("id = ?", item.ID).Updates(item)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -94,16 +95,16 @@ func (r *ItemRepository) Update(item *entity.Item) (*entity.Item, error) {
 
 	// Retrieve updated item
 	var updatedItem entity.Item
-	if err := r.db.First(&updatedItem, item.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&updatedItem, item.ID).Error; err != nil {
 		return nil, err
 	}
 	return &updatedItem, nil
 }
 
 // Delete removes an item by its ID from the database.
-func (r *ItemRepository) Delete(id uint) error {
+func (r *ItemRepository) Delete(ctx context.Context, id uint) error {
 	// Delete item by ID
-	result := r.db.Delete(&entity.Item{}, id)
+	result := r.db.WithContext(ctx).Delete(&entity.Item{}, id)
 	if result.Error != nil {
 		return result.Error
 	}

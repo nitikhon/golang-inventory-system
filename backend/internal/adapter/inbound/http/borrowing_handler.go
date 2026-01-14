@@ -40,7 +40,7 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "borrowing amount must be greater than zero"})
 	}
 
-	borrowedItem, err := h.service.BorrowItem(borrowing)
+	borrowedItem, err := h.service.BorrowItem(c.UserContext(), borrowing)
 	if err != nil {
 		switch err.Error() {
 		case errormap.ErrUserNotExist, errormap.ErrItemNotAvailable, gorm.ErrRecordNotFound.Error():
@@ -66,7 +66,7 @@ func (h *BorrowingHandler) ApproveBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	approvedBorrowing, err := h.service.ApproveBorrowing(uint(borrowingID), userID)
+	approvedBorrowing, err := h.service.ApproveBorrowing(c.UserContext(), uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
 		case gorm.ErrRecordNotFound.Error():
@@ -98,7 +98,7 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	rejectedBorrowing, err := h.service.RejectBorrowing(uint(borrowingID), userID)
+	rejectedBorrowing, err := h.service.RejectBorrowing(c.UserContext(), uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
 		case errormap.ErrBorrowingNotExist, errormap.ErrRejecterNotExist, gorm.ErrRecordNotFound.Error():
@@ -123,7 +123,7 @@ func (h *BorrowingHandler) ReturnBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	returnedBorrowing, err := h.service.ReturnBorrowing(uint(borrowingID))
+	returnedBorrowing, err := h.service.ReturnBorrowing(c.UserContext(), uint(borrowingID))
 	if err != nil {
 		switch err.Error() {
 		case errormap.ErrBorrowingNotExist, gorm.ErrRecordNotFound.Error():
@@ -155,7 +155,7 @@ func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid borrowing status"})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(statuses, search, page, limit)
+	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(c.UserContext(), statuses, search, page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -166,14 +166,14 @@ func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
 	page := c.QueryInt("page", 1)
-    limit := c.QueryInt("limit", 12)
-    search := c.Query("search")
+	limit := c.QueryInt("limit", 12)
+	search := c.Query("search")
 
 	if userID == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByUserID(uint(userID), page, limit, search)
+	borrowings, err := h.service.GetBorrowingsByUserID(c.UserContext(), uint(userID), page, limit, search)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -188,7 +188,7 @@ func (h *BorrowingHandler) UserStats(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	borrowingStat, err := h.service.GetUserBorrowingStats(userID)
+	borrowingStat, err := h.service.GetUserBorrowingStats(c.UserContext(), userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -199,12 +199,12 @@ func (h *BorrowingHandler) UserStats(c *fiber.Ctx) error {
 func isValidBorrowingStatus(statuses []string) bool {
 	for _, status := range statuses {
 		if status != entity.BORROWING_PENDING &&
-		status != entity.BORROWING_ACTIVE &&
-		status != entity.BORROWING_RETURNED &&
-		status != entity.BORROWING_OVERDUE &&
-		status != entity.BORROWING_CANCELLED &&
-		status != entity.BORROWING_LOST &&
-		status != entity.BORROWING_REJECTED {
+			status != entity.BORROWING_ACTIVE &&
+			status != entity.BORROWING_RETURNED &&
+			status != entity.BORROWING_OVERDUE &&
+			status != entity.BORROWING_CANCELLED &&
+			status != entity.BORROWING_LOST &&
+			status != entity.BORROWING_REJECTED {
 			return false
 		}
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -81,7 +82,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Hour)
-			borrowingService.MarkOverdueItems()
+			borrowingService.MarkOverdueItems(context.Background())
 		}
 	}()
 

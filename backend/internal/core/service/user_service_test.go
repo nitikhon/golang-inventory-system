@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -49,14 +50,14 @@ func TestCreateUser_Success(t *testing.T) {
 		LastName:  "Corner",
 	}
 
-	mockUserRepo.EXPECT().GetUserByUsername(userInput.Username).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), userInput.Username).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(nil, nil)
 	mockHashApp.EXPECT().HashPassword(gomock.Any()).Return("hashedpassword", nil)
-	mockUserRepo.EXPECT().CreateUser(gomock.Any()).Return(&userInput, nil)
+	mockUserRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.Equal(t, &userInput, user)
@@ -77,13 +78,13 @@ func TestCreateUser_Failed_HashedFail(t *testing.T) {
 	}
 	mockErr := errors.New("hash error")
 
-	mockUserRepo.EXPECT().GetUserByUsername(userInput.Username).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), userInput.Username).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(nil, nil)
 	mockHashApp.EXPECT().HashPassword(gomock.Any()).Return("", mockErr)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.Equal(t, &entity.User{}, user)
@@ -104,10 +105,10 @@ func TestCreateUser_UsernameExists(t *testing.T) {
 	}
 	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
-	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(&userInput, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
@@ -128,11 +129,11 @@ func TestCreateUser_EmailExists(t *testing.T) {
 	}
 	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
-	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any()).Return(&userInput, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
@@ -153,12 +154,12 @@ func TestCreateUser_PhoneExists(t *testing.T) {
 	}
 	mockErr := errors.New(errormap.ErrUserCredentialsExist)
 
-	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any()).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any()).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any()).Return(&userInput, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.NotNil(t, user, fmt.Sprintf("expect existed user, got %v", user))
@@ -179,14 +180,14 @@ func TestCreateUser_RepoError(t *testing.T) {
 	}
 	mockErr := errors.New("database error")
 
-	mockUserRepo.EXPECT().GetUserByUsername(userInput.Username).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, nil)
-	mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByUsername(gomock.Any(), userInput.Username).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(nil, nil)
 	mockHashApp.EXPECT().HashPassword(gomock.Any()).Return("hashedpassword", nil)
-	mockUserRepo.EXPECT().CreateUser(gomock.Any()).Return(&entity.User{}, mockErr)
+	mockUserRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(&entity.User{}, mockErr)
 
 	// act
-	user, err := mockUserService.CreateUser(&userInput)
+	user, err := mockUserService.CreateUser(context.Background(), &userInput)
 
 	// assert
 	assert.Equal(t, &entity.User{}, user)
@@ -199,7 +200,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			GormModel:     entity.GormModel{ID: 1},
+			GormModel: entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -207,12 +208,12 @@ func TestUpdateUser(t *testing.T) {
 			LastName:  "Corner",
 		}
 
-		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
-		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
-		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&userInput, nil)
+		mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 		// act
-		user, err := mockUserService.UpdateUser(&userInput)
+		user, err := mockUserService.UpdateUser(context.Background(), &userInput)
 
 		// assert
 		assert.NotEqual(t, &entity.User{}, user)
@@ -224,7 +225,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			GormModel:     entity.GormModel{ID: 1},
+			GormModel: entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -233,12 +234,12 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		// same user found (same ID) - should not block update
-		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(&userInput, nil)
-		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(&userInput, nil)
-		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&userInput, nil)
+		mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(&userInput, nil)
+		mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(&userInput, nil)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).Return(&userInput, nil)
 
 		// act
-		user, err := mockUserService.UpdateUser(&userInput)
+		user, err := mockUserService.UpdateUser(context.Background(), &userInput)
 
 		// assert
 		assert.NotEqual(t, &entity.User{}, user)
@@ -250,7 +251,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			GormModel:     entity.GormModel{ID: 1},
+			GormModel: entity.GormModel{ID: 1},
 			Email:     "existing@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -260,13 +261,13 @@ func TestUpdateUser(t *testing.T) {
 
 		existingUser := entity.User{
 			GormModel: entity.GormModel{ID: 2}, // different user
-			Email: "existing@gmail.com",
+			Email:     "existing@gmail.com",
 		}
 
-		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(&existingUser, nil)
+		mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(&existingUser, nil)
 
 		// act
-		user, err := mockUserService.UpdateUser(&userInput)
+		user, err := mockUserService.UpdateUser(context.Background(), &userInput)
 
 		// assert
 		assert.Equal(t, &entity.User{}, user)
@@ -278,7 +279,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			GormModel:     entity.GormModel{ID: 1},
+			GormModel: entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -288,14 +289,14 @@ func TestUpdateUser(t *testing.T) {
 
 		existingUser := entity.User{
 			GormModel: entity.GormModel{ID: 2}, // different user
-			Phone: "0987654321",
+			Phone:     "0987654321",
 		}
 
-		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
-		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(&existingUser, nil)
+		mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(&existingUser, nil)
 
 		// act
-		user, err := mockUserService.UpdateUser(&userInput)
+		user, err := mockUserService.UpdateUser(context.Background(), &userInput)
 
 		// assert
 		assert.Equal(t, &entity.User{}, user)
@@ -307,7 +308,7 @@ func TestUpdateUser(t *testing.T) {
 		mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 		userInput := entity.User{
-			GormModel:     entity.GormModel{ID: 1},
+			GormModel: entity.GormModel{ID: 1},
 			Email:     "test@gmail.com",
 			Password:  "P@ssw0rd",
 			Phone:     "0987654321",
@@ -315,12 +316,12 @@ func TestUpdateUser(t *testing.T) {
 			LastName:  "Corner",
 		}
 
-		mockUserRepo.EXPECT().GetUserByEmail(userInput.Email).Return(nil, gorm.ErrRecordNotFound)
-		mockUserRepo.EXPECT().GetUserByPhone(userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
-		mockUserRepo.EXPECT().UpdateUser(gomock.Any()).Return(&entity.User{}, errors.New("database error"))
+		mockUserRepo.EXPECT().GetUserByEmail(gomock.Any(), userInput.Email).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().GetUserByPhone(gomock.Any(), userInput.Phone).Return(nil, gorm.ErrRecordNotFound)
+		mockUserRepo.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).Return(&entity.User{}, errors.New("database error"))
 
 		// act
-		user, err := mockUserService.UpdateUser(&userInput)
+		user, err := mockUserService.UpdateUser(context.Background(), &userInput)
 
 		// assert
 		assert.Equal(t, &entity.User{}, user)
@@ -350,10 +351,10 @@ func TestDeleteUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockUserRepo.EXPECT().DeleteUser(tt.userID).Return(tt.mockErr)
+			mockUserRepo.EXPECT().DeleteUser(gomock.Any(), tt.userID).Return(tt.mockErr)
 
 			// act
-			err := mockUserService.DeleteUser(tt.userID)
+			err := mockUserService.DeleteUser(context.Background(), tt.userID)
 
 			// arrange
 			assert.Equal(t, tt.mockErr, err)
@@ -380,10 +381,10 @@ func TestGetAllUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockUserRepo.EXPECT().GetAllUsers().Return([]*entity.User{}, tt.mockErr)
+			mockUserRepo.EXPECT().GetAllUsers(gomock.Any()).Return([]*entity.User{}, tt.mockErr)
 
 			// act
-			users, err := mockUserService.GetAllUsers()
+			users, err := mockUserService.GetAllUsers(context.Background())
 
 			// assert
 			if tt.mockErr == nil {
@@ -417,11 +418,11 @@ func TestGetUserByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserRepo.EXPECT().
-				GetUserByID(tt.userID).
+				GetUserByID(gomock.Any(), tt.userID).
 				Return(&entity.User{GormModel: entity.GormModel{ID: tt.userID}}, tt.mockErr)
 
 			// act
-			user, err := mockUserService.GetUserByID(tt.userID)
+			user, err := mockUserService.GetUserByID(context.Background(), tt.userID)
 
 			// assert
 			if tt.mockErr == nil {
@@ -447,7 +448,7 @@ func TestGetUserByUsername(t *testing.T) {
 			username: "testuser",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByUsername("testuser").
+					GetUserByUsername(gomock.Any(), "testuser").
 					Return(&entity.User{Username: "testuser"}, nil)
 			},
 		},
@@ -456,7 +457,7 @@ func TestGetUserByUsername(t *testing.T) {
 			username: "testuser",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByUsername("testuser").
+					GetUserByUsername(gomock.Any(), "testuser").
 					Return(nil, gorm.ErrRecordNotFound)
 			},
 			mockErr: gorm.ErrRecordNotFound,
@@ -469,7 +470,7 @@ func TestGetUserByUsername(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			user, err := mockUserService.GetUserByUsername(tt.username)
+			user, err := mockUserService.GetUserByUsername(context.Background(), tt.username)
 
 			// assert
 			if tt.mockErr != nil {
@@ -497,7 +498,7 @@ func TestGetUserByEmail(t *testing.T) {
 			email: "test@gmail.com",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByEmail("test@gmail.com").
+					GetUserByEmail(gomock.Any(), "test@gmail.com").
 					Return(&entity.User{Email: "test@gmail.com"}, nil)
 			},
 		},
@@ -506,7 +507,7 @@ func TestGetUserByEmail(t *testing.T) {
 			email: "test@gmail.com",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByEmail("test@gmail.com").
+					GetUserByEmail(gomock.Any(), "test@gmail.com").
 					Return(nil, gorm.ErrRecordNotFound)
 			},
 			mockErr: gorm.ErrRecordNotFound,
@@ -519,7 +520,7 @@ func TestGetUserByEmail(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			user, err := mockUserService.GetUserByEmail(tt.email)
+			user, err := mockUserService.GetUserByEmail(context.Background(), tt.email)
 
 			// assert
 			if tt.mockErr != nil {
@@ -547,7 +548,7 @@ func TestGetUserByPhone(t *testing.T) {
 			phone: "0987654321",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByPhone("0987654321").
+					GetUserByPhone(gomock.Any(), "0987654321").
 					Return(&entity.User{Phone: "0987654321"}, nil)
 			},
 		},
@@ -556,7 +557,7 @@ func TestGetUserByPhone(t *testing.T) {
 			phone: "0987654321",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByPhone("0987654321").
+					GetUserByPhone(gomock.Any(), "0987654321").
 					Return(nil, gorm.ErrRecordNotFound)
 			},
 			mockErr: gorm.ErrRecordNotFound,
@@ -569,7 +570,7 @@ func TestGetUserByPhone(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			user, err := mockUserService.GetUserByPhone(tt.phone)
+			user, err := mockUserService.GetUserByPhone(context.Background(), tt.phone)
 
 			// assert
 			if tt.mockErr != nil {
@@ -605,7 +606,7 @@ func TestLogin(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByUsername("tester").
+						GetUserByUsername(gomock.Any(), "tester").
 						Return(&mockUser, nil),
 					mockHashApp.EXPECT().
 						CheckPasswordHash(gomock.Any(), "P@ssw0rd").
@@ -617,7 +618,7 @@ func TestLogin(t *testing.T) {
 						GenerateRefreshToken(mockUser).
 						Return("refreshToken", nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(uint(1), gomock.Any()).
+						UpdateRefreshToken(gomock.Any(), uint(1), gomock.Any()).
 						Return(nil),
 				)
 			},
@@ -628,7 +629,7 @@ func TestLogin(t *testing.T) {
 			password: "P@ssw0rd",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByUsername("tester").
+					GetUserByUsername(gomock.Any(), "tester").
 					Return(&entity.User{}, errors.New("some db error"))
 			},
 			mockErr: errors.New("some db error"),
@@ -639,7 +640,7 @@ func TestLogin(t *testing.T) {
 			password: "P@ssw0rd",
 			expectCalls: func() {
 				mockUserRepo.EXPECT().
-					GetUserByUsername("tester").
+					GetUserByUsername(gomock.Any(), "tester").
 					Return(nil, nil)
 			},
 			mockErr: gorm.ErrRecordNotFound,
@@ -651,7 +652,7 @@ func TestLogin(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByUsername("tester").
+						GetUserByUsername(gomock.Any(), "tester").
 						Return(&mockUser, nil),
 					mockHashApp.EXPECT().
 						CheckPasswordHash(gomock.Any(), "P@ssw0rd").
@@ -667,7 +668,7 @@ func TestLogin(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByUsername("tester").
+						GetUserByUsername(gomock.Any(), "tester").
 						Return(&mockUser, nil),
 					mockHashApp.EXPECT().
 						CheckPasswordHash(gomock.Any(), "P@ssw0rd").
@@ -686,7 +687,7 @@ func TestLogin(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByUsername("tester").
+						GetUserByUsername(gomock.Any(), "tester").
 						Return(&mockUser, nil),
 					mockHashApp.EXPECT().
 						CheckPasswordHash(gomock.Any(), "P@ssw0rd").
@@ -708,7 +709,7 @@ func TestLogin(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByUsername("tester").
+						GetUserByUsername(gomock.Any(), "tester").
 						Return(&mockUser, nil),
 					mockHashApp.EXPECT().
 						CheckPasswordHash(gomock.Any(), "P@ssw0rd").
@@ -720,7 +721,7 @@ func TestLogin(t *testing.T) {
 						GenerateRefreshToken(mockUser).
 						Return("refreshToken", nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(uint(1), "refreshToken").
+						UpdateRefreshToken(gomock.Any(), uint(1), "refreshToken").
 						Return(gorm.ErrRecordNotFound),
 				)
 			},
@@ -734,7 +735,7 @@ func TestLogin(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			accessToken, refreshToken, err := mockUserService.Login(tt.username, tt.password)
+			accessToken, refreshToken, err := mockUserService.Login(context.Background(), tt.username, tt.password)
 
 			// assert
 			if tt.mockErr == nil {
@@ -773,7 +774,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken(mockRefreshToken).
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&mockUser, nil),
 					mockJWTApp.EXPECT().
 						GenerateAccessToken(mockUser).
@@ -782,7 +783,7 @@ func TestRefreshToken(t *testing.T) {
 						GenerateRefreshToken(mockUser).
 						Return("newRefreshToken", nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(mockUser.ID, "newRefreshToken").
+						UpdateRefreshToken(gomock.Any(), mockUser.ID, "newRefreshToken").
 						Return(nil),
 				)
 			},
@@ -810,7 +811,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken(mockRefreshToken).
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&entity.User{}, errors.New("error from GetUserByID")),
 				)
 			},
@@ -826,7 +827,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken("invalidToken").
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&mockUser, nil),
 				)
 			},
@@ -842,7 +843,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken(mockRefreshToken).
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&mockUser, nil),
 					mockJWTApp.EXPECT().
 						GenerateAccessToken(mockUser).
@@ -861,7 +862,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken(mockRefreshToken).
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&mockUser, nil),
 					mockJWTApp.EXPECT().
 						GenerateAccessToken(mockUser).
@@ -883,7 +884,7 @@ func TestRefreshToken(t *testing.T) {
 						ValidateRefreshToken(mockRefreshToken).
 						Return(mockUser.ID, nil),
 					mockUserRepo.EXPECT().
-						GetUserByID(mockUser.ID).
+						GetUserByID(gomock.Any(), mockUser.ID).
 						Return(&mockUser, nil),
 					mockJWTApp.EXPECT().
 						GenerateAccessToken(mockUser).
@@ -892,7 +893,7 @@ func TestRefreshToken(t *testing.T) {
 						GenerateRefreshToken(mockUser).
 						Return("newRefreshToken", nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(mockUser.ID, "newRefreshToken").
+						UpdateRefreshToken(gomock.Any(), mockUser.ID, "newRefreshToken").
 						Return(gorm.ErrRecordNotFound),
 				)
 			},
@@ -906,7 +907,7 @@ func TestRefreshToken(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			tokens, err := mockUserService.RefreshToken(tt.mockRefreshToken)
+			tokens, err := mockUserService.RefreshToken(context.Background(), tt.mockRefreshToken)
 
 			// assert
 			if tt.mockErr == nil {
@@ -924,7 +925,7 @@ func TestLogout(t *testing.T) {
 	mockUserService, mockUserRepo, _, _ := setupUserServiceMock(t)
 
 	mockUserWithRefreshToken := &entity.User{
-		GormModel:        entity.GormModel{ID: 1},
+		GormModel:    entity.GormModel{ID: 1},
 		RefreshToken: "refreshToken",
 	}
 
@@ -940,10 +941,10 @@ func TestLogout(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByID(uint(1)).
+						GetUserByID(gomock.Any(), uint(1)).
 						Return(mockUserWithRefreshToken, nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(uint(1), "").
+						UpdateRefreshToken(gomock.Any(), uint(1), "").
 						Return(nil),
 				)
 			},
@@ -954,7 +955,7 @@ func TestLogout(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByID(uint(1)).
+						GetUserByID(gomock.Any(), uint(1)).
 						Return(&entity.User{}, errors.New("GetUserByID error")),
 				)
 			},
@@ -966,7 +967,7 @@ func TestLogout(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByID(uint(1)).
+						GetUserByID(gomock.Any(), uint(1)).
 						Return(nil, nil),
 				)
 			},
@@ -978,10 +979,10 @@ func TestLogout(t *testing.T) {
 			expectCalls: func() {
 				gomock.InOrder(
 					mockUserRepo.EXPECT().
-						GetUserByID(uint(1)).
+						GetUserByID(gomock.Any(), uint(1)).
 						Return(mockUserWithRefreshToken, nil),
 					mockUserRepo.EXPECT().
-						UpdateRefreshToken(uint(1), "").
+						UpdateRefreshToken(gomock.Any(), uint(1), "").
 						Return(errors.New("UpdateRefreshToken Error")),
 				)
 			},
@@ -995,7 +996,7 @@ func TestLogout(t *testing.T) {
 			tt.expectCalls()
 
 			// act
-			err := mockUserService.Logout(tt.userID)
+			err := mockUserService.Logout(context.Background(), tt.userID)
 
 			// assert
 			assert.Equal(t, tt.mockErr, err)
@@ -1014,7 +1015,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "success case",
 			userInput: entity.User{
-				GormModel:     entity.GormModel{ID: 1},
+				GormModel: entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1026,12 +1027,12 @@ func TestUpdateUserProfile(t *testing.T) {
 					"phone":      "0987654321",
 				}
 				mockUserRepo.EXPECT().
-					UpdateUserProfile(uint(1), updatedFields).
+					UpdateUserProfile(gomock.Any(), uint(1), updatedFields).
 					Return(&entity.User{GormModel: entity.GormModel{ID: 1}}, nil)
 				mockUserRepo.EXPECT().
-					GetUserByID(uint(1)).
+					GetUserByID(gomock.Any(), uint(1)).
 					Return(&entity.User{
-						GormModel:     entity.GormModel{ID: 1},
+						GormModel: entity.GormModel{ID: 1},
 						FirstName: "John",
 						LastName:  "Doe",
 						Phone:     "0987654321",
@@ -1041,7 +1042,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "repo error - UpdateUserProfile fails",
 			userInput: entity.User{
-				GormModel:     entity.GormModel{ID: 1},
+				GormModel: entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1053,7 +1054,7 @@ func TestUpdateUserProfile(t *testing.T) {
 					"phone":      "0987654321",
 				}
 				mockUserRepo.EXPECT().
-					UpdateUserProfile(uint(1), updatedFields).
+					UpdateUserProfile(gomock.Any(), uint(1), updatedFields).
 					Return(&entity.User{}, errors.New("database error"))
 			},
 			mockErr: errors.New("database error"),
@@ -1061,7 +1062,7 @@ func TestUpdateUserProfile(t *testing.T) {
 		{
 			name: "repo error - GetUserByID fails",
 			userInput: entity.User{
-				GormModel:     entity.GormModel{ID: 1},
+				GormModel: entity.GormModel{ID: 1},
 				FirstName: "John",
 				LastName:  "Doe",
 				Phone:     "0987654321",
@@ -1073,10 +1074,10 @@ func TestUpdateUserProfile(t *testing.T) {
 					"phone":      "0987654321",
 				}
 				mockUserRepo.EXPECT().
-					UpdateUserProfile(uint(1), updatedFields).
+					UpdateUserProfile(gomock.Any(), uint(1), updatedFields).
 					Return(&entity.User{GormModel: entity.GormModel{ID: 1}}, nil)
 				mockUserRepo.EXPECT().
-					GetUserByID(uint(1)).
+					GetUserByID(gomock.Any(), uint(1)).
 					Return(&entity.User{}, errors.New("user not found"))
 			},
 			mockErr: errors.New(errormap.ErrGetUpdatedUser),
@@ -1091,7 +1092,7 @@ func TestUpdateUserProfile(t *testing.T) {
 			tt.expectCalls(mockUserRepo)
 
 			// act
-			user, err := mockUserService.UpdateUserProfile(&tt.userInput)
+			user, err := mockUserService.UpdateUserProfile(context.Background(), &tt.userInput)
 
 			// assert
 			if tt.mockErr == nil {
@@ -1116,23 +1117,23 @@ func TestUpdateUserPassword(t *testing.T) {
 		{
 			name: "success case",
 			userInput: entity.User{
-				GormModel:    entity.GormModel{ID: 1},
-				Password: "P@ssw0rd",
+				GormModel: entity.GormModel{ID: 1},
+				Password:  "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
 				mockHashApp.EXPECT().
 					HashPassword("P@ssw0rd").
 					Return("hashedpassword", nil)
 				mockUserRepo.EXPECT().
-					UpdateUserPassword(uint(1), "hashedpassword").
+					UpdateUserPassword(gomock.Any(), uint(1), "hashedpassword").
 					Return(nil)
 			},
 		},
 		{
 			name: "hash error",
 			userInput: entity.User{
-				GormModel:    entity.GormModel{ID: 1},
-				Password: "P@ssw0rd",
+				GormModel: entity.GormModel{ID: 1},
+				Password:  "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
 				mockHashApp.EXPECT().
@@ -1144,15 +1145,15 @@ func TestUpdateUserPassword(t *testing.T) {
 		{
 			name: "repo error",
 			userInput: entity.User{
-				GormModel:    entity.GormModel{ID: 1},
-				Password: "P@ssw0rd",
+				GormModel: entity.GormModel{ID: 1},
+				Password:  "P@ssw0rd",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository, mockHashApp *mock_util.MockCryptoUtil) {
 				mockHashApp.EXPECT().
 					HashPassword("P@ssw0rd").
 					Return("hashedpassword", nil)
 				mockUserRepo.EXPECT().
-					UpdateUserPassword(uint(1), "hashedpassword").
+					UpdateUserPassword(gomock.Any(), uint(1), "hashedpassword").
 					Return(errors.New("database error"))
 			},
 			mockErr: errors.New("database error"),
@@ -1167,7 +1168,7 @@ func TestUpdateUserPassword(t *testing.T) {
 			tt.expectCalls(mockUserRepo, mockHashApp)
 
 			// act
-			err := mockUserService.UpdateUserPassword(&tt.userInput)
+			err := mockUserService.UpdateUserPassword(context.Background(), &tt.userInput)
 
 			// assert
 			assert.Equal(t, tt.mockErr, err)
@@ -1187,11 +1188,11 @@ func TestUpdateUserEmail(t *testing.T) {
 			name: "success case",
 			userInput: entity.User{
 				GormModel: entity.GormModel{ID: 1},
-				Email: "test@example.com",
+				Email:     "test@example.com",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
 				mockUserRepo.EXPECT().
-					UpdateUserEmail(uint(1), "test@example.com").
+					UpdateUserEmail(gomock.Any(), uint(1), "test@example.com").
 					Return(nil)
 			},
 		},
@@ -1199,11 +1200,11 @@ func TestUpdateUserEmail(t *testing.T) {
 			name: "repo error",
 			userInput: entity.User{
 				GormModel: entity.GormModel{ID: 1},
-				Email: "test@example.com",
+				Email:     "test@example.com",
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
 				mockUserRepo.EXPECT().
-					UpdateUserEmail(uint(1), "test@example.com").
+					UpdateUserEmail(gomock.Any(), uint(1), "test@example.com").
 					Return(errors.New("database error"))
 			},
 			mockErr: errors.New("database error"),
@@ -1218,7 +1219,7 @@ func TestUpdateUserEmail(t *testing.T) {
 			tt.expectCalls(mockUserRepo)
 
 			// act
-			err := mockUserService.UpdateUserEmail(&tt.userInput)
+			err := mockUserService.UpdateUserEmail(context.Background(), &tt.userInput)
 
 			// assert
 			assert.Equal(t, tt.mockErr, err)
@@ -1237,36 +1238,36 @@ func TestUpdateUserAdminStatus(t *testing.T) {
 		{
 			name: "success case - set admin to true",
 			userInput: entity.User{
-				GormModel:   entity.GormModel{ID: 1},
-				IsAdmin: true,
+				GormModel: entity.GormModel{ID: 1},
+				IsAdmin:   true,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
 				mockUserRepo.EXPECT().
-					UpdateUserAdminStatus(uint(1), true).
+					UpdateUserAdminStatus(gomock.Any(), uint(1), true).
 					Return(nil)
 			},
 		},
 		{
 			name: "success case - set admin to false",
 			userInput: entity.User{
-				GormModel:   entity.GormModel{ID: 1},
-				IsAdmin: false,
+				GormModel: entity.GormModel{ID: 1},
+				IsAdmin:   false,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
 				mockUserRepo.EXPECT().
-					UpdateUserAdminStatus(uint(1), false).
+					UpdateUserAdminStatus(gomock.Any(), uint(1), false).
 					Return(nil)
 			},
 		},
 		{
 			name: "repo error",
 			userInput: entity.User{
-				GormModel:   entity.GormModel{ID: 1},
-				IsAdmin: true,
+				GormModel: entity.GormModel{ID: 1},
+				IsAdmin:   true,
 			},
 			expectCalls: func(mockUserRepo *mock_port.MockUserRepository) {
 				mockUserRepo.EXPECT().
-					UpdateUserAdminStatus(uint(1), true).
+					UpdateUserAdminStatus(gomock.Any(), uint(1), true).
 					Return(errors.New("database error"))
 			},
 			mockErr: errors.New("database error"),
@@ -1281,7 +1282,7 @@ func TestUpdateUserAdminStatus(t *testing.T) {
 			tt.expectCalls(mockUserRepo)
 
 			// act
-			err := mockUserService.UpdateUserAdminStatus(&tt.userInput)
+			err := mockUserService.UpdateUserAdminStatus(context.Background(), &tt.userInput)
 
 			// assert
 			assert.Equal(t, tt.mockErr, err)

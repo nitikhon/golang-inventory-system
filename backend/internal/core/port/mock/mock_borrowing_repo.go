@@ -5,10 +5,11 @@
 package mock_port
 
 import (
+        context "context"
+        gomock "github.com/golang/mock/gomock"
         entity "github.com/nitikhon/golang-inventory-system/internal/core/entity"
         gorm "gorm.io/gorm"
         reflect "reflect"
-        gomock "github.com/golang/mock/gomock"
 )
 
 // MockBorrowingRepository is a mock of BorrowingRepository interface.
@@ -50,108 +51,108 @@ func (mr *MockBorrowingRepositoryMockRecorder) ApproveBorrowingWithTx(arg0, arg1
 }
 
 // BorrowItem mocks base method.
-func (m *MockBorrowingRepository) BorrowItem(arg0 *entity.Borrowing) (*entity.Borrowing, error) {
+func (m *MockBorrowingRepository) BorrowItem(arg0 context.Context, arg1 *entity.Borrowing) (*entity.Borrowing, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "BorrowItem", arg0)
+        ret := m.ctrl.Call(m, "BorrowItem", arg0, arg1)
         ret0, _ := ret[0].(*entity.Borrowing)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // BorrowItem indicates an expected call of BorrowItem.
-func (mr *MockBorrowingRepositoryMockRecorder) BorrowItem(arg0 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) BorrowItem(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BorrowItem", reflect.TypeOf((*MockBorrowingRepository)(nil).BorrowItem), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BorrowItem", reflect.TypeOf((*MockBorrowingRepository)(nil).BorrowItem), arg0, arg1)
 }
 
 // GetAllBorrowings mocks base method.
-func (m *MockBorrowingRepository) GetAllBorrowings() ([]*entity.Borrowing, error) {
+func (m *MockBorrowingRepository) GetAllBorrowings(arg0 context.Context) ([]*entity.Borrowing, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetAllBorrowings")
+        ret := m.ctrl.Call(m, "GetAllBorrowings", arg0)
         ret0, _ := ret[0].([]*entity.Borrowing)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetAllBorrowings indicates an expected call of GetAllBorrowings.
-func (mr *MockBorrowingRepositoryMockRecorder) GetAllBorrowings() *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetAllBorrowings(arg0 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllBorrowings", reflect.TypeOf((*MockBorrowingRepository)(nil).GetAllBorrowings))
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllBorrowings", reflect.TypeOf((*MockBorrowingRepository)(nil).GetAllBorrowings), arg0)
 }
 
 // GetBorrowingByID mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingByID(arg0 uint) (*entity.Borrowing, error) {
+func (m *MockBorrowingRepository) GetBorrowingByID(arg0 context.Context, arg1 uint) (*entity.Borrowing, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingByID", arg0)
+        ret := m.ctrl.Call(m, "GetBorrowingByID", arg0, arg1)
         ret0, _ := ret[0].(*entity.Borrowing)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetBorrowingByID indicates an expected call of GetBorrowingByID.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingByID(arg0 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingByID(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingByID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingByID), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingByID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingByID), arg0, arg1)
 }
 
 // GetBorrowingsByApproverID mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByApproverID(arg0 uint) ([]*entity.Borrowing, error) {
+func (m *MockBorrowingRepository) GetBorrowingsByApproverID(arg0 context.Context, arg1 uint) ([]*entity.Borrowing, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingsByApproverID", arg0)
+        ret := m.ctrl.Call(m, "GetBorrowingsByApproverID", arg0, arg1)
         ret0, _ := ret[0].([]*entity.Borrowing)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetBorrowingsByApproverID indicates an expected call of GetBorrowingsByApproverID.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByApproverID(arg0 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByApproverID(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByApproverID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByApproverID), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByApproverID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByApproverID), arg0, arg1)
 }
 
 // GetBorrowingsByBorrowingStatus mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByBorrowingStatus(arg0 []string, arg1 string, arg2, arg3 int) (*entity.PaginationResult[entity.Borrowing], error) {
+func (m *MockBorrowingRepository) GetBorrowingsByBorrowingStatus(arg0 context.Context, arg1 []string, arg2 string, arg3, arg4 int) (*entity.PaginationResult[entity.Borrowing], error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingsByBorrowingStatus", arg0, arg1, arg2, arg3)
+        ret := m.ctrl.Call(m, "GetBorrowingsByBorrowingStatus", arg0, arg1, arg2, arg3, arg4)
         ret0, _ := ret[0].(*entity.PaginationResult[entity.Borrowing])
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetBorrowingsByBorrowingStatus indicates an expected call of GetBorrowingsByBorrowingStatus.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByBorrowingStatus(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByBorrowingStatus(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByBorrowingStatus", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByBorrowingStatus), arg0, arg1, arg2, arg3)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByBorrowingStatus", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByBorrowingStatus), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetBorrowingsByItemID mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByItemID(arg0 uint) ([]*entity.Borrowing, error) {
+func (m *MockBorrowingRepository) GetBorrowingsByItemID(arg0 context.Context, arg1 uint) ([]*entity.Borrowing, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingsByItemID", arg0)
+        ret := m.ctrl.Call(m, "GetBorrowingsByItemID", arg0, arg1)
         ret0, _ := ret[0].([]*entity.Borrowing)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetBorrowingsByItemID indicates an expected call of GetBorrowingsByItemID.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByItemID(arg0 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByItemID(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByItemID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByItemID), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByItemID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByItemID), arg0, arg1)
 }
 
 // GetBorrowingsByUserID mocks base method.
-func (m *MockBorrowingRepository) GetBorrowingsByUserID(arg0 uint, arg1, arg2 int, arg3 string) (*entity.PaginationResult[entity.Borrowing], error) {
+func (m *MockBorrowingRepository) GetBorrowingsByUserID(arg0 context.Context, arg1 uint, arg2, arg3 int, arg4 string) (*entity.PaginationResult[entity.Borrowing], error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetBorrowingsByUserID", arg0, arg1, arg2, arg3)
+        ret := m.ctrl.Call(m, "GetBorrowingsByUserID", arg0, arg1, arg2, arg3, arg4)
         ret0, _ := ret[0].(*entity.PaginationResult[entity.Borrowing])
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetBorrowingsByUserID indicates an expected call of GetBorrowingsByUserID.
-func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByUserID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetBorrowingsByUserID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByUserID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByUserID), arg0, arg1, arg2, arg3)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBorrowingsByUserID", reflect.TypeOf((*MockBorrowingRepository)(nil).GetBorrowingsByUserID), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetDB mocks base method.
@@ -169,33 +170,33 @@ func (mr *MockBorrowingRepositoryMockRecorder) GetDB() *gomock.Call {
 }
 
 // GetUserBorrowingStats mocks base method.
-func (m *MockBorrowingRepository) GetUserBorrowingStats(arg0 uint) (*entity.BorrowingStats, error) {
+func (m *MockBorrowingRepository) GetUserBorrowingStats(arg0 context.Context, arg1 uint) (*entity.BorrowingStats, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetUserBorrowingStats", arg0)
+        ret := m.ctrl.Call(m, "GetUserBorrowingStats", arg0, arg1)
         ret0, _ := ret[0].(*entity.BorrowingStats)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetUserBorrowingStats indicates an expected call of GetUserBorrowingStats.
-func (mr *MockBorrowingRepositoryMockRecorder) GetUserBorrowingStats(arg0 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) GetUserBorrowingStats(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserBorrowingStats", reflect.TypeOf((*MockBorrowingRepository)(nil).GetUserBorrowingStats), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserBorrowingStats", reflect.TypeOf((*MockBorrowingRepository)(nil).GetUserBorrowingStats), arg0, arg1)
 }
 
 // HasActiveBorrowing mocks base method.
-func (m *MockBorrowingRepository) HasActiveBorrowing(arg0, arg1 uint) (bool, error) {
+func (m *MockBorrowingRepository) HasActiveBorrowing(arg0 context.Context, arg1, arg2 uint) (bool, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "HasActiveBorrowing", arg0, arg1)
+        ret := m.ctrl.Call(m, "HasActiveBorrowing", arg0, arg1, arg2)
         ret0, _ := ret[0].(bool)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // HasActiveBorrowing indicates an expected call of HasActiveBorrowing.
-func (mr *MockBorrowingRepositoryMockRecorder) HasActiveBorrowing(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBorrowingRepositoryMockRecorder) HasActiveBorrowing(arg0, arg1, arg2 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasActiveBorrowing", reflect.TypeOf((*MockBorrowingRepository)(nil).HasActiveBorrowing), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasActiveBorrowing", reflect.TypeOf((*MockBorrowingRepository)(nil).HasActiveBorrowing), arg0, arg1, arg2)
 }
 
 // MarkOverdueItemsWithTx mocks base method.

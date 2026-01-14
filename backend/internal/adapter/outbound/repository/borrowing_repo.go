@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"math"
 	"time"
 
@@ -19,13 +20,13 @@ func NewBorrowingRepository(db *gorm.DB) *BorrowingRepository {
 	return &BorrowingRepository{db: db}
 }
 
-func (r *BorrowingRepository) BorrowItem(borrowing *entity.Borrowing) (*entity.Borrowing, error) {
-	err := r.db.Create(&borrowing).Error
+func (r *BorrowingRepository) BorrowItem(ctx context.Context, borrowing *entity.Borrowing) (*entity.Borrowing, error) {
+	err := r.db.WithContext(ctx).Create(&borrowing).Error
 	if err != nil {
 		return &entity.Borrowing{}, err
 	}
 
-	err = r.db.Preload("Item").Preload("User").First(borrowing, borrowing.ID).Error
+	err = r.db.WithContext(ctx).Preload("Item").Preload("User").First(borrowing, borrowing.ID).Error
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +90,9 @@ func (r *BorrowingRepository) ReturnBorrowingWithTx(tx *gorm.DB, borrowingId uin
 }
 
 // GetAllBorrowings retrieves all borrowing records from the database.
-func (r *BorrowingRepository) GetAllBorrowings() ([]*entity.Borrowing, error) {
+func (r *BorrowingRepository) GetAllBorrowings(ctx context.Context) ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing
-	err := r.db.Find(&borrowings).Error
+	err := r.db.WithContext(ctx).Find(&borrowings).Error
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +100,9 @@ func (r *BorrowingRepository) GetAllBorrowings() ([]*entity.Borrowing, error) {
 }
 
 // GetBorrowingByID retrieves a borrowing record by its ID.
-func (r *BorrowingRepository) GetBorrowingByID(borrowingID uint) (*entity.Borrowing, error) {
+func (r *BorrowingRepository) GetBorrowingByID(ctx context.Context, borrowingID uint) (*entity.Borrowing, error) {
 	var borrowing entity.Borrowing
-	err := r.db.First(&borrowing, borrowingID).Error
+	err := r.db.WithContext(ctx).First(&borrowing, borrowingID).Error
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +110,11 @@ func (r *BorrowingRepository) GetBorrowingByID(borrowingID uint) (*entity.Borrow
 }
 
 // GetBorrowingsByUserID retrieves all borrowings for a specific user.
-func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
+func (r *BorrowingRepository) GetBorrowingsByUserID(ctx context.Context, userID uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
 	var items []entity.Borrowing
 	var total int64
 
-	query := r.db.Model(&entity.Borrowing{}).Joins("User").Joins("Item")
+	query := r.db.WithContext(ctx).Model(&entity.Borrowing{}).Joins("User").Joins("Item")
 
 	query = query.Where("borrowings.user_id = ?", userID)
 
@@ -150,9 +151,9 @@ func (r *BorrowingRepository) GetBorrowingsByUserID(userID uint, page, limit int
 }
 
 // GetBorrowingsByItemID retrieves all borrowings for a specific item.
-func (r *BorrowingRepository) GetBorrowingsByItemID(itemID uint) ([]*entity.Borrowing, error) {
+func (r *BorrowingRepository) GetBorrowingsByItemID(ctx context.Context, itemID uint) ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing
-	err := r.db.Where("item_id = ?", itemID).Find(&borrowings).Error
+	err := r.db.WithContext(ctx).Where("item_id = ?", itemID).Find(&borrowings).Error
 	if err != nil {
 		return nil, err
 	}
@@ -160,11 +161,11 @@ func (r *BorrowingRepository) GetBorrowingsByItemID(itemID uint) ([]*entity.Borr
 }
 
 // GetBorrowingsByBorrowingStatus retrieves borrowings by their borrowing status.
-func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(ctx context.Context, status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
 	var items []entity.Borrowing
 	var total int64
 
-	query := r.db.Model(&entity.Borrowing{}).Joins("User").Joins("Item")
+	query := r.db.WithContext(ctx).Model(&entity.Borrowing{}).Joins("User").Joins("Item")
 
 	query = query.Where("borrowings.borrowing_status IN ?", status)
 
@@ -201,22 +202,22 @@ func (r *BorrowingRepository) GetBorrowingsByBorrowingStatus(status []string, se
 }
 
 // GetBorrowingsByApproverID retrieves borrowings approved by a specific user.
-func (r *BorrowingRepository) GetBorrowingsByApproverID(approverID uint) ([]*entity.Borrowing, error) {
+func (r *BorrowingRepository) GetBorrowingsByApproverID(ctx context.Context, approverID uint) ([]*entity.Borrowing, error) {
 	var borrowings []*entity.Borrowing
-	err := r.db.Where("approved_by = ?", approverID).Find(&borrowings).Error
+	err := r.db.WithContext(ctx).Where("approved_by = ?", approverID).Find(&borrowings).Error
 	if err != nil {
 		return nil, err
 	}
 	return borrowings, nil
 }
 
-func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {
+func (r *BorrowingRepository) GetUserBorrowingStats(ctx context.Context, userID uint) (*entity.BorrowingStats, error) {
 	var result entity.BorrowingStats
 	var countOngoing int64
 	var countReturned int64
 	var countCurrentlyBorrows int64
 
-	err := r.db.Model(&entity.Borrowing{}).
+	err := r.db.WithContext(ctx).Model(&entity.Borrowing{}).
 		Where("user_id = ? AND borrowing_status = ?", userID, "pending").
 		Count(&countOngoing).Error
 	if err != nil {
@@ -224,7 +225,7 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	}
 	result.OnGoingBorrows = uint(countOngoing)
 
-	err = r.db.Model(&entity.Borrowing{}).
+	err = r.db.WithContext(ctx).Model(&entity.Borrowing{}).
 		Where("user_id = ? AND borrowing_status = ?", userID, "returned").
 		Count(&countReturned).Error
 	if err != nil {
@@ -232,7 +233,7 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	}
 	result.TotalReturned = uint(countReturned)
 
-	err = r.db.Model(&entity.Borrowing{}).
+	err = r.db.WithContext(ctx).Model(&entity.Borrowing{}).
 		Where("user_id = ? AND borrowing_status = ?", userID, "active").
 		Count(&countCurrentlyBorrows).Error
 	if err != nil {
@@ -243,9 +244,9 @@ func (r *BorrowingRepository) GetUserBorrowingStats(userID uint) (*entity.Borrow
 	return &result, nil
 }
 
-func (r *BorrowingRepository) HasActiveBorrowing(userID, itemID uint) (bool, error) {
+func (r *BorrowingRepository) HasActiveBorrowing(ctx context.Context, userID, itemID uint) (bool, error) {
 	var count int64
-	err := r.db.Model(&entity.Borrowing{}).
+	err := r.db.WithContext(ctx).Model(&entity.Borrowing{}).
 		Where("user_id = ? AND item_id = ? AND borrowing_status IN ?", userID, itemID, []string{"pending", "active"}).
 		Count(&count).Error
 

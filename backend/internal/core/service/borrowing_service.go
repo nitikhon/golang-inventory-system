@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -14,14 +15,14 @@ var _ BorrowingServiceInterface = (*BorrowingService)(nil)
 
 // BorrowingServiceInterface defines the contract for borrowing operations.
 type BorrowingServiceInterface interface {
-	BorrowItem(borrowing entity.BorrowRequest) (*entity.Borrowing, error)
-	ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error)
-	RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error)
-	ReturnBorrowing(borrowerId uint) (*entity.Borrowing, error)
-	GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
-	GetBorrowingsByUserID(borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
-	GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error)
-	MarkOverdueItems() error
+	BorrowItem(ctx context.Context, borrowing entity.BorrowRequest) (*entity.Borrowing, error)
+	ApproveBorrowing(ctx context.Context, borrowerId, approverId uint) (*entity.Borrowing, error)
+	RejectBorrowing(ctx context.Context, borrowerId, rejecterId uint) (*entity.Borrowing, error)
+	ReturnBorrowing(ctx context.Context, borrowerId uint) (*entity.Borrowing, error)
+	GetBorrowingsByBorrowingStatus(ctx context.Context, status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error)
+	GetBorrowingsByUserID(ctx context.Context, borrowerId uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error)
+	GetUserBorrowingStats(ctx context.Context, userID uint) (*entity.BorrowingStats, error)
+	MarkOverdueItems(ctx context.Context) error
 }
 
 // BorrowingService provides the use cases for borrowing operations.
@@ -41,9 +42,9 @@ func NewBorrowingService(borrowingRepo port.BorrowingRepository, itemRepo port.I
 }
 
 // BorrowItem handles the borrowing of an item.
-func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowing, error) {
+func (s *BorrowingService) BorrowItem(ctx context.Context, req entity.BorrowRequest) (*entity.Borrowing, error) {
 	// User exists and is active
-	user, err := s.userRepo.GetUserByID(req.UserID)
+	user, err := s.userRepo.GetUserByID(ctx, req.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowi
 	}
 
 	// Item exists and is available
-	item, err := s.itemRepo.GetItemByID(req.ItemID)
+	item, err := s.itemRepo.GetItemByID(ctx, req.ItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +67,7 @@ func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowi
 	}
 
 	// Check if the user has already borrowed this item
-	exists, err := s.borrowingRepo.HasActiveBorrowing(req.UserID, req.ItemID)
+	exists, err := s.borrowingRepo.HasActiveBorrowing(ctx, req.UserID, req.ItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -102,13 +103,13 @@ func (s *BorrowingService) BorrowItem(req entity.BorrowRequest) (*entity.Borrowi
 		BorrowingStatus: "pending",
 	}
 
-	return s.borrowingRepo.BorrowItem(&borrowing)
+	return s.borrowingRepo.BorrowItem(ctx, &borrowing)
 }
 
 // ApproveBorrowing approves a borrowing request.
-func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entity.Borrowing, error) {
+func (s *BorrowingService) ApproveBorrowing(ctx context.Context, borrowerId, approverId uint) (*entity.Borrowing, error) {
 	db := s.itemRepo.GetDB()
-	tx := db.Begin()
+	tx := db.WithContext(ctx).Begin()
 	committed := false
 	defer func() {
 		if r := recover(); r != nil {
@@ -120,7 +121,7 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 	}()
 
 	// Check if the borrowing exists
-	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(borrowerId)
+	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(ctx, borrowerId)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +130,7 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 	}
 
 	// Check if the approver exists
-	approver, err := s.userRepo.GetUserByID(approverId)
+	approver, err := s.userRepo.GetUserByID(ctx, approverId)
 	if err != nil {
 		return nil, err
 	}
@@ -172,9 +173,9 @@ func (s *BorrowingService) ApproveBorrowing(borrowerId, approverId uint) (*entit
 }
 
 // RejectBorrowing rejects a borrowing request.
-func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity.Borrowing, error) {
+func (s *BorrowingService) RejectBorrowing(ctx context.Context, borrowerId, rejecterId uint) (*entity.Borrowing, error) {
 	db := s.itemRepo.GetDB()
-	tx := db.Begin()
+	tx := db.WithContext(ctx).Begin()
 	committed := false
 	defer func() {
 		if r := recover(); r != nil {
@@ -186,7 +187,7 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 	}()
 
 	// Check if the borrowing exists
-	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(borrowerId)
+	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(ctx, borrowerId)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +196,7 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 	}
 
 	// Check if the rejecter exists
-	rejecter, err := s.userRepo.GetUserByID(rejecterId)
+	rejecter, err := s.userRepo.GetUserByID(ctx, rejecterId)
 	if err != nil {
 		return nil, err
 	}
@@ -226,9 +227,9 @@ func (s *BorrowingService) RejectBorrowing(borrowerId, rejecterId uint) (*entity
 }
 
 // RejectBorrowing rejects a borrowing request.
-func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing, error) {
+func (s *BorrowingService) ReturnBorrowing(ctx context.Context, borrowingId uint) (*entity.Borrowing, error) {
 	db := s.itemRepo.GetDB()
-	tx := db.Begin()
+	tx := db.WithContext(ctx).Begin()
 	committed := false
 	defer func() {
 		if r := recover(); r != nil {
@@ -240,7 +241,7 @@ func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing,
 	}()
 
 	// Check if the borrowing exists
-	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(borrowingId)
+	existingBorrowing, err := s.borrowingRepo.GetBorrowingByID(ctx, borrowingId)
 	if err != nil {
 		return nil, err
 	}
@@ -289,21 +290,21 @@ func (s *BorrowingService) ReturnBorrowing(borrowingId uint) (*entity.Borrowing,
 }
 
 // GetBorrowingByStatus retrieves borrowings by their status.
-func (s *BorrowingService) GetBorrowingsByBorrowingStatus(status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
-	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(status, search, page, limit)
+func (s *BorrowingService) GetBorrowingsByBorrowingStatus(ctx context.Context, status []string, search string, page, limit int) (*entity.PaginationResult[entity.Borrowing], error) {
+	return s.borrowingRepo.GetBorrowingsByBorrowingStatus(ctx, status, search, page, limit)
 }
 
-func (s *BorrowingService) GetBorrowingsByUserID(id uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
-	return s.borrowingRepo.GetBorrowingsByUserID(id, page, limit, search)
+func (s *BorrowingService) GetBorrowingsByUserID(ctx context.Context, id uint, page, limit int, search string) (*entity.PaginationResult[entity.Borrowing], error) {
+	return s.borrowingRepo.GetBorrowingsByUserID(ctx, id, page, limit, search)
 }
 
-func (s *BorrowingService) GetUserBorrowingStats(userID uint) (*entity.BorrowingStats, error) {
-	return s.borrowingRepo.GetUserBorrowingStats(userID)
+func (s *BorrowingService) GetUserBorrowingStats(ctx context.Context, userID uint) (*entity.BorrowingStats, error) {
+	return s.borrowingRepo.GetUserBorrowingStats(ctx, userID)
 }
 
-func (s *BorrowingService) MarkOverdueItems() error {
+func (s *BorrowingService) MarkOverdueItems(ctx context.Context) error {
 	db := s.borrowingRepo.GetDB()
-	tx := db.Begin()
+	tx := db.WithContext(ctx).Begin()
 	committed := false
 	defer func() {
 		if r := recover(); r != nil {

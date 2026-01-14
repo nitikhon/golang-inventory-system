@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -14,21 +15,21 @@ import (
 var _ UserServiceInterface = (*UserService)(nil)
 
 type UserServiceInterface interface {
-	CreateUser(user *entity.User) (*entity.User, error)
-	UpdateUser(user *entity.User) (*entity.User, error)
-	DeleteUser(userID uint) error
-	GetAllUsers() ([]*entity.User, error)
-	GetUserByID(userID uint) (*entity.User, error)
-	GetUserByUsername(username string) (*entity.User, error)
-	GetUserByEmail(email string) (*entity.User, error)
-	GetUserByPhone(phone string) (*entity.User, error)
-	Login(username, password string) (string, string, error)
-	RefreshToken(refreshToken string) (entity.Token, error)
-	Logout(userID uint) error
-	UpdateUserProfile(user *entity.User) (*entity.User, error)
-	UpdateUserPassword(user *entity.User) error
-	UpdateUserEmail(user *entity.User) error
-	UpdateUserAdminStatus(user *entity.User) error
+	CreateUser(ctx context.Context, user *entity.User) (*entity.User, error)
+	UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error)
+	DeleteUser(ctx context.Context, userID uint) error
+	GetAllUsers(ctx context.Context) ([]*entity.User, error)
+	GetUserByID(ctx context.Context, userID uint) (*entity.User, error)
+	GetUserByUsername(uctx context.Context, sername string) (*entity.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
+	GetUserByPhone(ctx context.Context, phone string) (*entity.User, error)
+	Login(ctx context.Context, username, password string) (string, string, error)
+	RefreshToken(ctx context.Context, refreshToken string) (entity.Token, error)
+	Logout(ctx context.Context, userID uint) error
+	UpdateUserProfile(ctx context.Context, user *entity.User) (*entity.User, error)
+	UpdateUserPassword(ctx context.Context, user *entity.User) error
+	UpdateUserEmail(ctx context.Context, user *entity.User) error
+	UpdateUserAdminStatus(ctx context.Context, user *entity.User) error
 }
 
 // UserService provides the use cases for the user entity.
@@ -44,21 +45,21 @@ func NewUserService(repo port.UserRepository, crypto util.CryptoUtil, jwt util.J
 }
 
 // Create creates a new user.
-func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
 	// Check if username already exists
-	existingUser, err := s.repo.GetUserByUsername(user.Username)
+	existingUser, err := s.repo.GetUserByUsername(ctx, user.Username)
 	if err == nil && existingUser != nil {
 		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
 
 	// Check if email already exists
-	existingUser, err = s.repo.GetUserByEmail(user.Email)
+	existingUser, err = s.repo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
 		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
 
 	// Check if phone already exists
-	existingUser, err = s.repo.GetUserByPhone(user.Phone)
+	existingUser, err = s.repo.GetUserByPhone(ctx, user.Phone)
 	if err == nil && existingUser != nil {
 		return &entity.User{}, errors.New(errormap.ErrUserCredentialsExist)
 	}
@@ -71,58 +72,58 @@ func (s *UserService) CreateUser(user *entity.User) (*entity.User, error) {
 
 	user.Password = hashedPassword
 
-	return s.repo.CreateUser(user)
+	return s.repo.CreateUser(ctx, user)
 }
 
 // Update updates an existing user.
-func (s *UserService) UpdateUser(user *entity.User) (*entity.User, error) {
-	existingUser, err := s.repo.GetUserByEmail(user.Email)
+func (s *UserService) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
+	existingUser, err := s.repo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil && existingUser.ID != user.ID {
 		return &entity.User{}, errors.New(errormap.ErrEmailAlreadyTaken)
 	}
 
-	existingUser, err = s.repo.GetUserByPhone(user.Phone)
+	existingUser, err = s.repo.GetUserByPhone(ctx, user.Phone)
 	if err == nil && existingUser != nil && existingUser.ID != user.ID {
 		return &entity.User{}, errors.New(errormap.ErrPhoneAlreadyTaken)
 	}
 
-	return s.repo.UpdateUser(user)
+	return s.repo.UpdateUser(ctx, user)
 }
 
 // Delete deletes a user by their ID.
-func (s *UserService) DeleteUser(id uint) error {
-	return s.repo.DeleteUser(id)
+func (s *UserService) DeleteUser(ctx context.Context, id uint) error {
+	return s.repo.DeleteUser(ctx, id)
 }
 
 // GetAllUsers returns all users.
-func (s *UserService) GetAllUsers() ([]*entity.User, error) {
-	return s.repo.GetAllUsers()
+func (s *UserService) GetAllUsers(ctx context.Context) ([]*entity.User, error) {
+	return s.repo.GetAllUsers(ctx)
 }
 
 // GetUserByID returns a user by their ID.
-func (s *UserService) GetUserByID(id uint) (*entity.User, error) {
-	return s.repo.GetUserByID(id)
+func (s *UserService) GetUserByID(ctx context.Context, id uint) (*entity.User, error) {
+	return s.repo.GetUserByID(ctx, id)
 }
 
 // GetUserByUsername retrieves a user by their username.
-func (s *UserService) GetUserByUsername(username string) (*entity.User, error) {
-	return s.repo.GetUserByUsername(username)
+func (s *UserService) GetUserByUsername(ctx context.Context, username string) (*entity.User, error) {
+	return s.repo.GetUserByUsername(ctx, username)
 }
 
 // GetUserByEmail retrieves a user by their email.
-func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
-	return s.repo.GetUserByEmail(email)
+func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+	return s.repo.GetUserByEmail(ctx, email)
 }
 
 // GetUserByPhone retrieves a user by their phone number.
-func (s *UserService) GetUserByPhone(phone string) (*entity.User, error) {
-	return s.repo.GetUserByPhone(phone)
+func (s *UserService) GetUserByPhone(ctx context.Context, phone string) (*entity.User, error) {
+	return s.repo.GetUserByPhone(ctx, phone)
 }
 
 // Login checks if the user exists and if the password is correct.
-func (s *UserService) Login(username, password string) (string, string, error) {
+func (s *UserService) Login(ctx context.Context, username, password string) (string, string, error) {
 	// Check if user exists
-	user, err := s.repo.GetUserByUsername(username)
+	user, err := s.repo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return "", "", err
 	}
@@ -148,7 +149,7 @@ func (s *UserService) Login(username, password string) (string, string, error) {
 	}
 
 	// Save refresh token
-	err = s.repo.UpdateRefreshToken(user.ID, refreshToken)
+	err = s.repo.UpdateRefreshToken(ctx, user.ID, refreshToken)
 	if err != nil {
 		return "", "", err
 	}
@@ -158,7 +159,7 @@ func (s *UserService) Login(username, password string) (string, string, error) {
 
 // RefreshToken validates the provided refresh token, retrieves the associated user,
 // and generates a new pair of access and refresh tokens.
-func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
+func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (entity.Token, error) {
 	// Validate the Refresh Token
 	userID, err := s.jwt.ValidateRefreshToken(refreshToken)
 	if err != nil {
@@ -166,7 +167,7 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 	}
 
 	// Retrieve the user
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return entity.Token{}, err
 	}
@@ -187,7 +188,7 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 	}
 
 	// Save new refresh token
-	err = s.repo.UpdateRefreshToken(user.ID, newRefreshToken)
+	err = s.repo.UpdateRefreshToken(ctx, user.ID, newRefreshToken)
 	if err != nil {
 		return entity.Token{}, err
 	}
@@ -196,9 +197,9 @@ func (s *UserService) RefreshToken(refreshToken string) (entity.Token, error) {
 }
 
 // Logout clears the refresh token for the user.
-func (s *UserService) Logout(userID uint) error {
+func (s *UserService) Logout(ctx context.Context, userID uint) error {
 	// Retrieve the user
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -208,7 +209,7 @@ func (s *UserService) Logout(userID uint) error {
 	}
 
 	// Update the user in the repository
-	err = s.repo.UpdateRefreshToken(user.ID, "")
+	err = s.repo.UpdateRefreshToken(ctx, user.ID, "")
 	if err != nil {
 		return err
 	}
@@ -216,19 +217,19 @@ func (s *UserService) Logout(userID uint) error {
 	return nil
 }
 
-func (s *UserService) UpdateUserProfile(user *entity.User) (*entity.User, error) {
+func (s *UserService) UpdateUserProfile(ctx context.Context, user *entity.User) (*entity.User, error) {
 	updatedFields := map[string]any{
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 		"phone":      user.Phone,
 	}
 
-	_, err := s.repo.UpdateUserProfile(user.ID, updatedFields)
+	_, err := s.repo.UpdateUserProfile(ctx, user.ID, updatedFields)
 	if err != nil {
 		return &entity.User{}, err
 	}
 
-	updatedUser, err := s.repo.GetUserByID(user.ID)
+	updatedUser, err := s.repo.GetUserByID(ctx, user.ID)
 	if err != nil {
 		return &entity.User{}, errors.New(errormap.ErrGetUpdatedUser)
 	}
@@ -236,28 +237,28 @@ func (s *UserService) UpdateUserProfile(user *entity.User) (*entity.User, error)
 	return updatedUser, nil
 }
 
-func (s *UserService) UpdateUserPassword(user *entity.User) error {
+func (s *UserService) UpdateUserPassword(ctx context.Context, user *entity.User) error {
 	hashedPassword, err := s.crypto.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 
-	err = s.repo.UpdateUserPassword(user.ID, hashedPassword)
+	err = s.repo.UpdateUserPassword(ctx, user.ID, hashedPassword)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *UserService) UpdateUserEmail(user *entity.User) error {
-	if err := s.repo.UpdateUserEmail(user.ID, user.Email); err != nil {
+func (s *UserService) UpdateUserEmail(ctx context.Context, user *entity.User) error {
+	if err := s.repo.UpdateUserEmail(ctx, user.ID, user.Email); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *UserService) UpdateUserAdminStatus(user *entity.User) error {
-	if err := s.repo.UpdateUserAdminStatus(user.ID, user.IsAdmin); err != nil {
+func (s *UserService) UpdateUserAdminStatus(ctx context.Context, user *entity.User) error {
+	if err := s.repo.UpdateUserAdminStatus(ctx, user.ID, user.IsAdmin); err != nil {
 		return err
 	}
 	return nil

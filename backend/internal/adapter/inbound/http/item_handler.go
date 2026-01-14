@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"slices"
 	"strings"
@@ -28,10 +29,10 @@ func NewItemHandler(service *service.ItemService) *ItemHandler {
 // GetAllItems retrieves all items.
 func (h *ItemHandler) GetAllItems(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
-    limit := c.QueryInt("limit", 12)
-    search := c.Query("search")
+	limit := c.QueryInt("limit", 12)
+	search := c.Query("search")
 
-	items, err := h.service.GetAllItems(page, limit, search)
+	items, err := h.service.GetAllItems(ctx, page, limit, search)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -44,7 +45,7 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	item, err := h.service.GetItemByID(uint(id))
+	item, err := h.service.GetItemByID(c.UserContext(), uint(id))
 	if err != nil {
 		switch err.Error() {
 		case gorm.ErrRecordNotFound.Error():
@@ -70,7 +71,7 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 
 	item.Name = normalizeItemName(item.Name)
 
-	createdItem, err := h.service.Create(&item)
+	createdItem, err := h.service.Create(c.UserContext(), &item)
 	if err != nil {
 		// Handle business logic errors
 		if err.Error() == errormap.ErrItemNameAlreadyExists {
@@ -99,7 +100,7 @@ func (h *ItemHandler) PutUpdate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	updatedItem, err := h.service.Update(&item)
+	updatedItem, err := h.service.Update(c.UserContext(), &item)
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
@@ -121,7 +122,7 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	item, err := h.service.GetItemByID(uint(id))
+	item, err := h.service.GetItemByID(c.UserContext(), uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 	}
@@ -186,7 +187,7 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 		item.Status = *req.Status
 	}
 
-	updatedItem, err := h.service.Update(item)
+	updatedItem, err := h.service.Update(c.UserContext(), item)
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
@@ -209,7 +210,7 @@ func (h *ItemHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if err := h.service.Delete(uint(id)); err != nil {
+	if err := h.service.Delete(c.UserContext(), uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.SendStatus(fiber.StatusNoContent)

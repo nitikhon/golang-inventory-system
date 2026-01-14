@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -35,10 +36,10 @@ func TestGetAllItems(t *testing.T) {
 	page := 1
 	limit := 12
 	search := ""
-	mockItemRepo.EXPECT().GetAllItems(page, limit, search).Return(&entity.PaginationResult[entity.Item]{}, nil)
+	mockItemRepo.EXPECT().GetAllItems(gomock.Any(), page, limit, search).Return(&entity.PaginationResult[entity.Item]{}, nil)
 
 	// act
-	items, err := mockItemService.GetAllItems(page, limit, search)
+	items, err := mockItemService.GetAllItems(context.Background(), page, limit, search)
 
 	// assert
 	assert.NotNil(t, items, fmt.Sprintf("expect empty array, got %v", items))
@@ -83,11 +84,11 @@ func TestGetItemById(t *testing.T) {
 			// arrange
 			mockItemRepo.
 				EXPECT().
-				GetItemByID(tt.id).
+				GetItemByID(gomock.Any(), tt.id).
 				Return(tt.mockReturn, tt.mockErr)
 
 			// act
-			item, err := mockItemService.GetItemByID(tt.id)
+			item, err := mockItemService.GetItemByID(context.Background(), tt.id)
 
 			// assert
 			if tt.expectErr {
@@ -123,16 +124,16 @@ func TestCreateItem_Success(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("test item").
+		GetItemByName(gomock.Any(), "test item").
 		Return(nil, nil) // no existing item found
 
 	mockItemRepo.
 		EXPECT().
-		Create(gomock.Any()).
+		Create(gomock.Any(), gomock.Any()).
 		Return(expectedItem, nil)
 
 	// act
-	result, err := mockItemService.Create(inputItem)
+	result, err := mockItemService.Create(context.Background(), inputItem)
 
 	// assert
 	assert.Nil(t, err)
@@ -160,11 +161,11 @@ func TestCreateItem_FailureItemAlreadyExists(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("existing item"). // normalized name
-		Return(existingItem, nil)       // existing item found
+		GetItemByName(gomock.Any(), "existing item"). // normalized name
+		Return(existingItem, nil)                     // existing item found
 
 	// act
-	result, err := mockItemService.Create(inputItem)
+	result, err := mockItemService.Create(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -185,11 +186,11 @@ func TestCreateItem_FailureGetItemByNameError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("test item"). // normalized name
+		GetItemByName(gomock.Any(), "test item"). // normalized name
 		Return(nil, errors.New("database connection error"))
 
 	// act
-	result, err := mockItemService.Create(inputItem)
+	result, err := mockItemService.Create(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -210,16 +211,16 @@ func TestCreateItem_FailureCreateError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("test item").
+		GetItemByName(gomock.Any(), "test item").
 		Return(nil, nil) // no existing item found
 
 	mockItemRepo.
 		EXPECT().
-		Create(gomock.Any()).
+		Create(gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to insert into database"))
 
 	// act
-	result, err := mockItemService.Create(inputItem)
+	result, err := mockItemService.Create(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -261,21 +262,21 @@ func TestUpdateItem_Success(t *testing.T) {
 	// Mock expectations - check item exists first, then check name conflicts
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(1)).
+		GetItemByID(gomock.Any(), uint(1)).
 		Return(currentItem, nil) // item exists
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("Updated Item"). // original name (service doesn't normalize yet)
-		Return(nil, nil)               // no existing item with this name
+		GetItemByName(gomock.Any(), "Updated Item"). // original name (service doesn't normalize yet)
+		Return(nil, nil)                             // no existing item with this name
 
 	mockItemRepo.
 		EXPECT().
-		Update(gomock.Any()).
+		Update(gomock.Any(), gomock.Any()).
 		Return(expectedItem, nil)
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.Nil(t, err)
@@ -297,11 +298,11 @@ func TestUpdateItem_FailureItemNotFound(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(999)).
+		GetItemByID(gomock.Any(), uint(999)).
 		Return(nil, nil) // item not found
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -343,21 +344,21 @@ func TestUpdateItem_SuccessUpdateToSameName(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(1)).
+		GetItemByID(gomock.Any(), uint(1)).
 		Return(existingItem, nil)
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("same item").
+		GetItemByName(gomock.Any(), "same item").
 		Return(existingItem, nil) // existing item found with same ID
 
 	mockItemRepo.
 		EXPECT().
-		Update(gomock.Any()).
+		Update(gomock.Any(), gomock.Any()).
 		Return(expectedItem, nil)
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.Nil(t, err)
@@ -388,16 +389,16 @@ func TestUpdateItem_FailureNameAlreadyExistsDifferentItem(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(1)).
+		GetItemByID(gomock.Any(), uint(1)).
 		Return(inputItem, nil)
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("existing name").
+		GetItemByName(gomock.Any(), "existing name").
 		Return(existingItem, nil) // existing item found with different ID
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -419,11 +420,11 @@ func TestUpdateItem_FailureGetItemByIDError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(1)).
+		GetItemByID(gomock.Any(), uint(1)).
 		Return(nil, errors.New("database connection failed"))
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -453,16 +454,16 @@ func TestUpdateItem_FailureGetItemByNameError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByID(uint(1)).
+		GetItemByID(gomock.Any(), uint(1)).
 		Return(currentItem, nil) // item exists
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName("Test Item").
+		GetItemByName(gomock.Any(), "Test Item").
 		Return(nil, errors.New("database timeout error"))
 
 	// act
-	result, err := mockItemService.Update(inputItem)
+	result, err := mockItemService.Update(context.Background(), inputItem)
 
 	// assert
 	assert.NotNil(t, err)
@@ -473,10 +474,10 @@ func TestUpdateItem_FailureGetItemByNameError(t *testing.T) {
 func TestDelete(t *testing.T) {
 	// arrange
 	mockItemService, mockItemRepo := setupItemServiceMock(t)
-	mockItemRepo.EXPECT().Delete(gomock.Any()).Return(nil)
+	mockItemRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
 
 	// act
-	err := mockItemService.Delete(uint(1))
+	err := mockItemService.Delete(context.Background(), uint(1))
 
 	// assert
 	assert.Nil(t, err, fmt.Sprintf("expect an error to be nil, got %v", err))

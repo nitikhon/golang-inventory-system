@@ -32,7 +32,7 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	createdUser, err := h.service.CreateUser(&user)
+	createdUser, err := h.service.CreateUser(c.UserContext(), &user)
 	if err != nil {
 		if err.Error() == errormap.ErrUserCredentialsExist {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrUserCredentialsExist})
@@ -58,7 +58,7 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	updatedUser, err := h.service.UpdateUser(&user)
+	updatedUser, err := h.service.UpdateUser(c.UserContext(), &user)
 	if err != nil {
 		switch err.Error() {
 		case gorm.ErrRecordNotFound.Error():
@@ -79,7 +79,7 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	err = h.service.DeleteUser(uint(id))
+	err = h.service.DeleteUser(c.UserContext(), uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -88,7 +88,7 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 
 // GetAllUsers retrieves all users.
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
-	users, err := h.service.GetAllUsers()
+	users, err := h.service.GetAllUsers(c.UserContext())
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -102,7 +102,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByID(uint(id))
+	user, err := h.service.GetUserByID(c.UserContext(), uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -122,7 +122,7 @@ func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByUsername(username)
+	user, err := h.service.GetUserByUsername(c.UserContext(), username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
@@ -145,7 +145,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByEmail(email)
+	user, err := h.service.GetUserByEmail(c.UserContext(), email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
@@ -168,7 +168,7 @@ func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByPhone(phone)
+	user, err := h.service.GetUserByPhone(c.UserContext(), phone)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
@@ -199,7 +199,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	accessToken, refreshToken, err := h.service.Login(username, loginRequest.Password)
+	accessToken, refreshToken, err := h.service.Login(c.UserContext(), username, loginRequest.Password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidCredentials})
 	}
@@ -228,7 +228,7 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 	}
 
 	// Validate the Refresh Token and generate new tokens
-	tokens, err := h.service.RefreshToken(refreshToken)
+	tokens, err := h.service.RefreshToken(c.UserContext(), refreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidRefreshToken})
 	}
@@ -255,7 +255,7 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
 	// Retrieve the user by ID
-	user, err := h.service.GetUserByID(userID)
+	user, err := h.service.GetUserByID(c.UserContext(), userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -269,7 +269,7 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
 	// Clear refresh token in DB
-	err := h.service.Logout(userID)
+	err := h.service.Logout(c.UserContext(), userID)
 	if err != nil {
 		if err.Error() == "user already logged out" {
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{

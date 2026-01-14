@@ -5,10 +5,11 @@
 package mock_port
 
 import (
-        gomock "github.com/golang/mock/gomock"
         entity "github.com/nitikhon/golang-inventory-system/internal/core/entity"
         gorm "gorm.io/gorm"
         reflect "reflect"
+        context "context"
+        gomock "github.com/golang/mock/gomock"
 )
 
 // MockItemRepository is a mock of ItemRepository interface.
@@ -35,47 +36,47 @@ func (m *MockItemRepository) EXPECT() *MockItemRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockItemRepository) Create(arg0 *entity.Item) (*entity.Item, error) {
+func (m *MockItemRepository) Create(arg0 context.Context, arg1 *entity.Item) (*entity.Item, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Create", arg0)
+        ret := m.ctrl.Call(m, "Create", arg0, arg1)
         ret0, _ := ret[0].(*entity.Item)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockItemRepositoryMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemRepository)(nil).Create), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemRepository)(nil).Create), arg0, arg1)
 }
 
 // Delete mocks base method.
-func (m *MockItemRepository) Delete(arg0 uint) error {
+func (m *MockItemRepository) Delete(arg0 context.Context, arg1 uint) error {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Delete", arg0)
+        ret := m.ctrl.Call(m, "Delete", arg0, arg1)
         ret0, _ := ret[0].(error)
         return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockItemRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockItemRepository)(nil).Delete), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockItemRepository)(nil).Delete), arg0, arg1)
 }
 
 // GetAllItems mocks base method.
-func (m *MockItemRepository) GetAllItems(arg0, arg1 int, arg2 string) (*entity.PaginationResult[entity.Item], error) {
+func (m *MockItemRepository) GetAllItems(arg0 context.Context, arg1, arg2 int, arg3 string) (*entity.PaginationResult[entity.Item], error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetAllItems", arg0, arg1, arg2)
+        ret := m.ctrl.Call(m, "GetAllItems", arg0, arg1, arg2, arg3)
         ret0, _ := ret[0].(*entity.PaginationResult[entity.Item])
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetAllItems indicates an expected call of GetAllItems.
-func (mr *MockItemRepositoryMockRecorder) GetAllItems(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) GetAllItems(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllItems", reflect.TypeOf((*MockItemRepository)(nil).GetAllItems), arg0, arg1, arg2)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllItems", reflect.TypeOf((*MockItemRepository)(nil).GetAllItems), arg0, arg1, arg2, arg3)
 }
 
 // GetDB mocks base method.
@@ -93,18 +94,18 @@ func (mr *MockItemRepositoryMockRecorder) GetDB() *gomock.Call {
 }
 
 // GetItemByID mocks base method.
-func (m *MockItemRepository) GetItemByID(arg0 uint) (*entity.Item, error) {
+func (m *MockItemRepository) GetItemByID(arg0 context.Context, arg1 uint) (*entity.Item, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetItemByID", arg0)
+        ret := m.ctrl.Call(m, "GetItemByID", arg0, arg1)
         ret0, _ := ret[0].(*entity.Item)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetItemByID indicates an expected call of GetItemByID.
-func (mr *MockItemRepositoryMockRecorder) GetItemByID(arg0 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) GetItemByID(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByID", reflect.TypeOf((*MockItemRepository)(nil).GetItemByID), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByID", reflect.TypeOf((*MockItemRepository)(nil).GetItemByID), arg0, arg1)
 }
 
 // GetItemByIDForUpdate mocks base method.
@@ -123,33 +124,33 @@ func (mr *MockItemRepositoryMockRecorder) GetItemByIDForUpdate(arg0, arg1 interf
 }
 
 // GetItemByName mocks base method.
-func (m *MockItemRepository) GetItemByName(arg0 string) (*entity.Item, error) {
+func (m *MockItemRepository) GetItemByName(arg0 context.Context, arg1 string) (*entity.Item, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetItemByName", arg0)
+        ret := m.ctrl.Call(m, "GetItemByName", arg0, arg1)
         ret0, _ := ret[0].(*entity.Item)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetItemByName indicates an expected call of GetItemByName.
-func (mr *MockItemRepositoryMockRecorder) GetItemByName(arg0 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) GetItemByName(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByName", reflect.TypeOf((*MockItemRepository)(nil).GetItemByName), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItemByName", reflect.TypeOf((*MockItemRepository)(nil).GetItemByName), arg0, arg1)
 }
 
 // Update mocks base method.
-func (m *MockItemRepository) Update(arg0 *entity.Item) (*entity.Item, error) {
+func (m *MockItemRepository) Update(arg0 context.Context, arg1 *entity.Item) (*entity.Item, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Update", arg0)
+        ret := m.ctrl.Call(m, "Update", arg0, arg1)
         ret0, _ := ret[0].(*entity.Item)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockItemRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockItemRepositoryMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockItemRepository)(nil).Update), arg0)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockItemRepository)(nil).Update), arg0, arg1)
 }
 
 // UpdateWithTx mocks base method.

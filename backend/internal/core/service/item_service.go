@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -19,11 +20,11 @@ var _ ItemServiceInterface = (*ItemService)(nil)
 
 // ItemServiceInterface defines the contract for ItemService.
 type ItemServiceInterface interface {
-	GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error)
-	GetItemByID(id uint) (*entity.Item, error)
-	Create(item *entity.Item) (*entity.Item, error)
-	Update(item *entity.Item) (*entity.Item, error)
-	Delete(id uint) error
+	GetAllItems(ctx context.Context, page, limit int, search string) (*entity.PaginationResult[entity.Item], error)
+	GetItemByID(ctx context.Context, id uint) (*entity.Item, error)
+	Create(ctx context.Context, item *entity.Item) (*entity.Item, error)
+	Update(ctx context.Context, item *entity.Item) (*entity.Item, error)
+	Delete(ctx context.Context, id uint) error
 	GetItemByIDForUpdate(tx *gorm.DB, id uint) (*entity.Item, error)
 	UpdateWithTx(tx *gorm.DB, item *entity.Item) (*entity.Item, error)
 }
@@ -34,18 +35,18 @@ func NewItemService(repo port.ItemRepository) *ItemService {
 }
 
 // GetAllItems returns all items.
-func (s *ItemService) GetAllItems(page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
-	return s.repo.GetAllItems(page, limit, search)
+func (s *ItemService) GetAllItems(ctx context.Context, page, limit int, search string) (*entity.PaginationResult[entity.Item], error) {
+	return s.repo.GetAllItems(ctx, page, limit, search)
 }
 
 // GetItemByID returns an item by its ID.
-func (s *ItemService) GetItemByID(id uint) (*entity.Item, error) {
-	return s.repo.GetItemByID(id)
+func (s *ItemService) GetItemByID(ctx context.Context, id uint) (*entity.Item, error) {
+	return s.repo.GetItemByID(ctx, id)
 }
 
 // Create creates a new item.
-func (s *ItemService) Create(item *entity.Item) (*entity.Item, error) {
-	existingItem, err := s.repo.GetItemByName(item.Name)
+func (s *ItemService) Create(ctx context.Context, item *entity.Item) (*entity.Item, error) {
+	existingItem, err := s.repo.GetItemByName(ctx, item.Name)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -54,12 +55,12 @@ func (s *ItemService) Create(item *entity.Item) (*entity.Item, error) {
 		return nil, errors.New(errormap.ErrItemNameAlreadyExists)
 	}
 
-	return s.repo.Create(item)
+	return s.repo.Create(ctx, item)
 }
 
 // Update updates an existing item.
-func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
-	currentItem, err := s.repo.GetItemByID(item.ID)
+func (s *ItemService) Update(ctx context.Context, item *entity.Item) (*entity.Item, error) {
+	currentItem, err := s.repo.GetItemByID(ctx, item.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
 		return nil, errors.New(errormap.ErrItemNotFound)
 	}
 
-	existingItem, err := s.repo.GetItemByName(item.Name)
+	existingItem, err := s.repo.GetItemByName(ctx, item.Name)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -76,12 +77,12 @@ func (s *ItemService) Update(item *entity.Item) (*entity.Item, error) {
 		return nil, errors.New(errormap.ErrItemNameAlreadyExists)
 	}
 
-	return s.repo.Update(item)
+	return s.repo.Update(ctx, item)
 }
 
 // Delete deletes an item by its ID.
-func (s *ItemService) Delete(id uint) error {
-	return s.repo.Delete(id)
+func (s *ItemService) Delete(ctx context.Context, id uint) error {
+	return s.repo.Delete(ctx, id)
 }
 
 // GetItemByIDForUpdate create a transaction to update to handle race condition

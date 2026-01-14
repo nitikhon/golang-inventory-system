@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -99,13 +100,13 @@ func TestBorrowItem_Success(t *testing.T) {
 		BorrowingStatus: entity.BORROWING_PENDING,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
-	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any(), gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, err)
@@ -124,10 +125,10 @@ func TestBorrowItem_UserNotExist(t *testing.T) {
 		BorrowingAmount: 1,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(nil, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -145,10 +146,10 @@ func TestBorrowItem_UserRepoError(t *testing.T) {
 	}
 	mockErr := errors.New("database error")
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(nil, mockErr)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(nil, mockErr)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -179,11 +180,11 @@ func TestBorrowItem_ItemNotAvailable(t *testing.T) {
 		BorrowingAmount: 1,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -205,11 +206,11 @@ func TestBorrowItem_ItemNotExist(t *testing.T) {
 		BorrowingAmount: 1,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(nil, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(nil, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -232,11 +233,11 @@ func TestBorrowItem_ItemRepoError(t *testing.T) {
 	}
 	mockErr := errors.New("database error")
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(nil, mockErr)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(nil, mockErr)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -267,11 +268,11 @@ func TestBorrowItem_ItemNotEnough(t *testing.T) {
 		BorrowingAmount: 5, // Requesting more than available
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -301,12 +302,12 @@ func TestBorrowItem_AlreadyBorrowed(t *testing.T) {
 		BorrowingAmount: 1,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(true, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(true, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -337,12 +338,12 @@ func TestBorrowItem_HasActiveBorrowingRepoError(t *testing.T) {
 	}
 	mockErr := errors.New("database error")
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, mockErr)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, mockErr)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -373,13 +374,13 @@ func TestBorrowItem_BorrowRepoError(t *testing.T) {
 	}
 	mockErr := errors.New("database error")
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
-	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(nil, mockErr)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any(), gomock.Any()).Return(nil, mockErr)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -417,13 +418,13 @@ func TestBorrowItem_CanBorrowDifferentItem(t *testing.T) {
 		BorrowingStatus: entity.BORROWING_PENDING,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
-	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any(), gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, err)
@@ -455,12 +456,12 @@ func TestBorrowItem_InvalidDueDateFormat(t *testing.T) {
 		DueDate:         "2025/01/01",
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -491,12 +492,12 @@ func TestBorrowItem_InvalidDueDate(t *testing.T) {
 		DueDate:         time.Now().AddDate(0, 0, -7).Format(time.RFC3339),
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, result)
@@ -533,13 +534,13 @@ func TestBorrowItem_CanBorrowIfPreviousBorrowingNotPending(t *testing.T) {
 		BorrowingStatus: entity.BORROWING_PENDING,
 	}
 
-	mockUserRepo.EXPECT().GetUserByID(borrowingInput.UserID).Return(mockUser, nil)
-	mockItemRepo.EXPECT().GetItemByID(borrowingInput.ItemID).Return(mockItem, nil)
-	mockBorrowingRepo.EXPECT().HasActiveBorrowing(borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
-	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any()).Return(expectedBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), borrowingInput.UserID).Return(mockUser, nil)
+	mockItemRepo.EXPECT().GetItemByID(gomock.Any(), borrowingInput.ItemID).Return(mockItem, nil)
+	mockBorrowingRepo.EXPECT().HasActiveBorrowing(gomock.Any(), borrowingInput.UserID, borrowingInput.ItemID).Return(false, nil)
+	mockBorrowingRepo.EXPECT().BorrowItem(gomock.Any(), gomock.Any()).Return(expectedBorrowing, nil)
 
 	// act
-	result, err := service.BorrowItem(borrowingInput)
+	result, err := service.BorrowItem(context.Background(), borrowingInput)
 
 	// assert
 	assert.Nil(t, err)
@@ -589,14 +590,14 @@ func TestApproveBorrowing_Success(t *testing.T) {
 	sqlMock.ExpectCommit()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
 	mockBorrowingRepo.EXPECT().ApproveBorrowingWithTx(gomock.Any(), borrowingId, approverId).Return(expectedResult, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, err)
@@ -620,10 +621,10 @@ func TestApproveBorrowing_BorrowingNotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(nil, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -643,10 +644,10 @@ func TestApproveBorrowing_BorrowingRepoError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, mockErr)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(nil, mockErr)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -673,11 +674,11 @@ func TestApproveBorrowing_ApproverNotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(nil, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -705,11 +706,11 @@ func TestApproveBorrowing_ApproverRepoError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(nil, mockErr)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(nil, mockErr)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -743,11 +744,11 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyApproved(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -781,11 +782,11 @@ func TestApproveBorrowing_BorrowingNotPending_AlreadyRejected(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -818,12 +819,12 @@ func TestApproveBorrowing_ItemNotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(nil, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -857,12 +858,12 @@ func TestApproveBorrowing_ItemRepoError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(nil, mockErr)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -904,12 +905,12 @@ func TestApproveBorrowing_NotEnoughItemsForApproval(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -951,13 +952,13 @@ func TestApproveBorrowing_UpdateWithTxError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(nil, mockErr)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -999,14 +1000,14 @@ func TestApproveBorrowing_ApproveBorrowingWithTxError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(approverId).Return(mockApprover, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), approverId).Return(mockApprover, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
 	mockBorrowingRepo.EXPECT().ApproveBorrowingWithTx(gomock.Any(), borrowingId, approverId).Return(nil, mockErr)
 
 	// act
-	result, err := service.ApproveBorrowing(borrowingId, approverId)
+	result, err := service.ApproveBorrowing(context.Background(), borrowingId, approverId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1048,12 +1049,12 @@ func TestRejectBorrowing_Success_AdminReject(t *testing.T) {
 	sqlMock.ExpectCommit()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(mockRejecter, nil)
 	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(expectedResult, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, err)
@@ -1097,12 +1098,12 @@ func TestRejectBorrowing_Success_OwnerCancel(t *testing.T) {
 	sqlMock.ExpectCommit()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(mockRejecter, nil)
 	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(expectedResult, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, err)
@@ -1137,11 +1138,11 @@ func TestRejectBorrowing_Unauthorized(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(mockRejecter, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1161,10 +1162,10 @@ func TestRejectBorrowing_BorrowingNotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(nil, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1192,11 +1193,11 @@ func TestRejectBorrowing_RejecterNotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(nil, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1230,11 +1231,11 @@ func TestRejectBorrowing_BorrowingNotPending(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(mockRejecter, nil)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1269,12 +1270,12 @@ func TestRejectBorrowing_RepoError(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
-	mockUserRepo.EXPECT().GetUserByID(rejecterId).Return(mockRejecter, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
+	mockUserRepo.EXPECT().GetUserByID(gomock.Any(), rejecterId).Return(mockRejecter, nil)
 	mockBorrowingRepo.EXPECT().RejectBorrowingWithTx(gomock.Any(), borrowingId, rejecterId).Return(nil, mockErr)
 
 	// act
-	result, err := service.RejectBorrowing(borrowingId, rejecterId)
+	result, err := service.RejectBorrowing(context.Background(), borrowingId, rejecterId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1302,10 +1303,10 @@ func TestGetBorrowingsByBorrowingStatus_Success(t *testing.T) {
 		Limit:      10,
 	}
 
-	mockBorrowingRepo.EXPECT().GetBorrowingsByBorrowingStatus(status, search, page, limit).Return(expectedBorrowings, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByBorrowingStatus(gomock.Any(), status, search, page, limit).Return(expectedBorrowings, nil)
 
 	// act
-	result, err := service.GetBorrowingsByBorrowingStatus(status, search, page, limit)
+	result, err := service.GetBorrowingsByBorrowingStatus(context.Background(), status, search, page, limit)
 
 	// assert
 	assert.Nil(t, err)
@@ -1329,10 +1330,10 @@ func TestGetBorrowingsByUserID_Success(t *testing.T) {
 		Limit:      10,
 	}
 
-	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(id, page, limit, search).Return(expectedBorrowings, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingsByUserID(gomock.Any(), id, page, limit, search).Return(expectedBorrowings, nil)
 
 	// act
-	result, err := service.GetBorrowingsByUserID(id, page, limit, search)
+	result, err := service.GetBorrowingsByUserID(context.Background(), id, page, limit, search)
 
 	// assert
 	assert.Nil(t, err)
@@ -1347,10 +1348,10 @@ func TestGetBorrowingsStats_Success(t *testing.T) {
 
 	expectedBorrowings := &entity.BorrowingStats{}
 
-	mockBorrowingRepo.EXPECT().GetUserBorrowingStats(id).Return(expectedBorrowings, nil)
+	mockBorrowingRepo.EXPECT().GetUserBorrowingStats(gomock.Any(), id).Return(expectedBorrowings, nil)
 
 	// act
-	result, err := service.GetUserBorrowingStats(id)
+	result, err := service.GetUserBorrowingStats(context.Background(), id)
 
 	// assert
 	assert.Nil(t, err)
@@ -1389,13 +1390,13 @@ func TestReturnBorrowing_Success(t *testing.T) {
 	sqlMock.ExpectCommit()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
 	mockBorrowingRepo.EXPECT().ReturnBorrowingWithTx(gomock.Any(), borrowingId, entity.BORROWING_RETURNED).Return(expectedResult, nil)
 
 	// act
-	result, err := service.ReturnBorrowing(borrowingId)
+	result, err := service.ReturnBorrowing(context.Background(), borrowingId)
 
 	// assert
 	assert.Nil(t, err)
@@ -1434,13 +1435,13 @@ func TestReturnBorrowing_Success_Overdue(t *testing.T) {
 	sqlMock.ExpectCommit()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
 	mockItemRepo.EXPECT().GetItemByIDForUpdate(gomock.Any(), mockBorrowing.ItemID).Return(mockItem, nil)
 	mockItemRepo.EXPECT().UpdateWithTx(gomock.Any(), gomock.Any()).Return(mockItem, nil)
 	mockBorrowingRepo.EXPECT().ReturnBorrowingWithTx(gomock.Any(), borrowingId, entity.BORROWING_OVERDUE).Return(expectedResult, nil)
 
 	// act
-	result, err := service.ReturnBorrowing(borrowingId)
+	result, err := service.ReturnBorrowing(context.Background(), borrowingId)
 
 	// assert
 	assert.Nil(t, err)
@@ -1458,10 +1459,10 @@ func TestReturnBorrowing_NotExist(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(nil, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(nil, nil)
 
 	// act
-	result, err := service.ReturnBorrowing(borrowingId)
+	result, err := service.ReturnBorrowing(context.Background(), borrowingId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1484,10 +1485,10 @@ func TestReturnBorrowing_NotActive(t *testing.T) {
 	sqlMock.ExpectRollback()
 
 	mockItemRepo.EXPECT().GetDB().Return(mockDB)
-	mockBorrowingRepo.EXPECT().GetBorrowingByID(borrowingId).Return(mockBorrowing, nil)
+	mockBorrowingRepo.EXPECT().GetBorrowingByID(gomock.Any(), borrowingId).Return(mockBorrowing, nil)
 
 	// act
-	result, err := service.ReturnBorrowing(borrowingId)
+	result, err := service.ReturnBorrowing(context.Background(), borrowingId)
 
 	// assert
 	assert.Nil(t, result)
@@ -1506,23 +1507,23 @@ func TestMarkOverdueItemsWithTx_Success(t *testing.T) {
 	mockBorrowingRepo.EXPECT().MarkOverdueItemsWithTx(gomock.Any())
 
 	// act
-	err := service.MarkOverdueItems()
+	err := service.MarkOverdueItems(context.Background())
 
 	// assert
 	assert.Nil(t, err)
 }
 
 func TestMarkOverdueItems_Error(t *testing.T) {
-    // arrange
+	// arrange
 	service, mockBorrowingRepo, _, _ := setupBorrowingServiceMock(t)
 	mockDB, sqlMock := setupMockDB(t)
 
-    sqlMock.ExpectBegin()
-    sqlMock.ExpectRollback()
-    
-    mockBorrowingRepo.EXPECT().GetDB().Return(mockDB)
-    mockBorrowingRepo.EXPECT().MarkOverdueItemsWithTx(gomock.Any()).Return(errors.New("db error"))
+	sqlMock.ExpectBegin()
+	sqlMock.ExpectRollback()
 
-    err := service.MarkOverdueItems()
-    assert.Error(t, err)
+	mockBorrowingRepo.EXPECT().GetDB().Return(mockDB)
+	mockBorrowingRepo.EXPECT().MarkOverdueItemsWithTx(gomock.Any()).Return(errors.New("db error"))
+
+	err := service.MarkOverdueItems(context.Background())
+	assert.Error(t, err)
 }
