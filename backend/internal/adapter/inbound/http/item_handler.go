@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -32,8 +33,15 @@ func (h *ItemHandler) GetAllItems(c *fiber.Ctx) error {
 	limit := c.QueryInt("limit", 12)
 	search := c.Query("search")
 
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
 	items, err := h.service.GetAllItems(ctx, page, limit, search)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(items)
@@ -45,9 +53,15 @@ func (h *ItemHandler) GetItemByID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	item, err := h.service.GetItemByID(c.UserContext(), uint(id))
+
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	item, err := h.service.GetItemByID(ctx, uint(id))
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": gorm.ErrRecordNotFound})
 		default:
@@ -71,10 +85,16 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 
 	item.Name = normalizeItemName(item.Name)
 
-	createdItem, err := h.service.Create(c.UserContext(), &item)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	createdItem, err := h.service.Create(ctx, &item)
 	if err != nil {
 		// Handle business logic errors
-		if err.Error() == errormap.ErrItemNameAlreadyExists {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case errormap.ErrItemNameAlreadyExists:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrItemNameAlreadyExists})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -100,10 +120,15 @@ func (h *ItemHandler) PutUpdate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	updatedItem, err := h.service.Update(c.UserContext(), &item)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	updatedItem, err := h.service.Update(ctx, &item)
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case errormap.ErrItemNotFound:
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 		case errormap.ErrItemNameAlreadyExists:
@@ -122,8 +147,15 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	item, err := h.service.GetItemByID(c.UserContext(), uint(id))
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	item, err := h.service.GetItemByID(ctx, uint(id))
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 	}
 
@@ -187,10 +219,12 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 		item.Status = *req.Status
 	}
 
-	updatedItem, err := h.service.Update(c.UserContext(), item)
+	updatedItem, err := h.service.Update(ctx, item)
 	if err != nil {
 		// Handle business logic errors
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case errormap.ErrItemNotFound:
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrItemNotFound})
 		case errormap.ErrItemNameAlreadyExists:
@@ -210,7 +244,14 @@ func (h *ItemHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if err := h.service.Delete(c.UserContext(), uint(id)); err != nil {
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	if err := h.service.Delete(ctx, uint(id)); err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.SendStatus(fiber.StatusNoContent)

@@ -1,7 +1,9 @@
 package http
 
 import (
+	"context"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -40,9 +42,14 @@ func (h *BorrowingHandler) BorrowItem(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "borrowing amount must be greater than zero"})
 	}
 
-	borrowedItem, err := h.service.BorrowItem(c.UserContext(), borrowing)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	borrowedItem, err := h.service.BorrowItem(ctx, borrowing)
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case errormap.ErrUserNotExist, errormap.ErrItemNotAvailable, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrItemNotEnough, errormap.ErrAlreadyBorrowed:
@@ -66,9 +73,14 @@ func (h *BorrowingHandler) ApproveBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	approvedBorrowing, err := h.service.ApproveBorrowing(c.UserContext(), uint(borrowingID), userID)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	approvedBorrowing, err := h.service.ApproveBorrowing(ctx, uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotExist, errormap.ErrApproverNotExist, errormap.ErrItemNotExistOrActive:
@@ -98,9 +110,14 @@ func (h *BorrowingHandler) RejectBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	rejectedBorrowing, err := h.service.RejectBorrowing(c.UserContext(), uint(borrowingID), userID)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	rejectedBorrowing, err := h.service.RejectBorrowing(ctx, uint(borrowingID), userID)
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case errormap.ErrBorrowingNotExist, errormap.ErrRejecterNotExist, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotPending:
@@ -123,9 +140,14 @@ func (h *BorrowingHandler) ReturnBorrowing(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	returnedBorrowing, err := h.service.ReturnBorrowing(c.UserContext(), uint(borrowingID))
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	returnedBorrowing, err := h.service.ReturnBorrowing(ctx, uint(borrowingID))
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case errormap.ErrBorrowingNotExist, gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 		case errormap.ErrBorrowingNotActive:
@@ -155,8 +177,15 @@ func (h *BorrowingHandler) GetBorrowingsByBorrowingStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid borrowing status"})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(c.UserContext(), statuses, search, page, limit)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	borrowings, err := h.service.GetBorrowingsByBorrowingStatus(ctx, statuses, search, page, limit)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(borrowings)
@@ -173,8 +202,15 @@ func (h *BorrowingHandler) GetBorrowingByUserID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	borrowings, err := h.service.GetBorrowingsByUserID(c.UserContext(), uint(userID), page, limit, search)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	borrowings, err := h.service.GetBorrowingsByUserID(ctx, uint(userID), page, limit, search)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -188,8 +224,15 @@ func (h *BorrowingHandler) UserStats(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrInvalidRequestBody})
 	}
 
-	borrowingStat, err := h.service.GetUserBorrowingStats(c.UserContext(), userID)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	borrowingStat, err := h.service.GetUserBorrowingStats(ctx, userID)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

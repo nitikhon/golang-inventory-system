@@ -1,6 +1,9 @@
 package http
 
 import (
+	"context"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
 	"github.com/nitikhon/golang-inventory-system/internal/core/service"
@@ -32,9 +35,15 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	createdUser, err := h.service.CreateUser(c.UserContext(), &user)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	createdUser, err := h.service.CreateUser(ctx, &user)
 	if err != nil {
-		if err.Error() == errormap.ErrUserCredentialsExist {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case errormap.ErrUserCredentialsExist:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": errormap.ErrUserCredentialsExist})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -58,9 +67,14 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	updatedUser, err := h.service.UpdateUser(c.UserContext(), &user)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	updatedUser, err := h.service.UpdateUser(ctx, &user)
 	if err != nil {
 		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
 		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		case errormap.ErrEmailAlreadyTaken, errormap.ErrPhoneAlreadyTaken:
@@ -79,8 +93,15 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	err = h.service.DeleteUser(c.UserContext(), uint(id))
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	err = h.service.DeleteUser(ctx, uint(id))
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.SendStatus(fiber.StatusNoContent)
@@ -88,8 +109,15 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 
 // GetAllUsers retrieves all users.
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
-	users, err := h.service.GetAllUsers(c.UserContext())
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	users, err := h.service.GetAllUsers(ctx)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(users)
@@ -102,8 +130,15 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByID(c.UserContext(), uint(id))
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	user, err := h.service.GetUserByID(ctx, uint(id))
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(user)
@@ -122,9 +157,15 @@ func (h *UserHandler) GetUserByUsername(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByUsername(c.UserContext(), username)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	user, err := h.service.GetUserByUsername(ctx, username)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -145,9 +186,15 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByEmail(c.UserContext(), email)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	user, err := h.service.GetUserByEmail(ctx, email)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -168,9 +215,15 @@ func (h *UserHandler) GetUserByPhone(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	user, err := h.service.GetUserByPhone(c.UserContext(), phone)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	user, err := h.service.GetUserByPhone(ctx, phone)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case gorm.ErrRecordNotFound.Error():
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": errormap.ErrUserNotFound})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -199,8 +252,15 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	accessToken, refreshToken, err := h.service.Login(c.UserContext(), username, loginRequest.Password)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	accessToken, refreshToken, err := h.service.Login(ctx, username, loginRequest.Password)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidCredentials})
 	}
 
@@ -228,8 +288,15 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 	}
 
 	// Validate the Refresh Token and generate new tokens
-	tokens, err := h.service.RefreshToken(c.UserContext(), refreshToken)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	tokens, err := h.service.RefreshToken(ctx, refreshToken)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": errormap.ErrInvalidRefreshToken})
 	}
 
@@ -254,9 +321,16 @@ func (h *UserHandler) RefreshToken(c *fiber.Ctx) error {
 func (h *UserHandler) Me(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
 	// Retrieve the user by ID
-	user, err := h.service.GetUserByID(c.UserContext(), userID)
+	user, err := h.service.GetUserByID(ctx, userID)
 	if err != nil {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -268,10 +342,16 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 	// Get user ID from context (set by AuthMiddleware)
 	userID := c.Locals("user_id").(uint)
 
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
 	// Clear refresh token in DB
-	err := h.service.Logout(c.UserContext(), userID)
+	err := h.service.Logout(ctx, userID)
 	if err != nil {
-		if err.Error() == "user already logged out" {
+		switch err.Error() {
+		case context.DeadlineExceeded.Error():
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "The request took too long to process (timeout)"})
+		case "user already logged out":
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
 				"message": "Already logged out",
 			})
