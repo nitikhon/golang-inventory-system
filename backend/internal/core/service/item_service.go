@@ -61,7 +61,7 @@ func (s *ItemService) Create(ctx context.Context, item *entity.Item) (*entity.It
 // Update updates an existing item.
 func (s *ItemService) Update(ctx context.Context, item *entity.Item) (*entity.Item, error) {
 	currentItem, err := s.repo.GetItemByID(ctx, item.ID)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	if currentItem == nil {
