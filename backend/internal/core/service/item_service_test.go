@@ -161,7 +161,7 @@ func TestCreateItem_FailureItemAlreadyExists(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName(gomock.Any(), "existing item"). // normalized name
+		GetItemByName(gomock.Any(), "existing item").
 		Return(existingItem, nil)                     // existing item found
 
 	// act
@@ -186,7 +186,7 @@ func TestCreateItem_FailureGetItemByNameError(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName(gomock.Any(), "test item"). // normalized name
+		GetItemByName(gomock.Any(), "test item").
 		Return(nil, errors.New("database connection error"))
 
 	// act
@@ -252,7 +252,7 @@ func TestUpdateItem_Success(t *testing.T) {
 
 	expectedItem := &entity.Item{
 		GormModel:       entity.GormModel{ID: 1},
-		Name:            "updated Item", // service doesn't normalize name yet
+		Name:            "updated Item",
 		Description:     "Updated Description",
 		AvailableAmount: 8,
 		TotalAmount:     12,
@@ -267,7 +267,7 @@ func TestUpdateItem_Success(t *testing.T) {
 
 	mockItemRepo.
 		EXPECT().
-		GetItemByName(gomock.Any(), "Updated Item"). // original name (service doesn't normalize yet)
+		GetItemByName(gomock.Any(), "Updated Item").
 		Return(nil, nil)                             // no existing item with this name
 
 	mockItemRepo.

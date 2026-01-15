@@ -272,7 +272,7 @@ func seedTestData(t *testing.T, db *gorm.DB) error {
 			Status:          "available",
 		},
 		{
-			Name:            "portable projector",
+			Name:            "Portable Projector",
 			Description:     "Mini LED projector 1080p with wireless connectivity",
 			AvailableAmount: 1,
 			TotalAmount:     2,

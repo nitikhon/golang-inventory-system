@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -83,8 +82,6 @@ func (h *ItemHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	item.Name = normalizeItemName(item.Name)
-
 	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
 	defer cancel()
 
@@ -109,8 +106,6 @@ func (h *ItemHandler) PutUpdate(c *fiber.Ctx) error {
 	if err := c.BodyParser(&item); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-
-	item.Name = normalizeItemName(item.Name)
 
 	if item.ID == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrItemIDRequired})
@@ -175,8 +170,7 @@ func (h *ItemHandler) PatchUpdate(c *fiber.Ctx) error {
 		if *req.Name == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errormap.ErrNameNotEmpty})
 		}
-
-		item.Name = normalizeItemName(*req.Name)
+		item.Name = *req.Name
 	}
 
 	if req.Description != nil {
@@ -255,10 +249,6 @@ func (h *ItemHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.SendStatus(fiber.StatusNoContent)
-}
-
-func normalizeItemName(name string) string {
-	return strings.TrimSpace(strings.ToLower(name))
 }
 
 // validateItemInput validates input data at handler level

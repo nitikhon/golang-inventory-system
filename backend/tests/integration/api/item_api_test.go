@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/nitikhon/golang-inventory-system/internal/core/entity"
@@ -199,7 +198,7 @@ func TestCreateItem(t *testing.T) {
 			var createdItem entity.Item
 			err = json.NewDecoder(resp.Body).Decode(&createdItem)
 			require.NoError(t, err)
-			assert.Equal(t, strings.ToLower(payload["name"].(string)), createdItem.Name)
+			assert.Equal(t, payload["name"], createdItem.Name)
 			assert.Equal(t, payload["description"], createdItem.Description)
 			assert.Greater(t, createdItem.ID, uint(0))
 		})
@@ -330,9 +329,12 @@ func TestPutUpdateItem(t *testing.T) {
 	t.Run("Error Cases", func(t *testing.T) {
 		t.Run("Update non-existent item", func(t *testing.T) {
 			payload := map[string]any{
-				"ID":          99999,
-				"name":        "Non-existent",
-				"description": "This item doesn't exist",
+				"ID":               99999,
+				"name":             "Non-existent",
+				"description":      "This item doesn't exist",
+				"available_amount": 1,
+				"total_amount":     1,
+				"status":           "maintenance",
 			}
 
 			body, err := json.Marshal(payload)
@@ -507,7 +509,7 @@ func TestPatchUpdateItem(t *testing.T) {
 				payload:        map[string]any{"name": "Updated Name Only"},
 				expectedStatus: http.StatusOK,
 				validate: func(t *testing.T, updated entity.Item, original entity.Item) {
-					assert.Equal(t, "updated name only", updated.Name) // normalized to lowercase
+					assert.Equal(t, "Updated Name Only", updated.Name)
 					assert.Equal(t, original.Description, updated.Description)
 					assert.Equal(t, original.AvailableAmount, updated.AvailableAmount)
 					assert.Equal(t, original.TotalAmount, updated.TotalAmount)
@@ -559,7 +561,7 @@ func TestPatchUpdateItem(t *testing.T) {
 				},
 				expectedStatus: http.StatusOK,
 				validate: func(t *testing.T, updated entity.Item, original entity.Item) {
-					assert.Equal(t, "multi field update", updated.Name)
+					assert.Equal(t, "Multi Field Update", updated.Name)
 					assert.Equal(t, "Updated multiple fields", updated.Description)
 					assert.Equal(t, 5, updated.AvailableAmount)
 					assert.Equal(t, 15, updated.TotalAmount)
@@ -757,14 +759,14 @@ func TestPatchUpdateItem(t *testing.T) {
 	t.Run("Duplicate Name Conflict", func(t *testing.T) {
 		// Create two items
 		item1 := entity.Item{
-			Name:            "unique item one",
+			Name:            "Unique Item One",
 			Description:     "First item",
 			AvailableAmount: 5,
 			TotalAmount:     10,
 			Status:          "available",
 		}
 		item2 := entity.Item{
-			Name:            "unique item two",
+			Name:            "Unique Item Two",
 			Description:     "Second item",
 			AvailableAmount: 3,
 			TotalAmount:     8,
@@ -776,7 +778,7 @@ func TestPatchUpdateItem(t *testing.T) {
 		require.NoError(t, err)
 
 		// Try to update item2's name to item1's name
-		body, err := json.Marshal(map[string]any{"name": "unique item one"})
+		body, err := json.Marshal(map[string]any{"name": "Unique Item One"})
 		require.NoError(t, err)
 
 		url := fmt.Sprintf("/api/items/%d", item2.ID)
