@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { PaginatedResponse } from '../types/pagination'
-import type { Item, ItemCreateRequest } from '../types/item'
+import type { Item, ItemCreateRequest, ItemPatchRequest } from '../types/item'
 
 const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/items' : '/api/items'
@@ -21,4 +21,15 @@ const create = async (data: ItemCreateRequest, access_token: string | undefined)
   return request.data
 }
 
-export default { getAll, create }
+const patchUpdate = async (id: number, data: ItemPatchRequest, access_token: string | undefined): Promise<Item> => {
+  const request = await axios.patch(`${baseUrl}/${id}`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${access_token}`,
+    },
+    withCredentials: true,
+  })
+  return request.data
+}
+
+export default { getAll, create, patchUpdate }

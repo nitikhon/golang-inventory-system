@@ -16,3 +16,12 @@ export interface ItemCreateRequest {
   description: string
   status: ItemStatus
 }
+
+export interface ItemPatchRequest {
+  available_amount?: number
+  total_amount?: number
+  name?: string
+  description?: string
+  status?: ItemStatus
+}
+

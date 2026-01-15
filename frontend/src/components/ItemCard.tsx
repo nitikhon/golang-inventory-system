@@ -1,14 +1,20 @@
 import React from 'react'
 import type { Item } from '../types/item'
 import { useTranslation } from '../hooks/useTranslation'
+import { Pencil } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
 
 interface ItemCardProps {
   item: Item
   handleBorrow: (item: Item) => void
+  handleEdit: (item: Item) => void
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow, handleEdit }) => {
   const { t } = useTranslation()
+
+  const { user } = useAuth()
+
   const isAvailable = item.status === 'available'
   const isBorrowed = item.status === 'borrowed'
   const canBorrow =
@@ -76,11 +82,24 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, handleBorrow }) => {
             </span>
 
             {/* item amount */}
-            {(isAvailable || isBorrowed) && (
-              <span className="text-sm font-medium text-slate-400">
-                {item.available_amount}/{item.total_amount} {t.inventory.labels.items}
-              </span>
-            )}
+              <div className='flex flex-row items-center gap-2'>
+                {(isAvailable || isBorrowed) && (
+                  <span className="text-sm font-medium text-slate-400">
+                    {item.available_amount}/{item.total_amount} {t.inventory.labels.items}
+                  </span>
+                )}
+                {user?.is_admin && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(item)
+                    }}
+                    className="p-1 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <Pencil size={14} className="text-slate-400 hover:text-blue-600"/>
+                  </button>
+                )}
+              </div>
           </div>
 
           {/* item info */}

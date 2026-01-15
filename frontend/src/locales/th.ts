@@ -198,4 +198,31 @@ export const th = {
       pendingItem: 'กำลังประมวลผล...',
     },
   },
+  editItemModal: {
+    header: 'แก้ไขครุภัณฑ์',
+    labels: {
+      name: 'ชื่อ',
+      description: 'รายละเอียด',
+      total_amount: 'จำนวนทั้งหมด',
+      available_amount: 'จำนวนคงเหลือ',
+      status: 'สถานะ',
+    },
+    success: 'แก้ไขครุภัณฑ์สำเร็จ',
+    error: {
+      emptyName: 'ระบุชื่อของครุภัณฑ์',
+      emptyDesc: 'ระบุรายละเอียดของครุภัณฑ์',
+      invalidTotalAmount: 'จำนวนครุภัณฑ์ต้องมีอย่างน้อยหนึ่งชิ้น',
+      negativeAvailable: 'จำนวนคงเหลือต้องไม่ติดลบ',
+      invalidAvailable: 'จำนวนคงเหลือต้องไม่เกินจำนวนทั้งหมด',
+      updateFailed: 'เกิดข้อผิดพลาดในการแก้ไขครุภัณฑ์',
+    },
+    placeholder: {
+      name: 'เช่น MacBook Pro M3',
+      description: 'รายละเอียด...',
+    },
+    actions: {
+      update: 'บันทึกการแก้ไข',
+      updating: 'กำลังบันทึก...',
+    },
+  },
 }

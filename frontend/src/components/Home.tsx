@@ -14,6 +14,7 @@ import Pagination from './Pagination'
 import useDebounce from '../hooks/useDebounce'
 import { useTranslation } from '../hooks/useTranslation'
 import AddItemModal from './AddItemModal'
+import EditItemModal from './EditItemModal'
 
 const HomePage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
@@ -21,6 +22,8 @@ const HomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<Item | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const debouncedSearch = useDebounce(searchTerm, 500)
   const { t } = useTranslation()
@@ -38,6 +41,11 @@ const HomePage: React.FC = () => {
     }
     setSelectedItem(item)
     setIsBorrowModalOpen(true)
+  }
+
+  const handleEditClick = (item: Item) => {
+    setEditingItem(item)
+    setIsEditModalOpen(true)
   }
 
   const { data, isLoading, isError } = useQuery<PaginatedResponse<Item>>({
@@ -84,7 +92,7 @@ const HomePage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data?.data?.map((item: Item) => (
-            <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} />
+            <ItemCard key={item.id} item={item} handleBorrow={() => handleBorrowClick(item)} handleEdit={() => handleEditClick(item)} />
           ))}
         </div>
 
@@ -133,6 +141,11 @@ const HomePage: React.FC = () => {
       {/* add item modal */}
       {isAddItemModalOpen && (
         <AddItemModal isOpen={isAddItemModalOpen} onClose={setIsAddItemModalOpen} />
+      )}
+
+      {/* edit item modal */}
+      {isEditModalOpen && editingItem && (
+        <EditItemModal isOpen={isEditModalOpen} onClose={setIsEditModalOpen} item={editingItem} />
       )}
     </>
   )

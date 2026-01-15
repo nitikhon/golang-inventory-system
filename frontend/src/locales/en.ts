@@ -198,4 +198,31 @@ export const en = {
       pendingItem: 'Processing...',
     },
   },
+  editItemModal: {
+    header: 'Edit Item',
+    labels: {
+      name: 'Name',
+      description: 'Description',
+      total_amount: 'Total Amount',
+      available_amount: 'Available Amount',
+      status: 'Status',
+    },
+    success: 'Item updated successfully',
+    error: {
+      emptyName: 'Item name must not be empty',
+      emptyDesc: 'Item description must not be empty',
+      invalidTotalAmount: 'Item total amount must be at least 1',
+      negativeAvailable: 'Available amount cannot be negative',
+      invalidAvailable: 'Available amount cannot exceed total amount',
+      updateFailed: 'Failed to update item',
+    },
+    placeholder: {
+      name: 'e.g. MacBook Pro M3',
+      description: 'Device details...',
+    },
+    actions: {
+      update: 'Update Item',
+      updating: 'Updating...',
+    },
+  },
 }
