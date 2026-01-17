@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useTranslation } from '../hooks/useTranslation'
 
@@ -7,7 +8,7 @@ const LoginCard = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  const { login, isPending } = useAuth()
+  const { login, isPending, setIsLoginModalOpen } = useAuth()
   const { t } = useTranslation()
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,6 +68,17 @@ const LoginCard = () => {
           {isPending ? t.auth.authenticating : t.auth.loginButton}
         </button>
       </form>
+
+      <div className="mt-6 text-center text-sm text-slate-500">
+        {t.register.signupLink.text}{' '}
+        <Link 
+          to="/register" 
+          className="text-blue-600 font-semibold hover:underline"
+          onClick={() => setIsLoginModalOpen(false)}
+        >
+          {t.register.signupLink.action}
+        </Link>
+      </div>
     </div>
   )
 }

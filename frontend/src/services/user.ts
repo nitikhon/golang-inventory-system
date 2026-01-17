@@ -1,11 +1,16 @@
 import axios from 'axios'
-import type { LoginPayload, Token, User } from '../types/user'
+import type { LoginPayload, RegisterPayload, Token, User } from '../types/user'
 
 const isDev = import.meta.env.DEV
 const baseUrl = isDev ? 'http://localhost:8080/api/users' : '/api/users'
 
 const login = async (data: LoginPayload | undefined): Promise<Token> => {
   const request = await axios.post(`${baseUrl}/login`, data, { withCredentials: true })
+  return request.data
+}
+
+const register = async (data: RegisterPayload): Promise<User> => {
+  const request = await axios.post(`${baseUrl}/register`, data, { withCredentials: true })
   return request.data
 }
 
@@ -30,4 +35,4 @@ const refreshToken = async (): Promise<Token> => {
   return request.data
 }
 
-export default { login, logout, getProfile, refreshToken }
+export default { login, register, logout, getProfile, refreshToken }

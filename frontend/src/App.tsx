@@ -8,6 +8,7 @@ import MyBorrowings from './components/MyBorrowings'
 import { Toaster } from 'react-hot-toast'
 import Admin from './components/Admin'
 import { LanguageProvider } from './contexts/LanguageContext'
+import Register from './components/Register'
 
 const queryClient = new QueryClient()
 
@@ -22,6 +23,7 @@ function App() {
               <Toaster position="top-right" />
               <main className="max-w-7xl mx-auto px-4 py-8">
                 <Routes>
+                  <Route path="/register" element={<Register />} />
                   <Route path="/" element={<Home />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/my-borrowings" element={<MyBorrowings />} />

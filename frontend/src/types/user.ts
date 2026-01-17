@@ -20,3 +20,12 @@ export interface LoginPayload {
 export interface Token {
   access_token: string
 }
+
+export interface RegisterPayload {
+  username: string
+  password: string
+  email: string
+  first_name: string
+  last_name: string
+  phone: string
+}
